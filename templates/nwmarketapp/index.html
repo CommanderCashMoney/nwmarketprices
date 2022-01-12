@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>NW Market</title>
+        {% load static %}
+
+        <script type="text/javascript" src="{%  static 'codebase/suite.js' %}"></script>
+        <link rel="stylesheet" href="{% static 'codebase/suite.css' %}">
+        <link rel="stylesheet" href="{% static 'nwmarketapp/style.css' %}">
+
+    </head>
+    <body>
+        <div id="form_container"></div>
+        sadfasdf
+        <div id="chart_container"></div>
+
+
+     <script>
+
+    var form = new dhx.Form("form_container", {
+        css: "dhx_widget--bordered",
+        rows: [
+            {
+                type: "input",
+                label: "Name",
+                icon: "dxi dxi-magnify",
+                placeholder: "John Doe",
+                name: "name",
+                width: 200
+            },
+            // more form controls
+             {
+                type: "combo", // Input controls have initial width while Combo controls don't have
+                width: 270,
+                name: "confirmed_names",
+                label: "Item",
+                padding: "8px",
+                itemHeight: 50,
+                placeholder: "Select something",
+                 data: [
+                     {% for name in cn%}
+                         { value: '{{ name.0 }}', id: '{{ name.1 }}'},
+                     {% endfor %}
+
+
+
+                 ]
+            },
+            {
+                        name: "search-button",
+                        type: "button",
+                        icon: "mdi mdi-magnify",
+                        text: "Search",
+                        circle: true
+                    },
+             {
+                        name: "clear",
+                        type: "button",
+                        text: "clear",
+                        view: "link",
+                        padding: "0 16px",
+                        circle: true
+                    }
+        ]
+    });
+
+    form.getItem("clear").events.on("click", function () {
+    form.clear();
+
+
+});
+
+           //  You can change stroke width in series config
+        const config = {
+            type: "line",
+            css: "dhx_widget--bg_white dhx_widget--bordered",
+            scales: {
+                "bottom": {
+                    text: "month"
+                },
+                "left": {
+                    maxTicks: 10,
+                    max: 55,
+                    min: 0
+                }
+            },
+            series: [
+                {
+                    id: "A",
+                    value: "Iron Ore",
+                    color: "#81C4E8",
+                    strokeWidth: 3
+                },
+                {
+                    id: "B",
+                    value: "Iron Ingot",
+                    color: "#74A2E7",
+                    strokeWidth: 3
+                },
+
+            ],
+            legend: {
+                series: ["A", "B"],
+                halign: "right",
+                valign: "top"
+            }
+        };
+        const companiesData = [
+                {month: "02", "Iron Ore": 20, "Iron Ingot": 52 },
+                {month: "03", "Iron Ore": 5, "Iron Ingot": 33 },
+                {month: "04", "Iron Ore": 55, "Iron Ingot": 30  },
+                {month: "05", "Iron Ore": 30, "Iron Ingot": 11  },
+                {month: "06", "Iron Ore": 27, "Iron Ingot": 14  },
+                {month: "-3", "Iron Ore": 32, "Iron Ingot": 31 },
+                {month: "-2", "Iron Ore": 50, "Iron Ingot": 22 },
+                {month: "-1", "Iron Ore": 12, "Iron Ingot": 19 },
+                {month: "today", "Iron Ore": 10, "Iron Ingot": 24 },
+
+            ];
+        const chart = new dhx.Chart("chart", config);
+        chart.data.parse(companiesData);
+     </script>
+
+    </body>
+</html>
