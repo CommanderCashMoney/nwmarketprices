@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-qvos1ueti2_0hsx^-3mr%7&pv$6=b9^b3b&-=08=2!n)z%ob3%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['Nwmarket-env.eba-rxcymaas.us-west-1.elasticbeanstalk.com']
 
 
 # Application definition
@@ -69,21 +69,32 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'ebdjango.wsgi.application'
+WSGI_APPLICATION = 'nwmarket.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'nw',
-        'USER': 'postgres',
-        'PASSWORD': '29bix09A',
-        'HOST': 'localhost',
-        'PORT': '5432',
+if 'RDS_DB_NAME' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ['RDS_DB_NAME'],
+            'USER': os.environ['RDS_USERNAME'],
+            'PASSWORD': os.environ['RDS_PASSWORD'],
+            'HOST': os.environ['RDS_HOSTNAME'],
+            'PORT': os.environ['RDS_PORT'],
+        }
     }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'nw',
+            'USER': 'postgres',
+            'PASSWORD': '29bix09A',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
 }
 
 
