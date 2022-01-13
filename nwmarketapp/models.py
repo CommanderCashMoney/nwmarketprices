@@ -2,8 +2,8 @@ from django.db import models
 
 
 class ConfirmedNames(models.Model):
-    id = models.IntegerField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    name = models.CharField(db_column='NAME', max_length=50, blank=True, null=True)  # Field name made lowercase.
+    id = models.IntegerField(db_column='id', primary_key=True)  # Field name made lowercase.
+    name = models.CharField(db_column='name', max_length=50, blank=True, null=True)  # Field name made lowercase.
     timestamp = models.DateTimeField(blank=True, null=True)
 
     class Meta:
