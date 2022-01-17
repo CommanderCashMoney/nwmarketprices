@@ -1,126 +1,224 @@
 
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>NW Market</title>
-        {% load static %}
 
+
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+
+    <![endif]-->
+
+
+     <title>NW Market</title>
+        {% load static %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script type="text/javascript" src="{%  static 'codebase/suite.js' %}"></script>
+    <script type="text/javascript" src="{%  static 'jquery.typeahead.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'jquery.typeahead.min.css' %}">
         <link rel="stylesheet" href="{% static 'codebase/suite.css' %}">
         <link rel="stylesheet" href="{% static 'nwmarketapp/style.css' %}">
 
-    </head>
-    <body>
-        <div id="form_container"></div>
-        sadfasdf
-        <div id="chart_container"></div>
+</head>
+<body>
 
 
-     <script>
 
-    var form = new dhx.Form("form_container", {
-        css: "dhx_widget--bordered",
-        rows: [
-            {
-                type: "input",
-                label: "Name",
-                icon: "dxi dxi-magnify",
-                placeholder: "John Doe",
-                name: "name",
-                width: 200
-            },
-            // more form controls
-             {
-                type: "combo", // Input controls have initial width while Combo controls don't have
-                width: 270,
-                name: "confirmed_names",
-                label: "Item",
-                padding: "8px",
-                itemHeight: 50,
-                placeholder: "Select something",
+
+
+<!-- Main Container -->
+<div class="container">
+  <!-- Navigation -->
+  <header> <a href="">
+    <h4 class="logo">New World Market Prices</h4>
+    </a>
+
+  </header>
+
+
+
+  <!-- About Section -->
+  <section class="about" id="about">
+	<div class="column search">
+		<form action="" method="GET" id="search_form">
+
+
+             <div class="typeahead__container">
+                <div class="typeahead__field">
+                    <div class="typeahead__query">
+                        <input class="js-typeahead-country_v1" name="cn" placeholder="Search" autocomplete="off">
+                    </div>
+
+                </div>
+             </div>
+
+        </form>
+	  <p> </p>
+
+	  </div>
+
+    <div class="column mid" id="price_div">
+        <p class="price white_text" id="price_block">0.00</p>
+        <p class="white_text">current lowest price as of 1/27/2022 1:00 PM</p>
+    </div>
+	  <div class="column right graph">
+<div id="chart_container"></div>
+
+		  <p class="white_text" id="hist">Historic Pricing </p>
+	  </div>
+
+  </section>
+</div>
+</body>
+</html>
+<!-- Main Container Ends -->
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        var cn_list = []
+        $.typeahead({
+            input: '.js-typeahead-country_v1',
+            order: "desc",
+            display: "name",
+            source: {
                  data: [
-                     {% for name in cn%}
-                         { value: '{{ name.0 }}', id: '{{ name.1 }}'},
+                     {% for name in cn_list %}
+                         { name: '{{ name.0 }}', id: {{ name.1 }}},
                      {% endfor %}
 
-
-
-                 ]
-            },
-            {
-                        name: "search-button",
-                        type: "button",
-                        icon: "mdi mdi-magnify",
-                        text: "Search",
-                        circle: true
-                    },
-             {
-                        name: "clear",
-                        type: "button",
-                        text: "clear",
-                        view: "link",
-                        padding: "0 16px",
-                        circle: true
-                    }
         ]
-    });
 
-    form.getItem("clear").events.on("click", function () {
-    form.clear();
-
-
-});
-
-           //  You can change stroke width in series config
-        const config = {
-            type: "line",
-            css: "dhx_widget--bg_white dhx_widget--bordered",
-            scales: {
-                "bottom": {
-                    text: "month"
-                },
-                "left": {
-                    maxTicks: 10,
-                    max: 55,
-                    min: 0
-                }
             },
-            series: [
-                {
-                    id: "A",
-                    value: "Iron Ore",
-                    color: "#81C4E8",
-                    strokeWidth: 3
+            callback: {
+                onInit: function (node) {
+                    console.log('Typeahead Initiated on ' + node.selector);
                 },
-                {
-                    id: "B",
-                    value: "Iron Ingot",
-                    color: "#74A2E7",
-                    strokeWidth: 3
-                },
+                onSubmit: function (node, form, item, event) {
+                    event.preventDefault();
+                    {#console.log(node)#}
+                    {#console.log(form)#}
+                    {#console.log(item)#}
+                    {#console.log(event)#}
+                    {##}
+                    {#console.log(item.id)#}
+                    var cn_id = item.id
+                    var form_data = {cn_id}
 
-            ],
-            legend: {
-                series: ["A", "B"],
-                halign: "right",
-                valign: "top"
+                console.log(form_data)
+                    $.ajax({
+                        type: 'GET',
+                        url: "",
+                        data: form_data,
+                        success: function (response) {
+                            {# Set price block#}
+                            $("#price_div").html(`
+                                    <p class="price white_text" id="price_block">
+                                    ${response.recent_lowest_price[0][1]}
+                                </p>
+                                  <p class="white_text">current lowest price as of:
+                                     ${response.recent_lowest_price[0][0]}
+                                </p>
+                                <p class="white_text">Average cost of lowest 20 listings:
+                                    ${response.mean_price}
+                                </p>
+                                `)
+                            {#   set graph prices #}
+                            {#    console.log(response.hist_price)#}
+                            const graph_data = []
+                            var max_price = []
+                            $.each(response.hist_price, function () {
+                                var dict = {"date": this[0], "Lowest Price": this[1]}
+                                max_price.push(this[1])
+                                graph_data.push(dict)
+                            });
+
+                            console.log(graph_data)
+                            var max_of_array = Math.max.apply(Math, max_price);
+
+
+                            const companiesData = [
+
+                                {date: "02", "Iron Ore": 20.99},
+                                {date: "03", "Iron Ore": 5.15},
+                                {date: "04", "Iron Ore": 55.00},
+                                {#{month: "05", "Iron Ore": 30, "Iron Ingot": 11  },#}
+                                {#{month: "06", "Iron Ore": 27, "Iron Ingot": 14  },#}
+                                {#{month: "-3", "Iron Ore": 32, "Iron Ingot": 31 },#}
+                                {#{month: "-2", "Iron Ore": 50, "Iron Ingot": 22 },#}
+                                {#{month: "-1", "Iron Ore": 12, "Iron Ingot": 19 },#}
+                                {#{month: "today", "Iron Ore": 10, "Iron Ingot": 24 },#}
+
+                            ];
+
+                            const config = {
+                                type: "line",
+                                css: "dhx_widget--bg_white dhx_widget--bordered",
+                                scales: {
+                                    "bottom": {
+                                        text: "date"
+                                    },
+                                    "left": {
+                                        maxTicks: 1,
+                                        max: max_of_array,
+                                        min: 0
+                                    }
+                                },
+                                series: [
+                                    {
+                                        id: "A",
+                                        value: "Lowest Price",
+                                        color: "#81C4E8",
+                                        strokeWidth: 3
+                                    },
+                                    {
+                                        id: "B",
+                                        value: "Average Price",
+                                        color: "#74A2E7",
+                                        strokeWidth: 1
+                                    },
+
+                                ],
+                                legend: {
+                                    series: ["A", "B"],
+                                    halign: "right",
+                                    valign: "top"
+                                }
+                            };
+                            let r_len = response.hist_price.length
+                            if (r_len == 1) {
+                                console.log('Data points: ' + r_len)
+
+                            } else {
+                                if ($('#chart_container').is(':empty')) {
+                                    chart = new dhx.Chart("chart_container", config);
+                                    chart.data.parse(graph_data);
+
+                                } else {
+                                    chart.setConfig(config)
+                                    chart.data.parse(graph_data);
+
+                                }
+                            }
+                        },
+                        error: function (response) {
+                            console.log(response)
+                        }
+                    })
+                }
+
             }
-        };
-        const companiesData = [
-                {month: "02", "Iron Ore": 20, "Iron Ingot": 52 },
-                {month: "03", "Iron Ore": 5, "Iron Ingot": 33 },
-                {month: "04", "Iron Ore": 55, "Iron Ingot": 30  },
-                {month: "05", "Iron Ore": 30, "Iron Ingot": 11  },
-                {month: "06", "Iron Ore": 27, "Iron Ingot": 14  },
-                {month: "-3", "Iron Ore": 32, "Iron Ingot": 31 },
-                {month: "-2", "Iron Ore": 50, "Iron Ingot": 22 },
-                {month: "-1", "Iron Ore": 12, "Iron Ingot": 19 },
-                {month: "today", "Iron Ore": 10, "Iron Ingot": 24 },
+        })
+    })
 
-            ];
-        const chart = new dhx.Chart("chart", config);
-        chart.data.parse(companiesData);
-     </script>
 
-    </body>
-</html>
+</script>
+
