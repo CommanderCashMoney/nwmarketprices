@@ -10,7 +10,7 @@ import itertools
 import collections
 from django.views.decorators.cache import cache_page
 
-def remove_outliers(data, m=9):
+def remove_outliers(data, m=6):
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
     s = d / (mdev if mdev else 1.)
