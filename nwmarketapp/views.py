@@ -67,7 +67,7 @@ def get_list_by_nameid(name_id):
 
     return grouped_hist, recent_lowest_price, price_change, price_change_text
 
-@cache_page(60 * 120)
+# @cache_page(60 * 120)
 def index(request):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = confirmed_names.values_list('name', 'id')
@@ -83,9 +83,18 @@ def index(request):
             price_graph_data = []
             for x in grouped_hist:
                 price_graph_data.append((x[0][0],min(x)[1]))
+            avg_price_graph = []
+
+            for x in grouped_hist:
+                sum = 0
+                for i in x:
+                    sum += i[1]
+                avg_price = sum / len(x)
+                avg_price = "{:.2f}".format(float(avg_price))
+                avg_price_graph.append((x[0][0],avg_price))
 
             return JsonResponse({"recent_lowest_price": recent_lowest_price, "last_checked": last_checked,
-                                 "price_graph_data": price_graph_data, "price_change": price_change_text}, status=200)
+                                 "price_graph_data": price_graph_data, "price_change": price_change_text, "avg_graph_data": avg_price_graph}, status=200)
 
         else:
             return JsonResponse({'nothing': True}, status=200)
@@ -124,7 +133,7 @@ def index(request):
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
             mote_data.append([item_name, recent_lowest_price, price_change])
 
-        refining_ids = [326, 847,81,203,1334]
+        refining_ids = [326, 847,1033,977,1334]
         refining_data = []
         for x in refining_ids:
             grouped_hist, recent_lowest_price, price_change, price_change_text = get_list_by_nameid(x)
@@ -148,9 +157,9 @@ def index(request):
 
         # Most listed pie chart
         qs_recent_items = list(Prices.objects.values_list('timestamp').latest('timestamp'))
-        test1 = qs_recent_items[0].date()
+        latest_scan_date = qs_recent_items[0].date()
 
-        qs_recent_items = Prices.objects.filter(timestamp__gte=test1).values_list('timestamp', 'price', 'name', 'name_id')
+        qs_recent_items = Prices.objects.filter(timestamp__gte=latest_scan_date).values_list('timestamp', 'price', 'name', 'name_id')
         qs_format_date = qs_recent_items.annotate(day=TruncDay('timestamp')).values_list('day', 'price', 'name')
         qs_grouped = list(qs_format_date.annotate(Count('name_id'), Count('price'), Count('day')).order_by('name'))
         d = collections.defaultdict(int)
