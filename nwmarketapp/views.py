@@ -81,11 +81,11 @@ def index(request):
 
 
             price_graph_data = []
-            for x in grouped_hist:
+            for x in grouped_hist[-10:]:
                 price_graph_data.append((x[0][0],min(x)[1]))
             avg_price_graph = []
 
-            for x in grouped_hist:
+            for x in grouped_hist[-10:]:
                 sum = 0
                 for i in x:
                     sum += i[1]
