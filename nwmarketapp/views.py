@@ -100,7 +100,7 @@ def index(request):
             return JsonResponse({'nothing': True}, status=200)
     else:
         # not an ajax post, only run this on intial page load or refresh
-        popular_endgame_ids = [1223, 1496, 1421, 1626, 436, 1048, 806]
+        popular_endgame_ids = [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458]
         popular_endgame_data = []
         for x in popular_endgame_ids:
             grouped_hist, recent_lowest_price, price_change, price_change_text = get_list_by_nameid(x)
