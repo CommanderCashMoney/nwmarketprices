@@ -28,6 +28,7 @@ def get_change(current, previous):
 def get_list_by_nameid(name_id):
     qs_current_price = Prices.objects.filter(name_id=name_id)
     hist_price = qs_current_price.values_list('timestamp', 'price').order_by('timestamp')
+
     # truncate datetime to be mm/dd/yy
     trunced_days = list(hist_price.annotate(day=TruncDay('timestamp')).values_list('day', 'price'))
     # group by days
@@ -44,6 +45,9 @@ def get_list_by_nameid(name_id):
 
     recent_lowest_price = grouped_hist[-1]
     recent_lowest_price = min(recent_lowest_price)[1]
+    recent_price_time = qs_current_price.values_list('timestamp').latest('timestamp')
+    recent_price_time = recent_price_time[0].strftime('%x %I:%M %p')
+
     price_change = 0
     if len(grouped_hist) > 1:
         prev_lowest = grouped_hist[-2]
@@ -65,9 +69,9 @@ def get_list_by_nameid(name_id):
     else:
         price_change_text = 'Not enough data'
 
-    return grouped_hist, recent_lowest_price, price_change, price_change_text
+    return grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time
 
-@cache_page(60 * 15)
+# @cache_page(60 * 15)
 def index(request):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = confirmed_names.values_list('name', 'id')
@@ -76,8 +80,8 @@ def index(request):
     if request.method == 'GET' and is_ajax:
         selected_name = request.GET.get('cn_id')
         if selected_name:
-            grouped_hist, recent_lowest_price, price_change, price_change_text = get_list_by_nameid(selected_name)
-            last_checked = grouped_hist[-1][0][0].strftime("%x")
+            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time = get_list_by_nameid(selected_name)
+
 
 
             price_graph_data = []
@@ -93,7 +97,7 @@ def index(request):
                 avg_price = "{:.2f}".format(float(avg_price))
                 avg_price_graph.append((x[0][0],avg_price))
 
-            return JsonResponse({"recent_lowest_price": recent_lowest_price, "last_checked": last_checked,
+            return JsonResponse({"recent_lowest_price": recent_lowest_price, "last_checked": recent_price_time,
                                  "price_graph_data": price_graph_data, "price_change": price_change_text, "avg_graph_data": avg_price_graph}, status=200)
 
         else:
@@ -103,7 +107,7 @@ def index(request):
         popular_endgame_ids = [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458]
         popular_endgame_data = []
         for x in popular_endgame_ids:
-            grouped_hist, recent_lowest_price, price_change, price_change_text = get_list_by_nameid(x)
+            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time = get_list_by_nameid(x)
             item_name = confirmed_names.get(id=x)[0]
             if float(price_change) >= 0:
                 price_change = '<span class="blue_text">&#8593;{}%</span>'.format(price_change)
@@ -114,7 +118,7 @@ def index(request):
         popular_base_ids = [1576,120,1566,93,1572,1166,1567,868,1571,538]
         popular_base_data = []
         for x in popular_base_ids:
-            grouped_hist, recent_lowest_price, price_change, price_change_text = get_list_by_nameid(x)
+            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time = get_list_by_nameid(x)
             item_name = confirmed_names.get(id=x)[0]
             if float(price_change) >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
@@ -125,7 +129,7 @@ def index(request):
         mote_ids = [862,459,649,910,158,869,497]
         mote_data = []
         for x in mote_ids:
-            grouped_hist, recent_lowest_price, price_change, price_change_text = get_list_by_nameid(x)
+            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time = get_list_by_nameid(x)
             item_name = confirmed_names.get(id=x)[0]
             if float(price_change) >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
@@ -136,7 +140,7 @@ def index(request):
         refining_ids = [326, 847,1033,977,1334]
         refining_data = []
         for x in refining_ids:
-            grouped_hist, recent_lowest_price, price_change, price_change_text = get_list_by_nameid(x)
+            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time = get_list_by_nameid(x)
             item_name = confirmed_names.get(id=x)[0]
             if float(price_change) >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
@@ -147,7 +151,7 @@ def index(request):
         trophy_ids = [1542,1444,1529,1541,1953]
         trophy_data = []
         for x in trophy_ids:
-            grouped_hist, recent_lowest_price, price_change, price_change_text = get_list_by_nameid(x)
+            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time = get_list_by_nameid(x)
             item_name = confirmed_names.get(id=x)[0]
             if float(price_change) >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
