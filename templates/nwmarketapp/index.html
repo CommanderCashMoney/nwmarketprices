@@ -7,9 +7,12 @@
 
      <title>New World Market Prices</title>
         {% load static %}
-    <link rel="stylesheet" href="{% static 'jquery.typeahead.min.css' %}">
+    <link rel="stylesheet" href="{% static 'nwmarketapp/jquery.typeahead.min.css' %}">
     <link rel="stylesheet" href="{% static 'nwmarketapp/bootstrap-4.4.1.css' %}">
-
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'nwmarketapp/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'nwmarketapp/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'nwmarketapp/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'nwmarketapp/site.webmanifest' %}">
 
 </head>
 <body>
@@ -187,7 +190,7 @@
     <script src="{% static 'nwmarketapp/popper.min.js' %}"></script>
     <script src="{% static 'nwmarketapp/bootstrap-4.4.1.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
-    <script type="text/javascript" src="{%  static 'jquery.typeahead.min.js' %}"></script>
+    <script type="text/javascript" src="{%  static 'nwmarketapp/jquery.typeahead.min.js' %}"></script>
 
 <script>
 var part1 = "nwmarketprices";
@@ -230,7 +233,7 @@ document.getElementById("em1").innerHTML = "<a href=" + "mai" + "lto" + ":"
                     'rgba(75, 192, 192, 1)',
                     'rgba(54, 162, 235, 1)',
                     'rgba(153, 102, 255, 1)',
-                    'rgb(61,124,58)',
+                    'rgb(39,98,38)',
                     'rgb(180,32,131)',
                     'rgb(136,31,31)'
                 ],
@@ -319,7 +322,7 @@ document.getElementById("em1").innerHTML = "<a href=" + "mai" + "lto" + ":"
                     var cn_id = item.id
                     var form_data = {cn_id}
 
-                console.log(form_data)
+                {#console.log(form_data)#}
                     $.ajax({
                         type: 'GET',
                         url: "",
@@ -359,8 +362,8 @@ document.getElementById("em1").innerHTML = "<a href=" + "mai" + "lto" + ":"
                             });
 
 
-                            console.log(dates)
-                            console.log(prices)
+                            {#console.log(dates)#}
+                            {#console.log(prices)#}
                             var max_of_array = Math.max.apply(Math, max_price);
 
 
