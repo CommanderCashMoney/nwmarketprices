@@ -71,7 +71,7 @@ def get_list_by_nameid(name_id):
 
     return grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time
 
-# @cache_page(60 * 15)
+@cache_page(60 * 15)
 def index(request):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = confirmed_names.values_list('name', 'id')
