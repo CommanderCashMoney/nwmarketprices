@@ -113,7 +113,7 @@ def index(request):
                 price_change = '<span class="blue_text">&#8593;{}%</span>'.format(price_change)
             else:
                 price_change = '<span class="yellow_text">&#8595;{}%</span>'.format(price_change)
-            popular_endgame_data.append([item_name, recent_lowest_price, price_change])
+            popular_endgame_data.append([item_name, recent_lowest_price, price_change, x])
 
         popular_base_ids = [1576,120,1566,93,1572,1166,1567,868,1571,538]
         popular_base_data = []
@@ -124,7 +124,7 @@ def index(request):
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
             else:
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
-            popular_base_data.append([item_name, recent_lowest_price, price_change])
+            popular_base_data.append([item_name, recent_lowest_price, price_change, x])
 
         mote_ids = [862,459,649,910,158,869,497]
         mote_data = []
@@ -135,7 +135,7 @@ def index(request):
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
             else:
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
-            mote_data.append([item_name, recent_lowest_price, price_change])
+            mote_data.append([item_name, recent_lowest_price, price_change, x])
 
         refining_ids = [326, 847,1033,977,1334]
         refining_data = []
@@ -146,7 +146,7 @@ def index(request):
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
             else:
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
-            refining_data.append([item_name, recent_lowest_price, price_change])
+            refining_data.append([item_name, recent_lowest_price, price_change, x])
 
         trophy_ids = [1542,1444,1529,1541,1953]
         trophy_data = []
@@ -157,7 +157,7 @@ def index(request):
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
             else:
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
-            trophy_data.append([item_name, recent_lowest_price, price_change])
+            trophy_data.append([item_name, recent_lowest_price, price_change, x])
 
         # Most listed pie chart
         qs_recent_items = list(Prices.objects.values_list('timestamp').latest('timestamp'))

@@ -30,7 +30,7 @@
                     <div class="typeahead__container">
                         <div class="typeahead__field">
                             <div class="typeahead__query">
-                                <input class="js-typeahead-country_v1" name="cn" placeholder="Search" autocomplete="off">
+                                <input class="js-typeahead-names" name="cn" placeholder="Search" autocomplete="off" id="cn">
 
                             </div>
 
@@ -82,7 +82,7 @@
             <hr>
             <div class="row popular-text ">
                 {% for x in endgame %}
-                    <div class="col-7">{{ x.0 }}</div>
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }}, '{{ x.0 }}')">{{ x.0 }}</a></div>
                     <div class="col-3 text-right">{{ x.1 }}</div>
                     <div class="col-2 small">{{ x.2|safe }}</div>
 
@@ -98,7 +98,7 @@
             <hr>
             <div class="row popular-text ">
                 {% for x in base %}
-                    <div class="col-7">{{ x.0 }}</div>
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }}, '{{ x.0 }}')">{{ x.0 }}</a></div>
                     <div class="col-3 text-right">{{ x.1 }}</div>
                     <div class="col-2 small">{{ x.2|safe }}</div>
 
@@ -130,7 +130,7 @@
             <hr>
             <div class="row popular-text ">
                 {% for x in motes %}
-                    <div class="col-7">{{ x.0 }}</div>
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }}, '{{ x.0 }}')">{{ x.0 }}</a></div>
                     <div class="col-3 text-right">{{ x.1 }}</div>
                     <div class="col-2 small">{{ x.2|safe }}</div>
 
@@ -146,7 +146,7 @@
             <hr>
             <div class="row popular-text ">
                 {% for x in refining %}
-                    <div class="col-7">{{ x.0 }}</div>
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }}, '{{ x.0 }}')">{{ x.0 }}</a></div>
                     <div class="col-3 text-right">{{ x.1 }}</div>
                     <div class="col-2 small">{{ x.2|safe }}</div>
 
@@ -162,7 +162,7 @@
             <hr>
             <div class="row popular-text ">
                 {% for x in trophy %}
-                    <div class="col-7">{{ x.0 }}</div>
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }}, '{{ x.0|escapejs }}')">{{ x.0 }}</a></div>
                     <div class="col-3 text-right">{{ x.1 }}</div>
                     <div class="col-2 small">{{ x.2|safe }}</div>
 
@@ -201,10 +201,143 @@ var part5 = part1 + String.fromCharCode(part2) + part4;
 document.getElementById("em1").innerHTML = "<a href=" + "mai" + "lto" + ":"
 + part5 + ">" + part1 + part3 + part4 + "</a>"
 
+function encodeHTML(s) {
+    return s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;').split("'").join('&#39;');
+}
 
+function link_submit(cn, name) {
+
+
+    var cn_id = cn
+    var form_data = {cn_id}
+
+    {#console.log(form_data)#}
+    $.ajax({
+        type: 'GET',
+        url: "",
+        data: form_data,
+        success: function (response) {
+            {# Set price block#}
+            update_prices(response);
+            {#   set graph prices #}
+            create_linegraph(response)
+
+            $(".js-typeahead-names").eq(0).val(name)
+            window.scrollTo(0,0)
+        },
+
+        error: function (response) {
+            console.log(response)
+        }
+    })
+
+
+
+    {#$(".js-typeahead-names").eq(0).typeahead('open')#}
+    {#$(".js-typeahead-names").typeahead('val',"Asmo")#}
+
+    {#document.getElementById('search_form').submit();#}
+}
 </script>
 
 <script type="text/javascript">
+
+    function update_prices(response) {
+        $("#price_div").html(`
+            <h5>Lowest Price as of: ${response.last_checked}</h5>
+            <div class="col-md-12 col-12 large-text" id="price_block">
+                 ${response.recent_lowest_price}
+            </div>
+
+            <h5>${response.price_change}</h5>
+
+            `)
+
+    }
+
+    function create_linegraph(response) {
+        //	  LINE CHART
+        const dates = []
+        const prices = []
+        var max_price = []
+        $.each(response.price_graph_data, function () {
+            let dateObj = new Date(this[0])
+            let date = dateObj.getUTCDate()
+            let month = dateObj.getUTCMonth() + 1
+            let dt = month + '-' + date
+            dates.push(dt)
+            prices.push(this[1])
+
+            max_price.push(this[1])
+
+        });
+        const avg_prices = []
+        $.each(response.avg_graph_data, function () {
+            avg_prices.push(this[1])
+        });
+
+
+        {#console.log(dates)#}
+        {#console.log(prices)#}
+        var max_of_array = Math.max.apply(Math, max_price);
+
+
+        {#const labels = ['1/08', '1/9', '1/10', '1/12', '1/13', '1/15', '1/17']#}
+        const line_data = {
+            labels: dates,
+
+            datasets: [{
+                label: 'Lowest Price',
+
+                data: prices,
+                fill: false,
+                borderColor: 'rgb(55, 115, 204)',
+                backgroundColor: '#F3F3F3',
+                tension: 0.1
+            },
+                {
+                    label: 'Average Price',
+
+                    data: avg_prices,
+                    borderDash: [10, 5],
+                    fill: false,
+                    borderColor: 'rgb(55, 100, 155)',
+
+                    tension: 0.1
+                }
+            ]
+        };
+        var options1 = {
+            scales: {
+                x: {
+                    ticks: {
+                        color: "#F3F3F3"
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: "#F3F3F3"
+                    }
+                }
+
+            },
+            color: "#F3F3F3",
+
+
+        };
+        if (window.chart != null) {
+            window.chart.destroy();
+
+        }
+
+        var ctx = document.getElementById('linechart');
+        window.chart = new Chart(ctx, {
+            type: 'line',
+            data: line_data,
+            options: options1
+        });
+
+    }
     $(document).ready(function () {
 
 
@@ -280,22 +413,22 @@ document.getElementById("em1").innerHTML = "<a href=" + "mai" + "lto" + ":"
                 scales: {
                     x: {
                         ticks: {
-                            color: "white"
+                            color: "#F3F3F3"
                         }
                     },
                     y: {
                         ticks: {
-                            color: "white"
+                            color: "#F3F3F3"
                         }
                     }
 
                 },
-                color: "white",
+                color: "#F3F3F3",
             },
         });
         var cn_list = []
         $.typeahead({
-            input: '.js-typeahead-country_v1',
+            input: '.js-typeahead-names',
             order: "desc",
             display: "name",
             source: {
@@ -329,101 +462,9 @@ document.getElementById("em1").innerHTML = "<a href=" + "mai" + "lto" + ":"
                         data: form_data,
                         success: function (response) {
                             {# Set price block#}
-                            $("#price_div").html(`
-                                <h5>Lowest Price as of: ${response.last_checked}</h5>
-                                <div class="col-md-12 col-12 large-text" id="price_block">
-                                     ${response.recent_lowest_price}
-                                </div>
-
-                                <h5>${response.price_change}</h5>
-
-                                `)
+                            update_prices(response);
                             {#   set graph prices #}
-                            {#    console.log(response.hist_price)#}
-
-                            //	  LINE CHART
-                            const dates = []
-                            const prices = []
-                            var max_price = []
-                            $.each(response.price_graph_data, function () {
-                                let dateObj = new Date(this[0])
-                                let date = dateObj.getUTCDate()
-                                let month = dateObj.getUTCMonth() + 1
-                                let dt = month + '-' + date
-                                dates.push(dt)
-                                prices.push(this[1])
-
-                                max_price.push(this[1])
-
-                            });
-                            const avg_prices = []
-                            $.each(response.avg_graph_data, function () {
-                                avg_prices.push(this[1])
-                            });
-
-
-                            {#console.log(dates)#}
-                            {#console.log(prices)#}
-                            var max_of_array = Math.max.apply(Math, max_price);
-
-
-
-                            {#const labels = ['1/08', '1/9', '1/10', '1/12', '1/13', '1/15', '1/17']#}
-                            const line_data = {
-                                labels: dates,
-
-                                datasets: [{
-                                    label: 'Lowest Price',
-
-                                    data: prices,
-                                    fill: false,
-                                    borderColor: 'rgb(55, 115, 204)',
-                                    backgroundColor: 'white',
-                                    tension: 0.1
-                                },
-                                    {
-                                        label: 'Average Price',
-
-                                        data: avg_prices,
-                                        borderDash: [10, 5],
-                                        fill: false,
-                                        borderColor: 'rgb(55, 100, 155)',
-
-                                        tension: 0.1
-                                    }
-                                ]
-                            };
-                            var options1 = {
-                                scales: {
-                                    x: {
-                                        ticks: {
-                                            color: "white"
-                                        }
-                                    },
-                                    y: {
-                                        ticks: {
-                                            color: "white"
-                                        }
-                                    }
-
-                                },
-                                color: "white",
-
-
-                            };
-                            if (window.chart != null) {
-                                window.chart.destroy();
-
-                            }
-
-                            var ctx = document.getElementById('linechart');
-                            window.chart = new Chart(ctx, {
-                                type: 'line',
-                                data: line_data,
-                                options: options1
-                            });
-
-
+                            create_linegraph(response)
 
                         },
 
