@@ -281,13 +281,9 @@ function link_submit(cn, name) {
 
         $.each(response.detail_view, function (k, v) {
             let dateObj = new Date(v[0])
-            let date = dateObj.getUTCDate()
-            let year = dateObj.getUTCFullYear()
-            let month = dateObj.getUTCMonth() + 1
-            let hours = dateObj.getUTCHours()
-            let minutes = dateObj.getUTCMinutes()
-            let seconds = dateObj.getUTCSeconds()
-            let dt = month + '-' + date + '-' + year + ' ' + hours + ':' + minutes + ':' + seconds
+
+            let dt = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString()
+
             $("#detail_modal").append(`
 
 								<div class="col-7">${dt}</div>
@@ -306,8 +302,8 @@ function link_submit(cn, name) {
         var max_price = []
         $.each(response.price_graph_data, function () {
             let dateObj = new Date(this[0])
-            let date = dateObj.getUTCDate()
-            let month = dateObj.getUTCMonth() + 1
+            let date = dateObj.getDate()
+            let month = dateObj.getMonth() + 1
             let dt = month + '-' + date
             dates.push(dt)
             prices.push(this[1])
