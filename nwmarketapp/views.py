@@ -154,7 +154,7 @@ def index(request):
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
             refining_data.append([item_name, recent_lowest_price, price_change, x])
 
-        trophy_ids = [1542,1444,1529,1541,1953]
+        trophy_ids = [1542,1444,1529,1541,1502]
         trophy_data = []
         for x in trophy_ids:
             grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw = get_list_by_nameid(x)
@@ -165,7 +165,7 @@ def index(request):
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
             trophy_data.append([item_name, recent_lowest_price, price_change, x])
 
-        # Most listed pie chart
+        # Most listed bar chart
         qs_recent_items = list(Prices.objects.values_list('timestamp').latest('timestamp'))
         latest_scan_date = qs_recent_items[0].date()
 
@@ -179,8 +179,8 @@ def index(request):
             if not name in a: a.append(name)
             d[name] += 1
 
-        most_liked_item = sorted(d.items(), key=lambda item: item[1])
-        most_liked_item_top9 = most_liked_item[-9:]
+        most_listed_item = sorted(d.items(), key=lambda item: item[1])
+        most_listed_item_top10 = most_listed_item[-9:]
 
-    return render(request, 'nwmarketapp/index.html', {'cn_list': confirmed_names, 'endgame': popular_endgame_data, 'base': popular_base_data, 'motes': mote_data, 'refining': refining_data, 'trophy': trophy_data, 'top10': most_liked_item_top9})
+    return render(request, 'nwmarketapp/index.html', {'cn_list': confirmed_names, 'endgame': popular_endgame_data, 'base': popular_base_data, 'motes': mote_data, 'refining': refining_data, 'trophy': trophy_data, 'top10': most_listed_item_top10})
 
