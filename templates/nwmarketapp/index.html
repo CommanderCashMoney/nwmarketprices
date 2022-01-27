@@ -57,6 +57,7 @@
                 <h5>0% price increase since -/--/----</h5>
 
             </div>
+
             <div style="height: 1px"><img src="https://img.spacergif.org/v1/spacer.gif" aria-hidden="true" alt=""
                                           width="4px" height="1px"></div>
 
@@ -248,10 +249,53 @@ function link_submit(cn, name) {
             <div class="col-md-12 col-12 large-text" id="price_block">
                  ${response.recent_lowest_price}
             </div>
-
+<a href="#" data-toggle="modal" data-target="#exampleModal">Raw data</a>
             <h5>${response.price_change}</h5>
 
+
+
+
+ <!-- Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Unfiltered 10 lowest prices seen in last update</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+<div class="row popular-text" id="detail_modal">
+</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
             `)
+
+        $.each(response.detail_view, function (k, v) {
+            let dateObj = new Date(v[0])
+            let date = dateObj.getUTCDate()
+            let year = dateObj.getUTCFullYear()
+            let month = dateObj.getUTCMonth() + 1
+            let hours = dateObj.getUTCHours()
+            let minutes = dateObj.getUTCMinutes()
+            let seconds = dateObj.getUTCSeconds()
+            let dt = month + '-' + date + '-' + year + ' ' + hours + ':' + minutes + ':' + seconds
+            $("#detail_modal").append(`
+
+								<div class="col-7">${dt}</div>
+								<div class="col-4">${v[1]}</div>
+
+             `);
+
+        });
 
     }
 
