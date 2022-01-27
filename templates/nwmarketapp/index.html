@@ -38,7 +38,7 @@
                 <form class="form-inline my-2 my-lg-0" action="" method="GET" id="search_form">
                     {#          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">#}
                     {#          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>#}
-                    <div class="typeahead__container">
+                    <div class="typeahead__container search-bar">
                         <div class="typeahead__field">
                             <div class="typeahead__query">
                                 <input class="js-typeahead-names" name="cn" placeholder="Search" autocomplete="off" id="cn">
@@ -47,9 +47,9 @@
 
                         </div>
                     </div>
-                    <span style="padding-left: 10px">
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-                    </span>
+{#                    <span style="padding-left: 10px">#}
+{#                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>#}
+{#                    </span>#}
                 </form>
             </div>
         </nav>
@@ -234,7 +234,8 @@ function link_submit(cn, name) {
             {#   set graph prices #}
             create_linegraph(response)
 
-            $(".js-typeahead-names").eq(0).val(name)
+            $(".js-typeahead-names").val(name)
+            {#$(".js-typeahead-names").trigger('input.typeahead');#}
             window.scrollTo(0,0)
             gtag('event', 'link-search', {'term': name});
             $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
@@ -484,6 +485,7 @@ function link_submit(cn, name) {
             input: '.js-typeahead-names',
             order: "desc",
             display: "name",
+
             source: {
                  data: [
                      {% for name in cn_list %}
@@ -496,6 +498,32 @@ function link_submit(cn, name) {
             callback: {
                 onInit: function (node) {
                     console.log('Typeahead Initiated on ' + node.selector);
+                },
+                onClickAfter: function(node, a, item, event){
+
+                    var cn_id = item.id
+                    var form_data = {cn_id}
+
+                     $.ajax({
+                        type: 'GET',
+                        url: "",
+                        data: form_data,
+                        success: function (response) {
+                            {# Set price block#}
+                            update_prices(response);
+                            {#   set graph prices #}
+                            create_linegraph(response)
+                            let name = $(".js-typeahead-names").eq(0).val();
+
+                            gtag('event', 'search-input', {'term': name});
+                            $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
+                        },
+
+                        error: function (response) {
+                            console.log(response)
+                        }
+                    })
+
                 },
                 onSubmit: function (node, form, item, event) {
                     event.preventDefault();

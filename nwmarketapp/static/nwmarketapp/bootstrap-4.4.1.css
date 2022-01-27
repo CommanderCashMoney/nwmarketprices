@@ -411,6 +411,11 @@ h6, .h6 {
     padding-left: 15px;
     margin-top: 5px;
 }
+
+.search-bar{
+  width: 80%;
+
+}
 .row {
     
     display: flex;
@@ -653,20 +658,27 @@ pre code {
   .container, .container-sm {
     max-width: 540px;
   }
-	
+
 }
 
 @media (min-width: 768px) {
   .container, .container-sm, .container-md {
     max-width: 720px;
   }
+  .search-bar{
+  width: 70%;
+
+}
 }
 
 @media (min-width: 992px) {
   .container, .container-sm, .container-md, .container-lg {
     max-width: 960px;
   }
-	
+.search-bar{
+  width: 50%;
+
+}
 	
 }
 
