@@ -14,6 +14,17 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'nwmarketapp/favicon-16x16.png' %}">
     <link rel="manifest" href="{% static 'nwmarketapp/site.webmanifest' %}">
 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-WW3EJQVND0');
+
+
+</script>
 </head>
 <body>
 <!-- Navigation -->
@@ -225,6 +236,8 @@ function link_submit(cn, name) {
 
             $(".js-typeahead-names").eq(0).val(name)
             window.scrollTo(0,0)
+            gtag('event', 'link-search', {'term': name});
+            $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
         },
 
         error: function (response) {
@@ -505,7 +518,10 @@ function link_submit(cn, name) {
                             update_prices(response);
                             {#   set graph prices #}
                             create_linegraph(response)
+                            let name = $(".js-typeahead-names").eq(0).val();
 
+                            gtag('event', 'search-input', {'term': name});
+                            $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
                         },
 
                         error: function (response) {
@@ -520,14 +536,6 @@ function link_submit(cn, name) {
 
 
 </script>
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-WW3EJQVND0');
-</script>
 </body>
 </html>
