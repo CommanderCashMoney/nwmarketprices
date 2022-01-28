@@ -191,7 +191,7 @@
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <p>Data from Kshira Sagara server. If you see something that doesn't look right email me at: <span id='em1'></span></p>
+                <a>Data from Kshira Sagara server. If you see something that doesn't look correct, head over to the <a href="https://discord.gg/fAaezEcH" style="text-decoration: underline">discord channel</a> and post a screenshot please.</p>
             </div>
         </div>
     </div>
@@ -205,17 +205,7 @@
     <script type="text/javascript" src="{%  static 'nwmarketapp/jquery.typeahead.min.js' %}"></script>
 
 <script>
-var part1 = "nwmarketprices";
-var part2 = Math.pow(2,6);
-var part3 = String.fromCharCode(part2);
-var part4 = "gmail.com";
-var part5 = part1 + String.fromCharCode(part2) + part4;
-document.getElementById("em1").innerHTML = "<a href=" + "mai" + "lto" + ":"
-+ part5 + ">" + part1 + part3 + part4 + "</a>"
 
-function encodeHTML(s) {
-    return s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;').split("'").join('&#39;');
-}
 
 function link_submit(cn, name) {
 

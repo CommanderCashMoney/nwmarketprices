@@ -1,4 +1,4 @@
-
+import json
 from django.shortcuts import render
 from nwmarketapp.models import ConfirmedNames
 from nwmarketapp.models import Prices
@@ -184,3 +184,10 @@ def index(request):
 
     return render(request, 'nwmarketapp/index.html', {'cn_list': confirmed_names, 'endgame': popular_endgame_data, 'base': popular_base_data, 'motes': mote_data, 'refining': refining_data, 'trophy': trophy_data, 'top10': most_listed_item_top10})
 
+
+def cn(request):
+    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
+    confirmed_names = list(confirmed_names.values_list('name', 'id'))
+    cn = json.dumps(confirmed_names)
+
+    return JsonResponse({'cn': cn}, status=200)

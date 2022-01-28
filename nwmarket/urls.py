@@ -19,6 +19,7 @@ from django.urls import re_path
 from django.conf.urls import include
 
 urlpatterns = [
-    re_path(r'^$', include('nwmarketapp.urls')),
+    path('', include('nwmarketapp.urls')),
     path('admin/', admin.site.urls),
+    path('cn/', include('nwmarketapp.urls')),
 ]
