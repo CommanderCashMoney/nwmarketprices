@@ -9,6 +9,7 @@ from django.db.models import Count, Max
 import itertools
 import collections
 from django.views.decorators.cache import cache_page
+from ratelimit.decorators import ratelimit
 
 def remove_outliers(data, m=6):
     d = np.abs(data - np.median(data))
@@ -77,6 +78,8 @@ def get_list_by_nameid(name_id):
 
     return grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw
 
+
+@ratelimit(key='ip', rate='3/s', block=True)
 @cache_page(60 * 120)
 def index(request):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
@@ -184,7 +187,7 @@ def index(request):
 
     return render(request, 'nwmarketapp/index.html', {'cn_list': confirmed_names, 'endgame': popular_endgame_data, 'base': popular_base_data, 'motes': mote_data, 'refining': refining_data, 'trophy': trophy_data, 'top10': most_listed_item_top10})
 
-
+@ratelimit(key='ip', rate='10/s', block=True)
 def cn(request):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = list(confirmed_names.values_list('name', 'id'))
