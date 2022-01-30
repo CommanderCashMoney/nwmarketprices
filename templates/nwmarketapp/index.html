@@ -209,9 +209,9 @@
 <script>
     {% if direct_link %}
 
-link_submit({{ direct_link }}, '{{ item_name }}'
+link_submit({{ direct_link }});
 
-);
+
 
     {% endif %}
 
@@ -235,6 +235,9 @@ function link_submit(cn) {
             $(".js-typeahead-names").val(name)
             {#$(".js-typeahead-names").trigger('input.typeahead');#}
             window.scrollTo(0,0)
+            let win_title = 'New World Market Prices' + cn
+            let new_url = '/' + cn
+            window.history.pushState('data', win_title, new_url);
             gtag('event', 'link-search', {'term': name});
             $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
         },
@@ -512,7 +515,9 @@ function link_submit(cn) {
                             {#   set graph prices #}
                             create_linegraph(response)
                             let name = $(".js-typeahead-names").eq(0).val();
-
+                             let win_title = 'New World Market Prices' + cn_id
+                            let new_url = '/' + cn_id
+                            window.history.pushState('data', win_title, new_url);
                             gtag('event', 'search-input', {'term': name});
                             $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
                         },
