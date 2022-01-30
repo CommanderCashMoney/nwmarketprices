@@ -62,7 +62,9 @@
                 <h5>Lowest Price as of: -/--/----</h5>
 
                 <div class="col-md-12 col-12 large-text" id="price_block">
+
                     0.00
+
                 </div>
 
                 <h5>0% price increase since -/--/----</h5>
@@ -94,7 +96,7 @@
             <hr>
             <div class="row popular-text ">
                 {% for x in endgame %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }}, '{{ x.0 }}')">{{ x.0 }}</a></div>
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
                     <div class="col-3 text-right">{{ x.1 }}</div>
                     <div class="col-2 small">{{ x.2|safe }}</div>
 
@@ -110,7 +112,7 @@
             <hr>
             <div class="row popular-text ">
                 {% for x in base %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }}, '{{ x.0 }}')">{{ x.0 }}</a></div>
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
                     <div class="col-3 text-right">{{ x.1 }}</div>
                     <div class="col-2 small">{{ x.2|safe }}</div>
 
@@ -142,7 +144,7 @@
             <hr>
             <div class="row popular-text ">
                 {% for x in motes %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }}, '{{ x.0 }}')">{{ x.0 }}</a></div>
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
                     <div class="col-3 text-right">{{ x.1 }}</div>
                     <div class="col-2 small">{{ x.2|safe }}</div>
 
@@ -158,7 +160,7 @@
             <hr>
             <div class="row popular-text ">
                 {% for x in refining %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }}, '{{ x.0 }}')">{{ x.0 }}</a></div>
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }}">{{ x.0 }}</a></div>
                     <div class="col-3 text-right">{{ x.1 }}</div>
                     <div class="col-2 small">{{ x.2|safe }}</div>
 
@@ -174,7 +176,7 @@
             <hr>
             <div class="row popular-text ">
                 {% for x in trophy %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }}, '{{ x.0|escapejs }}')">{{ x.0 }}</a></div>
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
                     <div class="col-3 text-right">{{ x.1 }}</div>
                     <div class="col-2 small">{{ x.2|safe }}</div>
 
@@ -191,7 +193,7 @@
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <a>Data from Kshira Sagara server. If you see something that doesn't look correct, head over to the <a href="https://discord.gg/fAaezEcH" style="text-decoration: underline">discord channel</a> and post a screenshot please.</p>
+                Data from Kshira Sagara server. If you see something that doesn't look correct, head over to the <a href="https://discord.gg/fAaezEcH" style="text-decoration: underline">discord channel</a> and post a screenshot please.
             </div>
         </div>
     </div>
@@ -205,9 +207,15 @@
     <script type="text/javascript" src="{%  static 'nwmarketapp/jquery.typeahead.min.js' %}"></script>
 
 <script>
+    {% if direct_link %}
 
+link_submit({{ direct_link }}, '{{ item_name }}'
 
-function link_submit(cn, name) {
+);
+
+    {% endif %}
+
+function link_submit(cn) {
 
 
     var cn_id = cn
@@ -223,7 +231,7 @@ function link_submit(cn, name) {
             update_prices(response);
             {#   set graph prices #}
             create_linegraph(response)
-
+           var name = response.item_name
             $(".js-typeahead-names").val(name)
             {#$(".js-typeahead-names").trigger('input.typeahead');#}
             window.scrollTo(0,0)

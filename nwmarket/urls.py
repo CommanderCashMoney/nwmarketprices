@@ -22,4 +22,5 @@ urlpatterns = [
     path('', include('nwmarketapp.urls')),
     path('admin/', admin.site.urls),
     path('cn/', include('nwmarketapp.urls')),
+
 ]
