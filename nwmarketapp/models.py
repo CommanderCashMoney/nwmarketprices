@@ -36,6 +36,21 @@ class Perks(models.Model):
         db_table = 'perks'
 
 
+class Runs(models.Model):
+    start_date = models.DateTimeField(blank=True, null=True)
+    id = models.IntegerField(db_column='id', primary_key=True)
+
+    class Meta:
+        managed = False
+        db_table = 'runs'
+
+    def __unicode__(self):
+        return self.start_date
+
+    def __str__(self):
+        return self.start_date
+
+
 class Prices(models.Model):
     price = models.FloatField(blank=True, null=True)
     avail = models.IntegerField(blank=True, null=True)

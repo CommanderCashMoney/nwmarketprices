@@ -1,6 +1,6 @@
 import json
 from django.shortcuts import render
-from nwmarketapp.models import ConfirmedNames
+from nwmarketapp.models import ConfirmedNames, Runs
 from nwmarketapp.models import Prices
 from django.http import JsonResponse
 import numpy as np
@@ -45,15 +45,15 @@ def get_list_by_nameid(name_id):
     qs_current_price = Prices.objects.filter(name_id=name_id)
     item_name = qs_current_price.latest('name').name
     hist_price = qs_current_price.values_list('timestamp', 'price').order_by('timestamp')
-
-    # truncate datetime to be mm/dd/yy
-    trunced_days = list(hist_price.annotate(day=TruncDay('timestamp')).values_list('day', 'price'))
+    last_run = Runs.objects.latest('id').start_date
+    #get all prices since last run
+    latest_prices = list(hist_price.filter(timestamp__gte=last_run).values_list('timestamp', 'price').order_by('price'))
     # group by days
-    grouped_hist = [list(g) for _, g in itertools.groupby(trunced_days, key=lambda x: x[0])]
-    last_day_scan = grouped_hist[-1][0][0]
-    raw_price_view = list(hist_price.filter(timestamp__gte=last_day_scan).values_list('timestamp', 'price').order_by('price'))
-    raw_price_view.sort(key=lambda x: x[1])
-    lowest_10_raw = raw_price_view[:10]
+    grouped_hist = [list(g) for _, g in itertools.groupby(hist_price, key=lambda x: x[0].date())]
+    # last_day_scan = grouped_hist[-1][0][0].date()
+    # raw_price_view = list(hist_price.filter(timestamp__gte=last_day_scan).values_list('timestamp', 'price').order_by('price'))
+    # latest_prices = latest_prices.sort(key=lambda x: x[1])
+    lowest_10_raw = latest_prices[:10]
 
     # split out dates from prices
     for idx, day_hist in enumerate(grouped_hist):
@@ -65,9 +65,10 @@ def get_list_by_nameid(name_id):
             # clean otuliers group group_hist
             del grouped_hist[idx][x]
 
-    recent_lowest_price = grouped_hist[-1]
-    recent_lowest_price = min(recent_lowest_price)[1]
-    recent_price_time = qs_current_price.values_list('timestamp').latest('timestamp')
+    recent_lowest = grouped_hist[-1]
+    recent_lowest_price = min(recent_lowest)[1]
+    recent_price_time = recent_lowest[0]
+    # recent_price_time = qs_current_price.values_list('timestamp').latest('timestamp')
     recent_price_time = recent_price_time[0].strftime('%x %I:%M %p')
 
 
@@ -96,7 +97,7 @@ def get_list_by_nameid(name_id):
 
 
 @ratelimit(key='ip', rate='3/s', block=True)
-@cache_page(60 * 120)
+# @cache_page(60 * 120)
 def index(request, item_id=None):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = confirmed_names.values_list('name', 'id')
@@ -172,10 +173,9 @@ def index(request, item_id=None):
             trophy_data.append([item_name, recent_lowest_price, price_change, x])
 
         # Most listed bar chart
-        qs_recent_items = list(Prices.objects.values_list('timestamp').latest('timestamp'))
-        latest_scan_date = qs_recent_items[0].date()
+        last_run = Runs.objects.latest('id').start_date
 
-        qs_recent_items = Prices.objects.filter(timestamp__gte=latest_scan_date).values_list('timestamp', 'price', 'name', 'name_id')
+        qs_recent_items = Prices.objects.filter(timestamp__gte=last_run).values_list('timestamp', 'price', 'name', 'name_id')
         qs_format_date = qs_recent_items.annotate(day=TruncDay('timestamp')).values_list('day', 'price', 'name')
         qs_grouped = list(qs_format_date.annotate(Count('name_id'), Count('price'), Count('day')).order_by('name'))
         d = collections.defaultdict(int)
