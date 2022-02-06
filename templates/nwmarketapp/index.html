@@ -50,6 +50,30 @@
 {#                    <span style="padding-left: 10px">#}
 {#                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>#}
 {#                    </span>#}
+{#                    <span style="padding-left: 10px">#}
+{#                        <div class="dropdown">#}
+{#                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"#}
+{#                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">#}
+{#                                Select Server#}
+{#                            </button>#}
+{#                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">#}
+{#                                {% for x in servers %}#}
+{#                                    {% if x.1 == server_id %}#}
+{#                                        <script>#}
+{#                                        document.getElementById("dropdownMenuButton").innerHTML = '{{ x.0 }}';#}
+{#    #}
+{#                                        </script>#}
+{#                                    {% else %}#}
+{#                                        <a class="dropdown-item" href="#" onclick="change_server({{ x.1 }})">{{ x.0 }}</a>#}
+{#                                    {% endif %}#}
+{#    #}
+{#    #}
+{#                                {% endfor %}#}
+{#    #}
+{#                            </div>#}
+{#    #}
+{#                        </div>#}
+{#                    </span>#}
                 </form>
             </div>
         </nav>
@@ -209,14 +233,11 @@
 <script>
     {% if direct_link %}
 
-link_submit({{ direct_link }});
-
-
+    link_submit({{ direct_link }});
 
     {% endif %}
 
 function link_submit(cn) {
-
 
     var cn_id = cn
     var form_data = {cn_id}
@@ -233,10 +254,10 @@ function link_submit(cn) {
             create_linegraph(response)
            var name = response.item_name
             $(".js-typeahead-names").val(name)
-            {#$(".js-typeahead-names").trigger('input.typeahead');#}
+
             window.scrollTo(0,0)
             let win_title = 'New World Market Prices' + cn
-            let new_url = '/' + cn
+            let new_url = '/' + cn + '/' + {{ server_id }}
             window.history.pushState('data', win_title, new_url);
             gtag('event', 'link-search', {'term': name});
             $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
@@ -248,11 +269,26 @@ function link_submit(cn) {
     })
 
 
+}
 
-    {#$(".js-typeahead-names").eq(0).typeahead('open')#}
-    {#$(".js-typeahead-names").typeahead('val',"Asmo")#}
+function change_server(server_id){
+    let pathname = window.location.pathname;
+    console.log(pathname)
+        if ((pathname.match(/\//g)||[]).length == 2) {
+            let s_id = pathname.substring(pathname.lastIndexOf('/') + 1)
+            let i = pathname.lastIndexOf('/') + 1
+            let str = pathname.slice(0, i)
+            window.location.assign(str + server_id)
 
-    {#document.getElementById('search_form').submit();#}
+
+        }else{
+            window.location.assign(pathname + '1223/' + server_id)
+
+        }
+
+
+
+
 }
 </script>
 
@@ -484,8 +520,9 @@ function link_submit(cn) {
         var cn_list = []
         $.typeahead({
             input: '.js-typeahead-names',
-            order: "desc",
+            order: "asc",
             display: "name",
+
 
             source: {
                  data: [
@@ -516,7 +553,7 @@ function link_submit(cn) {
                             create_linegraph(response)
                             let name = $(".js-typeahead-names").eq(0).val();
                              let win_title = 'New World Market Prices' + cn_id
-                            let new_url = '/' + cn_id
+                            let new_url = '/' + cn_id + '/' + {{ server_id }}
                             window.history.pushState('data', win_title, new_url);
                             gtag('event', 'search-input', {'term': name});
                             $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});

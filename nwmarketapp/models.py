@@ -39,6 +39,7 @@ class Perks(models.Model):
 class Runs(models.Model):
     start_date = models.DateTimeField(blank=True, null=True)
     id = models.IntegerField(db_column='id', primary_key=True)
+    server_id = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -50,6 +51,14 @@ class Runs(models.Model):
     def __str__(self):
         return self.start_date
 
+class Servers(models.Model):
+    id = models.IntegerField(db_column='id', primary_key=True)
+    name = models.CharField(max_length=50, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'servers'
+
 
 class Prices(models.Model):
     price = models.FloatField(blank=True, null=True)
@@ -59,6 +68,7 @@ class Prices(models.Model):
     name = models.CharField(max_length=50, blank=True, null=True)
     timestamp = models.DateTimeField(blank=True, null=True)
     name_id = models.IntegerField(blank=True, null=True)
+    server_id = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False

@@ -1,6 +1,6 @@
 import json
 from django.shortcuts import render
-from nwmarketapp.models import ConfirmedNames, Runs
+from nwmarketapp.models import ConfirmedNames, Runs, Servers
 from nwmarketapp.models import Prices
 from django.http import JsonResponse
 import numpy as np
@@ -41,18 +41,20 @@ def get_price_graph_data(grouped_hist):
         avg_price_graph.append((x[0][0], avg_price))
     return price_graph_data, avg_price_graph
 
-def get_list_by_nameid(name_id):
-    qs_current_price = Prices.objects.filter(name_id=name_id)
-    item_name = qs_current_price.latest('name').name
+def get_list_by_nameid(name_id, server_id):
+    qs_current_price = Prices.objects.filter(name_id=name_id, server_id=server_id)
+    try:
+        item_name = qs_current_price.latest('name').name
+    except Prices.DoesNotExist:
+
+        return None, None, None, None, None, None, None
+
     hist_price = qs_current_price.values_list('timestamp', 'price').order_by('timestamp')
-    last_run = Runs.objects.latest('id').start_date
+    last_run = Runs.objects.filter(server_id=server_id).latest('id').start_date
     #get all prices since last run
     latest_prices = list(hist_price.filter(timestamp__gte=last_run).values_list('timestamp', 'price').order_by('price'))
     # group by days
     grouped_hist = [list(g) for _, g in itertools.groupby(hist_price, key=lambda x: x[0].date())]
-    # last_day_scan = grouped_hist[-1][0][0].date()
-    # raw_price_view = list(hist_price.filter(timestamp__gte=last_day_scan).values_list('timestamp', 'price').order_by('price'))
-    # latest_prices = latest_prices.sort(key=lambda x: x[1])
     lowest_10_raw = latest_prices[:10]
 
     # split out dates from prices
@@ -97,16 +99,25 @@ def get_list_by_nameid(name_id):
 
 
 @ratelimit(key='ip', rate='3/s', block=True)
-@cache_page(60 * 120)
-def index(request, item_id=None):
+# @cache_page(60 * 120)
+def index(request, item_id=None, server_id=1):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = confirmed_names.values_list('name', 'id')
+    all_servers = Servers.objects.all()
+    all_servers = all_servers.values_list('name', 'id')
+
+
+
 
     is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
     if request.method == 'GET' and is_ajax:
         selected_name = request.GET.get('cn_id')
         if selected_name:
-            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(selected_name)
+            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(selected_name, server_id)
+            if not grouped_hist:
+                # we didnt find any prices with that name id
+                return JsonResponse({"recent_lowest_price": 'N/A', "price_change": 'Not Found', "last_checked": 'Not Found'}, status=200)
+
             price_graph_data, avg_price_graph = get_price_graph_data(grouped_hist)
 
             return JsonResponse({"recent_lowest_price": recent_lowest_price, "last_checked": recent_price_time,
@@ -120,7 +131,7 @@ def index(request, item_id=None):
         popular_endgame_ids = [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458]
         popular_endgame_data = []
         for x in popular_endgame_ids:
-            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x)
+            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
             item_name = confirmed_names.get(id=x)[0]
             if float(price_change) >= 0:
                 price_change = '<span class="blue_text">&#8593;{}%</span>'.format(price_change)
@@ -131,7 +142,7 @@ def index(request, item_id=None):
         popular_base_ids = [1576,120,1566,93,1572,1166,1567,868,1571,538]
         popular_base_data = []
         for x in popular_base_ids:
-            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x)
+            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
             item_name = confirmed_names.get(id=x)[0]
             if float(price_change) >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
@@ -142,7 +153,7 @@ def index(request, item_id=None):
         mote_ids = [862,459,649,910,158,869,497]
         mote_data = []
         for x in mote_ids:
-            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x)
+            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
             item_name = confirmed_names.get(id=x)[0]
             if float(price_change) >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
@@ -153,7 +164,7 @@ def index(request, item_id=None):
         refining_ids = [326, 847,1033,977,1334]
         refining_data = []
         for x in refining_ids:
-            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x)
+            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
             item_name = confirmed_names.get(id=x)[0]
             if float(price_change) >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
@@ -164,7 +175,7 @@ def index(request, item_id=None):
         trophy_ids = [1542,1444,1529,1541,1502]
         trophy_data = []
         for x in trophy_ids:
-            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x)
+            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
             item_name = confirmed_names.get(id=x)[0]
             if float(price_change) >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
@@ -173,9 +184,9 @@ def index(request, item_id=None):
             trophy_data.append([item_name, recent_lowest_price, price_change, x])
 
         # Most listed bar chart
-        last_run = Runs.objects.latest('id').start_date
+        last_run = Runs.objects.filter(server_id=server_id).latest('id').start_date
 
-        qs_recent_items = Prices.objects.filter(timestamp__gte=last_run).values_list('timestamp', 'price', 'name', 'name_id')
+        qs_recent_items = Prices.objects.filter(timestamp__gte=last_run, server_id=server_id).values_list('timestamp', 'price', 'name', 'name_id')
         qs_format_date = qs_recent_items.annotate(day=TruncDay('timestamp')).values_list('day', 'price', 'name')
         qs_grouped = list(qs_format_date.annotate(Count('name_id'), Count('price'), Count('day')).order_by('name'))
         d = collections.defaultdict(int)
@@ -190,7 +201,7 @@ def index(request, item_id=None):
 
 
     return render(request, 'nwmarketapp/index.html', {'cn_list': confirmed_names, 'endgame': popular_endgame_data, 'base': popular_base_data, 'motes': mote_data, 'refining': refining_data, 'trophy': trophy_data, 'top10': most_listed_item_top10,
-                                  "direct_link": item_id})
+                                  "direct_link": item_id, 'servers': all_servers, 'server_id': server_id})
 
 @ratelimit(key='ip', rate='5/s', block=True)
 @cache_page(60 * 120)
