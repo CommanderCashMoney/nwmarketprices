@@ -29,7 +29,7 @@ def get_change(current, previous):
 def get_price_graph_data(grouped_hist):
     price_graph_data = []
     for x in grouped_hist[-10:]:
-        price_graph_data.append((x[0][0], min(x)[1]))
+        price_graph_data.append((x[0][0], x[0][1]))
     avg_price_graph = []
 
     for x in grouped_hist[-10:]:
@@ -67,6 +67,9 @@ def get_list_by_nameid(name_id, server_id):
     latest_prices = list(hist_price.filter(timestamp__gte=last_run).values_list('timestamp', 'price').order_by('price'))
     # group by days
     grouped_hist = [list(g) for _, g in itertools.groupby(hist_price, key=lambda x: x[0].date())]
+    for count, val in enumerate(grouped_hist):
+        grouped_hist[count].sort(key = lambda x: x[1])
+
     lowest_10_raw = latest_prices[:10]
 
     # split out dates from prices
@@ -79,11 +82,24 @@ def get_list_by_nameid(name_id, server_id):
             # clean otuliers group group_hist
             del grouped_hist[idx][x]
 
-    recent_lowest = grouped_hist[-1]
-    recent_lowest_price = min(recent_lowest)[1]
-    recent_price_time = recent_lowest[0]
+
+    if lowest_10_raw:
+        lowest_since_last_run = lowest_10_raw
+        l_dates, lprices = zip(*lowest_since_last_run)
+        filtered_prices, bad_indices = remove_outliers(np.array(lprices))
+        for x in bad_indices[0][::-1]:
+            # clean outliers for list
+            del lowest_since_last_run[x]
+        recent_lowest_price = lowest_since_last_run[0][1]
+        recent_price_time = lowest_since_last_run[0][0].strftime('%x %I:%M %p')
+    else:
+        recent_lowest = grouped_hist[-1]
+        recent_lowest_price = recent_lowest[0][1]
+        recent_price_time = recent_lowest[0][0].strftime('%x %I:%M %p')
+
+
     # recent_price_time = qs_current_price.values_list('timestamp').latest('timestamp')
-    recent_price_time = recent_price_time[0].strftime('%x %I:%M %p')
+
 
 
     price_change = 0
