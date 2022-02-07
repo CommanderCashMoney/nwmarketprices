@@ -366,6 +366,10 @@ function change_server(server_id){
         $.each(response.avg_graph_data, function () {
             avg_prices.push(this[1])
         });
+        const num_listings = []
+        $.each(response.num_listings, function () {
+            num_listings.push(this)
+        });
 
 
         {#console.log(dates)#}
@@ -379,23 +383,33 @@ function change_server(server_id){
 
             datasets: [{
                 label: 'Lowest Price',
-
+                yAxisID: 'y',
                 data: prices,
                 fill: false,
                 borderColor: 'rgb(55, 115, 204)',
                 backgroundColor: '#F3F3F3',
                 tension: 0.1
             },
-                {
-                    label: 'Average Price',
+            {
+                label: 'Average Price',
+                yAxisID: 'y',
+                data: avg_prices,
+                borderDash: [10, 5],
+                fill: false,
+                borderColor: 'rgb(55, 100, 155)',
 
-                    data: avg_prices,
-                    borderDash: [10, 5],
-                    fill: false,
-                    borderColor: 'rgb(55, 100, 155)',
+                tension: 0.1
+            },
+            {
+                type: 'bar',
+                label: "Number of listings",
+                yAxisID: 'y2',
+                data: num_listings,
+                fill: false,
+                tension: 0.1
 
-                    tension: 0.1
-                }
+
+            },
             ]
         };
         var options1 = {
@@ -403,13 +417,27 @@ function change_server(server_id){
                 x: {
                     ticks: {
                         color: "#F3F3F3"
-                    }
+                    },
+
                 },
                 y: {
+                    type: 'linear',
+                    position: 'left',
                     ticks: {
                         color: "#F3F3F3"
                     }
-                }
+                },
+                y2: {
+                type: 'linear',
+                position: 'right',
+                ticks: {
+                    max: 100,
+                    min: 0
+                },
+                grid: {
+                        display: false
+                    }
+            }
 
             },
             color: "#F3F3F3",

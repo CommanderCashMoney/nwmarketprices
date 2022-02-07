@@ -11,7 +11,7 @@ import collections
 from django.views.decorators.cache import cache_page
 from ratelimit.decorators import ratelimit
 
-def remove_outliers(data, m=6):
+def remove_outliers(data, m=33):
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
     s = d / (mdev if mdev else 1.)
@@ -39,7 +39,19 @@ def get_price_graph_data(grouped_hist):
         avg_price = sum / len(x)
         avg_price = "{:.2f}".format(float(avg_price))
         avg_price_graph.append((x[0][0], avg_price))
-    return price_graph_data, avg_price_graph
+    num_listings = []
+    for x in grouped_hist[-10:]:
+        # unique_prices = []
+        # temp = set()
+        # counter = collections.Counter(x)
+        # for y in x:
+        #     if y not in temp:
+        #         unique_prices.append(y)
+        #         temp.add(y)
+        # num_listings.append(len(unique_prices))
+        num_listings.append(len(x))
+
+    return price_graph_data, avg_price_graph, num_listings
 
 def get_list_by_nameid(name_id, server_id):
     qs_current_price = Prices.objects.filter(name_id=name_id, server_id=server_id)
@@ -118,10 +130,10 @@ def index(request, item_id=None, server_id=1):
                 # we didnt find any prices with that name id
                 return JsonResponse({"recent_lowest_price": 'N/A', "price_change": 'Not Found', "last_checked": 'Not Found'}, status=200)
 
-            price_graph_data, avg_price_graph = get_price_graph_data(grouped_hist)
+            price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
 
             return JsonResponse({"recent_lowest_price": recent_lowest_price, "last_checked": recent_price_time,
-                                 "price_graph_data": price_graph_data, "price_change": price_change_text, "avg_graph_data": avg_price_graph, "detail_view": lowest_10_raw, 'item_name': item_name}, status=200)
+                                 "price_graph_data": price_graph_data, "price_change": price_change_text, "avg_graph_data": avg_price_graph, "detail_view": lowest_10_raw, 'item_name': item_name, 'num_listings': num_listings}, status=200)
 
         else:
             return JsonResponse({'nothing': True}, status=200)
