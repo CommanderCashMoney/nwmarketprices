@@ -318,8 +318,11 @@ function change_server(server_id){
                             </button>
                         </div>
                         <div class="modal-body">
-<div class="row popular-text" id="detail_modal">
-</div>
+                            <div class="row popular-text" id="detail_modal">
+                                <div class="col-7">Time seen</div>
+								<div class="col-3">Price</div>
+                                <div class="col-2">Avail.</div>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -338,7 +341,8 @@ function change_server(server_id){
             $("#detail_modal").append(`
 
 								<div class="col-7">${dt}</div>
-								<div class="col-4">${v[1]}</div>
+								<div class="col-3">${v[1]}</div>
+                                <div class="col-2">${v[2]}</div>
 
              `);
 
@@ -406,7 +410,8 @@ function change_server(server_id){
                 yAxisID: 'y2',
                 data: num_listings,
                 fill: false,
-                tension: 0.1
+                tension: 0.1,
+                backgroundColor: 'rgb(44,43,49)',
 
 
             },

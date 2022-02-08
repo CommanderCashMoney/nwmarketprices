@@ -64,7 +64,7 @@ def get_list_by_nameid(name_id, server_id):
     hist_price = qs_current_price.values_list('timestamp', 'price').order_by('timestamp')
     last_run = Runs.objects.filter(server_id=server_id).latest('id').start_date
     #get all prices since last run
-    latest_prices = list(hist_price.filter(timestamp__gte=last_run).values_list('timestamp', 'price').order_by('price'))
+    latest_prices = list(hist_price.filter(timestamp__gte=last_run).values_list('timestamp', 'price', 'avail').order_by('price'))
     # group by days
     grouped_hist = [list(g) for _, g in itertools.groupby(hist_price, key=lambda x: x[0].date())]
     for count, val in enumerate(grouped_hist):
@@ -85,7 +85,7 @@ def get_list_by_nameid(name_id, server_id):
 
     if lowest_10_raw:
         lowest_since_last_run = lowest_10_raw
-        l_dates, lprices = zip(*lowest_since_last_run)
+        l_dates, lprices, lavail = zip(*lowest_since_last_run)
         filtered_prices, bad_indices = remove_outliers(np.array(lprices))
         for x in bad_indices[0][::-1]:
             # clean outliers for list
