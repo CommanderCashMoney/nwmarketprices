@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-qvos1ueti2_0hsx^-3mr%7&pv$6=b9^b3b&-=08=2!n)z%ob3%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['Nwmarket-env.eba-rxcymaas.us-west-1.elasticbeanstalk.com', '127.0.0.1', 'localhost', 'nwmarketprices.com']
 
@@ -131,11 +131,8 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-# STATIC_ROOT = os.path.join(BASE_DIR, "nwmarketapp", "static")
-# STATIC_URL = '/static/'
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STATIC_URL = 'static/'
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'nwmarketapp/static'),)
+STATIC_ROOT = os.path.join(BASE_DIR, "nwmarketapp", "static")
+STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

@@ -127,7 +127,7 @@ def get_list_by_nameid(name_id, server_id):
 
 
 @ratelimit(key='ip', rate='3/s', block=True)
-# @cache_page(60 * 120)
+@cache_page(60 * 120)
 def index(request, item_id=None, server_id=1):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = confirmed_names.values_list('name', 'id')
