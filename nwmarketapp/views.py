@@ -49,7 +49,6 @@ def get_price_graph_data(grouped_hist):
                 unique_prices.append(y[1])
                 temp.add(y[1])
         num_listings.append(len(unique_prices))
-        # num_listings.append(len(x))
 
     return price_graph_data, avg_price_graph, num_listings
 
