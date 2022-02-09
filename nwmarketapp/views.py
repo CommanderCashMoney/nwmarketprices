@@ -43,11 +43,11 @@ def get_price_graph_data(grouped_hist):
     for x in grouped_hist[-10:]:
         unique_prices = []
         temp = set()
-        counter = collections.Counter(x)
+
         for y in x:
-            if y not in temp:
-                unique_prices.append(y)
-                temp.add(y)
+            if y[1] not in temp:
+                unique_prices.append(y[1])
+                temp.add(y[1])
         num_listings.append(len(unique_prices))
         # num_listings.append(len(x))
 
@@ -127,7 +127,7 @@ def get_list_by_nameid(name_id, server_id):
 
 
 @ratelimit(key='ip', rate='3/s', block=True)
-@cache_page(60 * 120)
+# @cache_page(60 * 120)
 def index(request, item_id=None, server_id=1):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = confirmed_names.values_list('name', 'id')
