@@ -41,15 +41,15 @@ def get_price_graph_data(grouped_hist):
         avg_price_graph.append((x[0][0], avg_price))
     num_listings = []
     for x in grouped_hist[-10:]:
-        # unique_prices = []
-        # temp = set()
-        # counter = collections.Counter(x)
-        # for y in x:
-        #     if y not in temp:
-        #         unique_prices.append(y)
-        #         temp.add(y)
-        # num_listings.append(len(unique_prices))
-        num_listings.append(len(x))
+        unique_prices = []
+        temp = set()
+        counter = collections.Counter(x)
+        for y in x:
+            if y not in temp:
+                unique_prices.append(y)
+                temp.add(y)
+        num_listings.append(len(unique_prices))
+        # num_listings.append(len(x))
 
     return price_graph_data, avg_price_graph, num_listings
 
