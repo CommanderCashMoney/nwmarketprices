@@ -50,30 +50,30 @@
 {#                    <span style="padding-left: 10px">#}
 {#                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>#}
 {#                    </span>#}
-{#                    <span style="padding-left: 10px">#}
-{#                        <div class="dropdown">#}
-{#                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"#}
-{#                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">#}
-{#                                Select Server#}
-{#                            </button>#}
-{#                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">#}
-{#                                {% for x in servers %}#}
-{#                                    {% if x.1 == server_id %}#}
-{#                                        <script>#}
-{#                                        document.getElementById("dropdownMenuButton").innerHTML = '{{ x.0 }}';#}
-{#    #}
-{#                                        </script>#}
-{#                                    {% else %}#}
-{#                                        <a class="dropdown-item" href="#" onclick="change_server({{ x.1 }})">{{ x.0 }}</a>#}
-{#                                    {% endif %}#}
-{#    #}
-{#    #}
-{#                                {% endfor %}#}
-{#    #}
-{#                            </div>#}
-{#    #}
-{#                        </div>#}
-{#                    </span>#}
+                    <span style="padding-left: 10px">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Select Server
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                {% for x in servers %}
+                                    {% if x.1 == server_id %}
+                                        <script>
+                                        document.getElementById("dropdownMenuButton").innerHTML = '{{ x.0 }}';
+
+                                        </script>
+                                    {% else %}
+                                        <a class="dropdown-item" href="#" onclick="change_server({{ x.1 }})">{{ x.0 }}</a>
+                                    {% endif %}
+
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+                    </span>
                 </form>
             </div>
         </nav>
