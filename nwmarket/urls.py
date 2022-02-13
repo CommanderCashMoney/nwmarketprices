@@ -20,6 +20,7 @@ from django.conf.urls import include
 
 urlpatterns = [
     path('', include('nwmarketapp.urls')),
+    path('admin/clearcache/', include('clearcache.urls')),
     path('admin/', admin.site.urls),
     path('cn/', include('nwmarketapp.urls')),
 
