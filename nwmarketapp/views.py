@@ -1,6 +1,6 @@
 import json
 from django.shortcuts import render
-from nwmarketapp.models import ConfirmedNames, Runs, Servers
+from nwmarketapp.models import ConfirmedNames, Runs, Servers, Name_cleanup
 from nwmarketapp.models import Prices
 from django.http import JsonResponse
 import numpy as np
@@ -238,6 +238,15 @@ def cn(request):
     cn = json.dumps(confirmed_names)
 
     return JsonResponse({'cn': cn}, status=200)
+
+@ratelimit(key='ip', rate='5/s', block=True)
+# @cache_page(60 * 120)
+def nc(request):
+    name_cleanup = Name_cleanup.objects.all()
+    name_cleanup = list(name_cleanup.values_list('bad_word', 'good_word').filter(approved=True))
+    nc = json.dumps(name_cleanup)
+
+    return JsonResponse({'nc': nc}, status=200)
 
 
 
