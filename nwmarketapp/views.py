@@ -10,6 +10,76 @@ import itertools
 import collections
 from django.views.decorators.cache import cache_page
 from ratelimit.decorators import ratelimit
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework import status
+from django.contrib.auth import get_user_model
+
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, RetrieveUpdateAPIView, CreateAPIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import serializers
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        refresh = self.get_token(self.user)
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+
+        # Add extra responses here
+        data['username'] = self.user.username
+        data['groups'] = self.user.groups.values_list('name', flat=True)
+        return data
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
+class PriceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Prices
+        fields = ['name',
+                  'price',
+                  'avail',
+                  'timestamp',
+                  'name_id',
+                  'server_id']
+
+class PricesUploadAPI(CreateAPIView):
+    queryset = Prices.objects.all()
+    serializer_class = PriceSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_serializer(self, *args, **kwargs):
+        if isinstance(kwargs.get("data", {}), list):
+            kwargs["many"] = True
+        return super(PricesUploadAPI, self).get_serializer(*args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            add_run(serializer.data)
+            un = request.user.username
+            print(serializer.errors)
+            return Response({"status": True,
+                             "message": "Prices Added"},
+                            status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            print(f'errors: {serializer.errors}')
+            return Response({"status": False})
+
+
+def add_run(data):
+    sd = data[0]['timestamp']
+    sid = data[0]['server_id']
+    runs = Runs(start_date=sd, server_id=sid)
+    runs.save()
+
+
 
 def remove_outliers(data, m=33):
     d = np.abs(data - np.median(data))
@@ -134,8 +204,6 @@ def index(request, item_id=None, server_id=1):
     all_servers = all_servers.values_list('name', 'id')
 
 
-
-
     is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
     if request.method == 'GET' and is_ajax:
         selected_name = request.GET.get('cn_id')
@@ -240,7 +308,7 @@ def cn(request):
     return JsonResponse({'cn': cn}, status=200)
 
 @ratelimit(key='ip', rate='5/s', block=True)
-# @cache_page(60 * 120)
+@cache_page(60 * 120)
 def nc(request):
     name_cleanup = Name_cleanup.objects.all()
     name_cleanup = list(name_cleanup.values_list('bad_word', 'good_word').filter(approved=True))
