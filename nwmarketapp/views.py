@@ -139,6 +139,8 @@ def remove_outliers(data, m=33):
     return good_list, bad_indices
 
 def get_change(current, previous):
+    current = float(current)
+    previous = float(previous)
     if current == previous:
         return 0
     try:
@@ -216,6 +218,7 @@ def get_list_by_nameid(name_id, server_id):
         recent_price_time = recent_lowest[0][0].strftime('%x %I:%M %p')
 
 
+
     # recent_price_time = qs_current_price.values_list('timestamp').latest('timestamp')
 
 
@@ -228,7 +231,7 @@ def get_list_by_nameid(name_id, server_id):
 
         price_change = get_change(recent_lowest_price, prev_lowest_price)
         try:
-            price_change = "{:.2f}".format(float(price_change))
+            price_change =round(price_change)
         except ValueError:
             price_change = 0
 
@@ -240,6 +243,10 @@ def get_list_by_nameid(name_id, server_id):
                                                                                                 prev_date.strftime("%x"))
     else:
         price_change_text = 'Not enough data'
+
+    #format numbers
+    recent_lowest_price = "{:,.2f}".format(recent_lowest_price)
+
 
     return grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name
 

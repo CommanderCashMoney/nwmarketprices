@@ -963,11 +963,16 @@ pre code {
 .offset-11 {
   margin-left: 91.666667%;
 }
-	
+ .text-right {
+  text-align: right !important;
+}
 
 @media (min-width: 576px) {
 	.large-text {
 	font-size: 60px;
+}
+  .text-right {
+  text-align: right !important;
 }
   .col-sm {
     -ms-flex-preferred-size: 0;
