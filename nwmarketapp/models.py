@@ -5,6 +5,7 @@ class ConfirmedNames(models.Model):
     id = models.IntegerField(db_column='id', primary_key=True)  # Field name made lowercase.
     name = models.CharField(db_column='name', max_length=50, blank=True, null=True)  # Field name made lowercase.
     timestamp = models.DateTimeField(blank=True, null=True)
+    approved = models.BooleanField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -64,6 +65,7 @@ class Name_cleanup(models.Model):
     bad_word = models.CharField(max_length=50, blank=True, null=True)
     good_word = models.CharField(max_length=50, blank=True, null=True)
     approved = models.BooleanField(blank=True, null=True)
+    timestamp = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False

@@ -5,7 +5,7 @@ from nwmarketapp.models import Prices
 from django.http import JsonResponse
 import numpy as np
 from django.db.models.functions import TruncDay
-from django.db.models import Count, Max
+from django.db.models import Count
 import itertools
 import collections
 from django.views.decorators.cache import cache_page
@@ -13,9 +13,7 @@ from ratelimit.decorators import ratelimit
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import status
-from django.contrib.auth import get_user_model
-
-from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, RetrieveUpdateAPIView, CreateAPIView
+from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers
@@ -64,7 +62,7 @@ class PricesUploadAPI(CreateAPIView):
             headers = self.get_success_headers(serializer.data)
             add_run(serializer.data)
             un = request.user.username
-            print(serializer.errors)
+
             return Response({"status": True,
                              "message": "Prices Added"},
                             status=status.HTTP_201_CREATED, headers=headers)
@@ -79,6 +77,57 @@ def add_run(data):
     runs = Runs(start_date=sd, server_id=sid)
     runs.save()
 
+
+class NameCleanupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Name_cleanup
+        fields = ['bad_word', 'good_word', 'approved', 'timestamp']
+
+
+class NameCleanupAPI(CreateAPIView):
+    queryset = Name_cleanup.objects.all()
+    serializer_class = NameCleanupSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            add_run(serializer.data)
+
+            return Response({"status": True,
+                             "message": "Name Cleanup Added"},
+                            status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            print(f'errors: {serializer.errors}')
+            return Response({"status": False})
+
+
+class ConfirmedNamesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Name_cleanup
+        fields = ['name', 'timestamp', 'approved']
+
+
+class ConfirmedNamesAPI(CreateAPIView):
+    queryset = ConfirmedNames.objects.all()
+    serializer_class = ConfirmedNamesSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            add_run(serializer.data)
+
+            return Response({"status": True,
+                             "message": "Confirmed Names Added"},
+                            status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            print(f'errors: {serializer.errors}')
+            return Response({"status": False})
 
 
 def remove_outliers(data, m=33):
@@ -196,7 +245,7 @@ def get_list_by_nameid(name_id, server_id):
 
 
 @ratelimit(key='ip', rate='3/s', block=True)
-@cache_page(60 * 120)
+# @cache_page(60 * 120)
 def index(request, item_id=None, server_id=1):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = confirmed_names.values_list('name', 'id')
@@ -204,22 +253,21 @@ def index(request, item_id=None, server_id=1):
     all_servers = all_servers.values_list('name', 'id')
 
 
-    is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
-    if request.method == 'GET' and is_ajax:
-        selected_name = request.GET.get('cn_id')
-        if selected_name:
-            grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(selected_name, server_id)
-            if not grouped_hist:
-                # we didnt find any prices with that name id
-                return JsonResponse({"recent_lowest_price": 'N/A', "price_change": 'Not Found', "last_checked": 'Not Found'}, status=200)
+    # is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+    selected_name = request.GET.get('cn_id')
+    if selected_name:
 
-            price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
+        grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(selected_name, server_id)
+        if not grouped_hist:
+            # we didnt find any prices with that name id
+            return JsonResponse({"recent_lowest_price": 'N/A', "price_change": 'Not Found', "last_checked": 'Not Found'}, status=200)
 
-            return JsonResponse({"recent_lowest_price": recent_lowest_price, "last_checked": recent_price_time,
-                                 "price_graph_data": price_graph_data, "price_change": price_change_text, "avg_graph_data": avg_price_graph, "detail_view": lowest_10_raw, 'item_name': item_name, 'num_listings': num_listings}, status=200)
+        price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
 
-        else:
-            return JsonResponse({'nothing': True}, status=200)
+        return JsonResponse({"recent_lowest_price": recent_lowest_price, "last_checked": recent_price_time,
+                             "price_graph_data": price_graph_data, "price_change": price_change_text, "avg_graph_data": avg_price_graph, "detail_view": lowest_10_raw, 'item_name': item_name, 'num_listings': num_listings}, status=200)
+
+
     else:
 
             # not an ajax post or a direct item link URL, only run this on intial page load or refresh

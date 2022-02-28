@@ -24,7 +24,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from nwmarketapp.views import MyTokenObtainPairView
-from nwmarketapp.views import PricesUploadAPI
+from nwmarketapp.views import PricesUploadAPI, NameCleanupAPI, ConfirmedNamesAPI
 
 urlpatterns = [
     path('', include('nwmarketapp.urls')),
@@ -37,5 +37,8 @@ urlpatterns = [
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
     path('api/scanner_upload/', PricesUploadAPI.as_view(), name='scanner_upload'),
+    path('api/name_cleanup_upload/', NameCleanupAPI.as_view(), name='name_cleanup_upload'),
+    path('api/confirmed_names_upload/', ConfirmedNamesAPI.as_view(), name='confirmed_names_upload'),
+
 
 ]
