@@ -2,8 +2,8 @@ from django.db import models
 
 
 class ConfirmedNames(models.Model):
-    id = models.IntegerField(db_column='id', primary_key=True)  # Field name made lowercase.
-    name = models.CharField(db_column='name', max_length=50, blank=True, null=True)  # Field name made lowercase.
+    id = models.AutoField(db_column='id', primary_key=True)  # Field name made lowercase.
+    name = models.CharField(db_column='name', max_length=150, blank=True, null=True)  # Field name made lowercase.
     timestamp = models.DateTimeField(blank=True, null=True)
     approved = models.BooleanField(blank=True, null=True)
 
@@ -61,9 +61,9 @@ class Servers(models.Model):
         db_table = 'servers'
 
 class Name_cleanup(models.Model):
-    id = models.IntegerField(db_column='id', primary_key=True)
-    bad_word = models.CharField(max_length=50, blank=True, null=True)
-    good_word = models.CharField(max_length=50, blank=True, null=True)
+    id = models.AutoField(db_column='id', primary_key=True)
+    bad_word = models.CharField(max_length=150, blank=True, null=True)
+    good_word = models.CharField(max_length=150, blank=True, null=True)
     approved = models.BooleanField(blank=True, null=True)
     timestamp = models.DateTimeField(blank=True, null=True)
 

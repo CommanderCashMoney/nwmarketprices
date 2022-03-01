@@ -94,7 +94,6 @@ class NameCleanupAPI(CreateAPIView):
         if serializer.is_valid():
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
-            add_run(serializer.data)
 
             return Response({"status": True,
                              "message": "Name Cleanup Added"},
@@ -106,7 +105,7 @@ class NameCleanupAPI(CreateAPIView):
 
 class ConfirmedNamesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Name_cleanup
+        model = ConfirmedNames
         fields = ['name', 'timestamp', 'approved']
 
 
@@ -120,7 +119,6 @@ class ConfirmedNamesAPI(CreateAPIView):
         if serializer.is_valid():
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
-            add_run(serializer.data)
 
             return Response({"status": True,
                              "message": "Confirmed Names Added"},
@@ -354,7 +352,7 @@ def index(request, item_id=None, server_id=1):
                                   "direct_link": item_id, 'servers': all_servers, 'server_id': server_id})
 
 @ratelimit(key='ip', rate='5/s', block=True)
-@cache_page(60 * 120)
+# @cache_page(60 * 120)
 def cn(request):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = list(confirmed_names.values_list('name', 'id'))
@@ -363,7 +361,7 @@ def cn(request):
     return JsonResponse({'cn': cn}, status=200)
 
 @ratelimit(key='ip', rate='5/s', block=True)
-@cache_page(60 * 120)
+# @cache_page(60 * 120)
 def nc(request):
     name_cleanup = Name_cleanup.objects.all()
     name_cleanup = list(name_cleanup.values_list('bad_word', 'good_word').filter(approved=True))
