@@ -6,6 +6,7 @@ class ConfirmedNames(models.Model):
     name = models.CharField(db_column='name', max_length=150, blank=True, null=True)  # Field name made lowercase.
     timestamp = models.DateTimeField(blank=True, null=True)
     approved = models.BooleanField(blank=True, null=True)
+    username = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -41,6 +42,7 @@ class Runs(models.Model):
     start_date = models.DateTimeField(blank=True, null=True)
     id = models.AutoField(db_column='id', primary_key=True)
     server_id = models.IntegerField(blank=True, null=True)
+    approved = models.BooleanField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -66,6 +68,7 @@ class Name_cleanup(models.Model):
     good_word = models.CharField(max_length=150, blank=True, null=True)
     approved = models.BooleanField(blank=True, null=True)
     timestamp = models.DateTimeField(blank=True, null=True)
+    username = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -81,6 +84,8 @@ class Prices(models.Model):
     timestamp = models.DateTimeField(blank=True, null=True)
     name_id = models.IntegerField(blank=True, null=True)
     server_id = models.IntegerField(blank=True, null=True)
+    username = models.CharField(max_length=50, blank=True, null=True)
+    approved = models.BooleanField(blank=True, null=True)
 
     class Meta:
         managed = False

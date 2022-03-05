@@ -29,6 +29,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Add extra responses here
         data['username'] = self.user.username
         data['groups'] = self.user.groups.values_list('name', flat=True)
+
         return data
 
 
@@ -43,7 +44,9 @@ class PriceSerializer(serializers.ModelSerializer):
                   'avail',
                   'timestamp',
                   'name_id',
-                  'server_id']
+                  'server_id',
+                  'approved',
+                  'username']
 
 class PricesUploadAPI(CreateAPIView):
     queryset = Prices.objects.all()
@@ -60,8 +63,9 @@ class PricesUploadAPI(CreateAPIView):
         if serializer.is_valid():
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
-            add_run(serializer.data)
-            un = request.user.username
+            access_groups = request.user.groups.values_list('name', flat=True)
+            add_run(serializer.data, access_groups)
+
 
             return Response({"status": True,
                              "message": "Prices Added"},
@@ -71,17 +75,21 @@ class PricesUploadAPI(CreateAPIView):
             return Response({"status": False})
 
 
-def add_run(data):
+def add_run(data, access_groups):
     sd = data[0]['timestamp']
     sid = data[0]['server_id']
-    runs = Runs(start_date=sd, server_id=sid)
+    if 'scanner_user' in access_groups:
+        approved = True
+    else:
+        approved = False
+    runs = Runs(start_date=sd, server_id=sid, approved=approved)
     runs.save()
 
 
 class NameCleanupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Name_cleanup
-        fields = ['bad_word', 'good_word', 'approved', 'timestamp']
+        fields = ['bad_word', 'good_word', 'approved', 'timestamp', 'username']
 
 
 class NameCleanupAPI(CreateAPIView):
@@ -106,7 +114,7 @@ class NameCleanupAPI(CreateAPIView):
 class ConfirmedNamesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConfirmedNames
-        fields = ['name', 'timestamp', 'approved']
+        fields = ['name', 'timestamp', 'approved', 'username']
 
 
 class ConfirmedNamesAPI(CreateAPIView):
@@ -172,7 +180,7 @@ def get_price_graph_data(grouped_hist):
     return price_graph_data, avg_price_graph, num_listings
 
 def get_list_by_nameid(name_id, server_id):
-    qs_current_price = Prices.objects.filter(name_id=name_id, server_id=server_id)
+    qs_current_price = Prices.objects.filter(name_id=name_id, server_id=server_id, approved=True)
     try:
         item_name = qs_current_price.latest('name').name
     except Prices.DoesNotExist:
@@ -180,7 +188,7 @@ def get_list_by_nameid(name_id, server_id):
         return None, None, None, None, None, None, None
 
     hist_price = qs_current_price.values_list('timestamp', 'price').order_by('timestamp')
-    last_run = Runs.objects.filter(server_id=server_id).latest('id').start_date
+    last_run = Runs.objects.filter(server_id=server_id, approved=True).latest('id').start_date
     #get all prices since last run
     latest_prices = list(hist_price.filter(timestamp__gte=last_run).values_list('timestamp', 'price', 'avail').order_by('price'))
     # group by days
@@ -250,9 +258,9 @@ def get_list_by_nameid(name_id, server_id):
 
 
 @ratelimit(key='ip', rate='3/s', block=True)
-# @cache_page(60 * 120)
+@cache_page(60 * 120)
 def index(request, item_id=None, server_id=1):
-    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
+    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
     confirmed_names = confirmed_names.values_list('name', 'id')
     all_servers = Servers.objects.all()
     all_servers = all_servers.values_list('name', 'id')
@@ -354,7 +362,7 @@ def index(request, item_id=None, server_id=1):
 @ratelimit(key='ip', rate='5/s', block=True)
 # @cache_page(60 * 120)
 def cn(request):
-    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
+    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
     confirmed_names = list(confirmed_names.values_list('name', 'id'))
     cn = json.dumps(confirmed_names)
 
@@ -363,7 +371,7 @@ def cn(request):
 @ratelimit(key='ip', rate='5/s', block=True)
 # @cache_page(60 * 120)
 def nc(request):
-    name_cleanup = Name_cleanup.objects.all()
+    name_cleanup = Name_cleanup.objects.all().filter(approved=True)
     name_cleanup = list(name_cleanup.values_list('bad_word', 'good_word').filter(approved=True))
     nc = json.dumps(name_cleanup)
 
