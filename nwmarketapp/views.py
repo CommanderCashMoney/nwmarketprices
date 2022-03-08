@@ -1,6 +1,6 @@
 import json
 from django.shortcuts import render
-from nwmarketapp.models import ConfirmedNames, Runs, Servers, Name_cleanup
+from nwmarketapp.models import ConfirmedNames, Runs, Servers, Name_cleanup, nwdb_lookup
 from nwmarketapp.models import Prices
 from django.http import JsonResponse
 import numpy as np
@@ -17,6 +17,7 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -277,8 +278,15 @@ def index(request, item_id=None, server_id=1):
 
         price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
 
+        try:
+            nwdb_id = nwdb_lookup.objects.get(name=item_name)
+            nwdb_id = nwdb_id.item_id
+        except ObjectDoesNotExist:
+            nwdb_id = ''
+
+
         return JsonResponse({"recent_lowest_price": recent_lowest_price, "last_checked": recent_price_time,
-                             "price_graph_data": price_graph_data, "price_change": price_change_text, "avg_graph_data": avg_price_graph, "detail_view": lowest_10_raw, 'item_name': item_name, 'num_listings': num_listings}, status=200)
+                             "price_graph_data": price_graph_data, "price_change": price_change_text, "avg_graph_data": avg_price_graph, "detail_view": lowest_10_raw, 'item_name': item_name, 'num_listings': num_listings, 'nwdb_id': nwdb_id}, status=200)
 
 
     else:

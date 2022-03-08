@@ -96,3 +96,11 @@ class Prices(models.Model):
     def __str__(self):
         return self.price
 
+
+class nwdb_lookup(models.Model):
+    id = models.AutoField(db_column='id', primary_key=True)
+    name = models.CharField(max_length=150, blank=True, null=True)
+    item_id = models.CharField(max_length=150, blank=True, null=True)
+    class Meta:
+        managed = False
+        db_table = 'nwdb_lookup'

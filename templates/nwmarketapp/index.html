@@ -25,6 +25,12 @@
 
 
 </script>
+    <script>
+    var nwdbConfig = {
+        scale: 0.80,
+        delay: 5
+    }
+</script>
 <script async src="https://nwdb.info/embed.js"></script>
 
 </head>
@@ -302,7 +308,8 @@ function change_server(server_id){
             <div class="col-md-12 col-12 large-text" id="price_block">
                  ${response.recent_lowest_price}
             </div>
-<a href="#" data-toggle="modal" data-target="#exampleModal">Raw data</a>
+<a href="#" data-toggle="modal" data-target="#exampleModal">Raw data</a> |
+<a href="https://nwdb.info/db/item/${response.nwdb_id}" target="_blank">nwdb</a>
             <h5>${response.price_change}</h5>
 
 
