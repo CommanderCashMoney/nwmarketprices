@@ -155,18 +155,35 @@ def get_change(current, previous):
     except ZeroDivisionError:
         return 0
 def get_price_graph_data(grouped_hist):
+    # get last 10 lowest prices
     price_graph_data = []
-    for x in grouped_hist[-10:]:
+    for x in grouped_hist[-15:]:
         price_graph_data.append((x[0][0], x[0][1]))
-    avg_price_graph = []
 
-    for x in grouped_hist[-10:]:
-        sum = 0
-        for i in x:
-            sum += i[1]
-        avg_price = sum / len(x)
-        avg_price = "{:.2f}".format(float(avg_price))
-        avg_price_graph.append((x[0][0], avg_price))
+
+    # get 15 day rolling average
+    smooth = 0.3
+    i = 1
+    avg = []
+    avg_price_graph = []
+    avg.append(price_graph_data[0][1])
+    avg_price_graph.append(price_graph_data[0][1])
+    while i < len(price_graph_data):
+        window_average = round((smooth * price_graph_data[i][1]) + (1 - smooth) * avg[-1], 2)
+
+        avg.append(window_average)
+        avg_price_graph.append((price_graph_data[i][0], window_average))
+        i += 1
+
+
+    # for x in grouped_hist[-10:]:
+    #     sum = 0
+    #     for i in x:
+    #         sum += i[1]
+    #     avg_price = sum / len(x)
+    #     avg_price = "{:.2f}".format(float(avg_price))
+    #     avg_price_graph.append((x[0][0], avg_price))
+
     num_listings = []
     for x in grouped_hist[-10:]:
         unique_prices = []
@@ -174,11 +191,14 @@ def get_price_graph_data(grouped_hist):
 
         for y in x:
             if y[1] not in temp:
-                unique_prices.append(y[1])
+                if not y[2]:
+                    unique_prices.append(1)
+                else:
+                    unique_prices.append(y[2])
                 temp.add(y[1])
-        num_listings.append(len(unique_prices))
+        num_listings.append(sum(unique_prices))
 
-    return price_graph_data, avg_price_graph, num_listings
+    return price_graph_data[-10:], avg_price_graph[-10:], num_listings
 
 def get_list_by_nameid(name_id, server_id):
     qs_current_price = Prices.objects.filter(name_id=name_id, server_id=server_id, approved=True)
@@ -188,7 +208,7 @@ def get_list_by_nameid(name_id, server_id):
 
         return None, None, None, None, None, None, None
 
-    hist_price = qs_current_price.values_list('timestamp', 'price').order_by('timestamp')
+    hist_price = qs_current_price.values_list('timestamp', 'price', 'avail').order_by('timestamp')
     last_run = Runs.objects.filter(server_id=server_id, approved=True).latest('id').start_date
     #get all prices since last run
     latest_prices = list(hist_price.filter(timestamp__gte=last_run).values_list('timestamp', 'price', 'avail').order_by('price'))
@@ -201,7 +221,7 @@ def get_list_by_nameid(name_id, server_id):
 
     # split out dates from prices
     for idx, day_hist in enumerate(grouped_hist):
-        hist_dates2, hist_price_list2 = zip(*day_hist)
+        hist_dates2, hist_price_list2, hist_price_avail = zip(*day_hist)
         # filter outliers for each day
         filtered_prices, bad_indices = remove_outliers(np.array(hist_price_list2))
         for x in bad_indices[0][::-1]:
