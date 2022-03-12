@@ -278,7 +278,7 @@ def get_list_by_nameid(name_id, server_id):
     return grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name
 
 
-@ratelimit(key='ip', rate='3/s', block=True)
+@ratelimit(key='ip', rate='10/s', block=True)
 @cache_page(60 * 10)
 def index(request, item_id=None, server_id=1):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
@@ -390,7 +390,7 @@ def index(request, item_id=None, server_id=1):
     return render(request, 'nwmarketapp/index.html', {'cn_list': confirmed_names, 'endgame': popular_endgame_data, 'base': popular_base_data, 'motes': mote_data, 'refining': refining_data, 'trophy': trophy_data, 'top10': most_listed_item_top10,
                                   "direct_link": item_id, 'servers': all_servers, 'server_id': server_id})
 
-@ratelimit(key='ip', rate='5/s', block=True)
+@ratelimit(key='ip', rate='10/s', block=True)
 # @cache_page(60 * 120)
 def cn(request):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
@@ -399,7 +399,7 @@ def cn(request):
 
     return JsonResponse({'cn': cn}, status=200)
 
-@ratelimit(key='ip', rate='5/s', block=True)
+@ratelimit(key='ip', rate='10/s', block=True)
 # @cache_page(60 * 120)
 def nc(request):
     name_cleanup = Name_cleanup.objects.all().filter(approved=True)
@@ -407,6 +407,14 @@ def nc(request):
     nc = json.dumps(name_cleanup)
 
     return JsonResponse({'nc': nc}, status=200)
+
+@ratelimit(key='ip', rate='10/s', block=True)
+def servers(request):
+    server_list = Servers.objects.all().values_list('name', 'id'). order_by('id')
+    server_list = list(server_list)
+    server_list = json.dumps(server_list)
+
+    return JsonResponse({'servers': server_list}, status=200)
 
 
 
