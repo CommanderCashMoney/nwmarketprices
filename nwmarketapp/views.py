@@ -282,7 +282,7 @@ def get_list_by_nameid(name_id, server_id):
 @cache_page(60 * 120)
 def index(request, item_id=None, server_id=1):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
-    confirmed_names = confirmed_names.values_list('name', 'id')
+    confirmed_names = confirmed_names.values_list('name', 'id', 'nwdb_id')
     all_servers = Servers.objects.all()
     all_servers = all_servers.values_list('name', 'id')
 
@@ -290,6 +290,9 @@ def index(request, item_id=None, server_id=1):
     # is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
     selected_name = request.GET.get('cn_id')
     if selected_name:
+        if not selected_name.isnumeric():
+            # nwdb id was passed instead. COnvert this to my ids
+            selected_name = confirmed_names.get(nwdb_id=selected_name)[1]
 
         grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(selected_name, server_id)
         if not grouped_hist:
@@ -316,7 +319,7 @@ def index(request, item_id=None, server_id=1):
         popular_endgame_data = []
         for x in popular_endgame_ids:
             grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
-            item_name = confirmed_names.get(id=x)[0]
+
             if float(price_change) >= 0:
                 price_change = '<span class="blue_text">&#8593;{}%</span>'.format(price_change)
             else:
@@ -327,7 +330,7 @@ def index(request, item_id=None, server_id=1):
         popular_base_data = []
         for x in popular_base_ids:
             grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
-            item_name = confirmed_names.get(id=x)[0]
+
             if float(price_change) >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
             else:
@@ -338,7 +341,7 @@ def index(request, item_id=None, server_id=1):
         mote_data = []
         for x in mote_ids:
             grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
-            item_name = confirmed_names.get(id=x)[0]
+
             if float(price_change) >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
             else:
@@ -349,7 +352,7 @@ def index(request, item_id=None, server_id=1):
         refining_data = []
         for x in refining_ids:
             grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
-            item_name = confirmed_names.get(id=x)[0]
+
             if float(price_change) >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
             else:
@@ -360,7 +363,7 @@ def index(request, item_id=None, server_id=1):
         trophy_data = []
         for x in trophy_ids:
             grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
-            item_name = confirmed_names.get(id=x)[0]
+
             if float(price_change) >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
             else:

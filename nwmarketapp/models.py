@@ -7,6 +7,7 @@ class ConfirmedNames(models.Model):
     timestamp = models.DateTimeField(blank=True, null=True)
     approved = models.BooleanField(blank=True, null=True)
     username = models.CharField(max_length=50, blank=True, null=True)
+    nwdb_id = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         managed = False
