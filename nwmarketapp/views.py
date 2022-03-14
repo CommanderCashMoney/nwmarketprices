@@ -292,7 +292,7 @@ def index(request, item_id=None, server_id=1):
     if selected_name:
         if not selected_name.isnumeric():
             # nwdb id was passed instead. COnvert this to my ids
-            selected_name = confirmed_names.get(nwdb_id=selected_name)[1]
+            selected_name = confirmed_names.get(nwdb_id=selected_name.lower())[1]
 
         grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(selected_name, server_id)
         if not grouped_hist:
