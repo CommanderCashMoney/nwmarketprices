@@ -18,6 +18,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import connection
+
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -154,6 +156,7 @@ def get_change(current, previous):
         return ((current - previous) / previous) * 100.0
     except ZeroDivisionError:
         return 0
+
 def get_price_graph_data(grouped_hist):
     # get last 10 lowest prices
     price_graph_data = []
@@ -415,6 +418,34 @@ def servers(request):
     server_list = json.dumps(server_list)
 
     return JsonResponse({'servers': server_list}, status=200)
+
+@ratelimit(key='ip', rate='3/s', block=True)
+def latestprices(request):
+    server_id = request.GET.get('server_id')
+    if not server_id or not server_id.isnumeric():
+        server_id = 1
+    last_run = Runs.objects.filter(server_id=server_id, approved=True).latest('id').start_date
+    with connection.cursor() as cursor:
+        cursor.execute(f"""
+        SELECT rs.name, rs.nwdb_id, rs.price, rs.avail, rs.timestamp
+    FROM (
+        SELECT p.price,p.name,p.timestamp,cn.nwdb_id,p.avail, Rank()
+          over (Partition BY p.name_id
+                ORDER BY price asc ) AS Rank
+        FROM prices p
+        join confirmed_names cn on p.name = cn.name
+        where p.timestamp >= '{last_run}'
+        and server_id = {server_id}
+        and p.approved = true
+        ) rs WHERE Rank <= 5
+        order by rs.name, rs.price
+        """)
+        data = cursor.fetchall()
+        data = json.dumps(data, default=str)
+    return JsonResponse({'data': data}, status=200)
+
+
+
 
 
 
