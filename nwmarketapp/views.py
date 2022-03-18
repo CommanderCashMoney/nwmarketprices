@@ -2,7 +2,7 @@ import json
 from django.shortcuts import render
 from nwmarketapp.models import ConfirmedNames, Runs, Servers, Name_cleanup, nwdb_lookup
 from nwmarketapp.models import Prices
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
 import numpy as np
 from django.db.models.functions import TruncDay
 from django.db.models import Count
@@ -427,7 +427,7 @@ def latestprices(request):
     last_run = Runs.objects.filter(server_id=server_id, approved=True).latest('id').start_date
     with connection.cursor() as cursor:
         cursor.execute(f"""
-        SELECT rs.name, rs.nwdb_id, rs.price, rs.avail, rs.timestamp
+        SELECT  max(rs.nwdb_id),rs.name, trunc(avg(rs.price)::numeric,2), max(rs.avail), max(rs.timestamp)
     FROM (
         SELECT p.price,p.name,p.timestamp,cn.nwdb_id,p.avail, Rank()
           over (Partition BY p.name_id
@@ -438,11 +438,33 @@ def latestprices(request):
         and server_id = {server_id}
         and p.approved = true
         ) rs WHERE Rank <= 5
-        order by rs.name, rs.price
+        group by rs.name
+        order by rs.name
         """)
         data = cursor.fetchall()
-        data = json.dumps(data, default=str)
-    return JsonResponse({'data': data}, status=200)
+    s = ''
+    line = ''
+    for x in data:
+        for count, value in enumerate(x):
+            if count == 0:
+                line = line + '{' + f'"ItemId": {json.dumps(value, default=str)}, '
+            if count == 1:
+                line = line + f'"ItemName": {json.dumps(value, default=str)}, '
+            if count == 2:
+                line = line + f'"Price": {json.dumps(value, default=str)}, '
+            if count == 3:
+                line = line + f'"Availability": {json.dumps(value, default=str)}, '
+            if count == 4:
+                line = line + f'"LastUpdated": {json.dumps(value, default=str)}' + '}, '
+
+        s = f'{s}{line}'
+        line = ''
+    s = s[:-2]
+    s = f'[{s}]'
+    response = FileResponse(s, as_attachment=True, content_type='application/json', filename='nwmarketprices.json')
+
+
+    return response
 
 
 

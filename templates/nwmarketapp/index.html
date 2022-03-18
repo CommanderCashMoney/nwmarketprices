@@ -227,6 +227,39 @@
             <div class="col-12">
                 Data from additional servers coming soon. We are looking for more Market Watchers, head over to the <a href="https://discord.gg/9xfcG6jTVj" style="text-decoration: underline">discord channel</a> to find out more.
             </div>
+            <div class="col-12">
+                How to <a href="#" data-toggle="modal" data-target="#exportModal" style="text-decoration: underline">export prices</a> for use with gaming.tools crafting calculator
+                 <div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="exportModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content text-left">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Exporting prices to the gaming.tools crafting calculator</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row popular-text" >
+                                <ol>
+                                    <li><a href="/latestprices/?server_id={{ server_id }}" style="text-decoration: underline">Right click here and Save link as..</a></li>
+                                    <li>Go to <a href="https://gaming.tools/newworld/price-customization" style="text-decoration: underline" target="_blank">the price customization page</a></li>
+                                    <li>Scroll to the bottom and use the Import Prices function</li>
+                                    <li>Change the "Minimum Import Availability" to 1 to get all the prices</li>
+                                    <img src="{% static 'nwmarketapp/GamingtoolCustomizations.png' %}" width="400px">
+
+                                </ol>
+
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
         </div>
     </div>
 </footer>
