@@ -323,7 +323,7 @@ def index(request, item_id=None, server_id=1):
         for x in popular_endgame_ids:
             grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
 
-            if float(price_change) >= 0:
+            if price_change and price_change >= 0:
                 price_change = '<span class="blue_text">&#8593;{}%</span>'.format(price_change)
             else:
                 price_change = '<span class="yellow_text">&#8595;{}%</span>'.format(price_change)
@@ -334,7 +334,7 @@ def index(request, item_id=None, server_id=1):
         for x in popular_base_ids:
             grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
 
-            if float(price_change) >= 0:
+            if price_change and price_change >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
             else:
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
@@ -345,7 +345,7 @@ def index(request, item_id=None, server_id=1):
         for x in mote_ids:
             grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
 
-            if float(price_change) >= 0:
+            if price_change and price_change >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
             else:
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
@@ -356,7 +356,7 @@ def index(request, item_id=None, server_id=1):
         for x in refining_ids:
             grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
 
-            if float(price_change) >= 0:
+            if price_change and price_change >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
             else:
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
@@ -367,27 +367,34 @@ def index(request, item_id=None, server_id=1):
         for x in trophy_ids:
             grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name = get_list_by_nameid(x, server_id)
 
-            if float(price_change) >= 0:
+            if price_change and price_change >= 0:
                 price_change = """<span class="blue_text">&#8593;{}%</span>""".format(price_change)
             else:
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
             trophy_data.append([item_name, recent_lowest_price, price_change, x])
 
         # Most listed bar chart
-        last_run = Runs.objects.filter(server_id=server_id).latest('id').start_date
+        try:
+            last_run = Runs.objects.filter(server_id=server_id).latest('id').start_date
+            qs_recent_items = Prices.objects.filter(timestamp__gte=last_run, server_id=server_id).values_list(
+                'timestamp', 'price', 'name', 'name_id')
+            qs_format_date = qs_recent_items.annotate(day=TruncDay('timestamp')).values_list('day', 'price', 'name')
+            qs_grouped = list(qs_format_date.annotate(Count('name_id'), Count('price'), Count('day')).order_by('name'))
+            d = collections.defaultdict(int)
+            a = []
 
-        qs_recent_items = Prices.objects.filter(timestamp__gte=last_run, server_id=server_id).values_list('timestamp', 'price', 'name', 'name_id')
-        qs_format_date = qs_recent_items.annotate(day=TruncDay('timestamp')).values_list('day', 'price', 'name')
-        qs_grouped = list(qs_format_date.annotate(Count('name_id'), Count('price'), Count('day')).order_by('name'))
-        d = collections.defaultdict(int)
-        a = []
+            for ts, price, name, c, c1, c2 in qs_grouped:
+                if not name in a: a.append(name)
+                d[name] += 1
 
-        for ts, price, name, c, c1, c2 in qs_grouped:
-            if not name in a: a.append(name)
-            d[name] += 1
+            most_listed_item = sorted(d.items(), key=lambda item: item[1])
+            most_listed_item_top10 = most_listed_item[-9:]
 
-        most_listed_item = sorted(d.items(), key=lambda item: item[1])
-        most_listed_item_top10 = most_listed_item[-9:]
+        except Runs.DoesNotExist:
+            most_listed_item_top10 = []
+
+
+
 
 
     return render(request, 'nwmarketapp/index.html', {'cn_list': confirmed_names, 'endgame': popular_endgame_data, 'base': popular_base_data, 'motes': mote_data, 'refining': refining_data, 'trophy': trophy_data, 'top10': most_listed_item_top10,
