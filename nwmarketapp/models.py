@@ -20,16 +20,6 @@ class ConfirmedNames(models.Model):
 
 
 
-class Nodes(models.Model):
-    loc = models.FloatField(db_column='LOC', blank=True, null=True)  # Field name made lowercase.
-    type = models.CharField(db_column='TYPE', max_length=50, blank=True, null=True)  # Field name made lowercase.
-    id = models.IntegerField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    dir = models.IntegerField(db_column='DIR', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'nodes'
-
 class Perks(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)  # Field name made lowercase.
     name = models.CharField(db_column='NAME', max_length=50, blank=True, null=True)  # Field name made lowercase.
