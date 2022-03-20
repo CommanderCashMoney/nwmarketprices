@@ -443,7 +443,7 @@ def latest_prices(request: WSGIRequest) -> FileResponse:
             SELECT p.price,p.name,p.timestamp,cn.nwdb_id,p.avail, Rank()
               over (Partition BY p.name_id ORDER BY price asc ) AS Rank
             FROM prices p
-            LEFT join confirmed_names cn on p.name = cn.name
+            join confirmed_names cn on p.name = cn.name
             where p.timestamp >= '{last_run}'
             and server_id = {server_id}
             and p.approved = true
