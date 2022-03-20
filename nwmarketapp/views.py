@@ -1,4 +1,6 @@
 import json
+
+from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
 from nwmarketapp.models import ConfirmedNames, Runs, Servers, Name_cleanup, nwdb_lookup
 from nwmarketapp.models import Prices
@@ -418,6 +420,7 @@ def nc(request):
 
     return JsonResponse({'nc': nc}, status=200)
 
+
 @ratelimit(key='ip', rate='10/s', block=True)
 def servers(request):
     server_list = Servers.objects.all().values_list('name', 'id'). order_by('id')
@@ -426,52 +429,47 @@ def servers(request):
 
     return JsonResponse({'servers': server_list}, status=200)
 
+
 @ratelimit(key='ip', rate='3/s', block=True)
-def latestprices(request):
+def latest_prices(request: WSGIRequest) -> FileResponse:
     server_id = request.GET.get('server_id')
     if not server_id or not server_id.isnumeric():
         server_id = 1
     last_run = Runs.objects.filter(server_id=server_id, approved=True).latest('id').start_date
     with connection.cursor() as cursor:
-        cursor.execute(f"""
+        query = f"""
         SELECT  max(rs.nwdb_id),rs.name, trunc(avg(rs.price)::numeric,2), max(rs.avail), max(rs.timestamp)
-    FROM (
-        SELECT p.price,p.name,p.timestamp,cn.nwdb_id,p.avail, Rank()
-          over (Partition BY p.name_id
-                ORDER BY price asc ) AS Rank
-        FROM prices p
-        join confirmed_names cn on p.name = cn.name
-        where p.timestamp >= '{last_run}'
-        and server_id = {server_id}
-        and p.approved = true
+        FROM (
+            SELECT p.price,p.name,p.timestamp,cn.nwdb_id,p.avail, Rank()
+              over (Partition BY p.name_id ORDER BY price asc ) AS Rank
+            FROM prices p
+            LEFT join confirmed_names cn on p.name = cn.name
+            where p.timestamp >= '{last_run}'
+            and server_id = {server_id}
+            and p.approved = true
         ) rs WHERE Rank <= 5
         group by rs.name
-        order by rs.name
-        """)
+        order by rs.name;
+        """
+        cursor.execute(query)
         data = cursor.fetchall()
-    s = ''
-    line = ''
-    for x in data:
-        for count, value in enumerate(x):
-            if count == 0:
-                line = line + '{' + f'"ItemId": {json.dumps(value, default=str)}, '
-            if count == 1:
-                line = line + f'"ItemName": {json.dumps(value, default=str)}, '
-            if count == 2:
-                line = line + f'"Price": {json.dumps(value, default=str)}, '
-            if count == 3:
-                line = line + f'"Availability": {json.dumps(value, default=str)}, '
-            if count == 4:
-                line = line + f'"LastUpdated": {json.dumps(value, default=str)}' + '}, '
 
-        s = f'{s}{line}'
-        line = ''
-    s = s[:-2]
-    s = f'[{s}]'
-    response = FileResponse(s, as_attachment=True, content_type='application/json', filename='nwmarketprices.json')
+    items = [
+        {
+            "ItemId": row[0],
+            "ItemName": row[1],
+            "Price": row[2],
+            "Availability": row[3],
+            "LastUpdated": row[4],
+        } for row in data
+    ]
 
-
-    return response
+    return FileResponse(
+        json.dumps(items, default=str),
+        as_attachment=True,
+        content_type='application/json',
+        filename='nwmarketprices.json'
+    )
 
 
 
