@@ -144,3 +144,5 @@ cython_debug/
 !.elasticbeanstalk/*.global.yml
 /myenvsettings.env
 \nwmarket\settings.py
+export.json
+

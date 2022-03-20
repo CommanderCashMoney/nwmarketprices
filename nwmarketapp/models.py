@@ -10,11 +10,12 @@ class ConfirmedNames(models.Model):
     nwdb_id = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'confirmed_names'
         ordering = ['name']
+
     def __unicode__(self):
         return self.name
+
     def __str__(self):
         return self.name
 
@@ -25,7 +26,6 @@ class Perks(models.Model):
     name = models.CharField(db_column='NAME', max_length=50, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'perks'
 
 
@@ -36,7 +36,6 @@ class Runs(models.Model):
     approved = models.BooleanField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'runs'
 
     def __unicode__(self):
@@ -50,7 +49,6 @@ class Servers(models.Model):
     name = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'servers'
 
 class Name_cleanup(models.Model):
@@ -62,7 +60,6 @@ class Name_cleanup(models.Model):
     username = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'name_cleanup'
 
 
@@ -73,13 +70,12 @@ class Prices(models.Model):
     perks = models.IntegerField(blank=True, null=True)
     name = models.CharField(max_length=150, blank=True, null=True)
     timestamp = models.DateTimeField(blank=True, null=True)
-    name_id = models.IntegerField(blank=True, null=True)
+    name_id = models.IntegerField(blank=True, null=True, db_index=True)
     server_id = models.IntegerField(blank=True, null=True)
     username = models.CharField(max_length=50, blank=True, null=True)
     approved = models.BooleanField(blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'prices'
 
     def __unicode__(self):
@@ -93,5 +89,12 @@ class nwdb_lookup(models.Model):
     name = models.CharField(max_length=150, blank=True, null=True)
     item_id = models.CharField(max_length=150, blank=True, null=True)
     class Meta:
-        managed = False
         db_table = 'nwdb_lookup'
+
+
+# temporarily re-adding nodes so that django_content_type migration doesn't break.
+class Nodes(models.Model):
+    id = models.AutoField(db_column='id', primary_key=True)
+
+    class Meta:
+        db_table = 'nodes'
