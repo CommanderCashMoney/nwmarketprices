@@ -1,4 +1,5 @@
 import json
+from time import perf_counter
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
@@ -22,6 +23,7 @@ from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection
 
+from nwmarketapp.pydantic_models import ItemSummary
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -206,24 +208,30 @@ def get_price_graph_data(grouped_hist):
 
     return price_graph_data[-10:], avg_price_graph[-10:], num_listings
 
-def get_list_by_nameid(name_id, server_id):
-    qs_current_price = Prices.objects.filter(name_id=name_id, server_id=server_id, approved=True)
-    try:
-        item_name = qs_current_price.latest('name').name
-    except Prices.DoesNotExist:
 
-        return None, None, None, None, None, None, None
-
-    hist_price = qs_current_price.values_list('timestamp', 'price', 'avail').order_by('timestamp')
+def get_list_by_nameid(name_id, server_id) -> ItemSummary:
     last_run = Runs.objects.filter(server_id=server_id, approved=True).latest('id')
+    qs_current_price = Prices.objects.filter(
+        name_id=name_id,
+        server_id=server_id,
+        approved=True,
+        timestamp__gte=last_run.start_date,
+        username=last_run.username
+    )
+
+    item_name = qs_current_price.latest('name_id').name
+
     #get all prices since last run
-    latest_prices = list(hist_price.filter(timestamp__gte=last_run.start_date, username=last_run.username).values_list('timestamp', 'price', 'avail').order_by('price'))
+    latest = list(qs_current_price.values_list('timestamp', 'price', 'avail').order_by('price'))
     # group by days
-    grouped_hist = [list(g) for _, g in itertools.groupby(hist_price, key=lambda x: x[0].date())]
+    grouped_hist = [
+        list(g)
+        for _, g in itertools.groupby(qs_current_price.order_by("timestamp"), key=lambda x: x[0].date())
+    ]
     for count, val in enumerate(grouped_hist):
         grouped_hist[count].sort(key = lambda x: x[1])
 
-    lowest_10_raw = latest_prices[:10]
+    lowest_10_raw = latest[:10]
 
     # split out dates from prices
     for idx, day_hist in enumerate(grouped_hist):
@@ -279,20 +287,30 @@ def get_list_by_nameid(name_id, server_id):
 
     #format numbers
     recent_lowest_price = "{:,.2f}".format(recent_lowest_price)
-
-
-    return grouped_hist, recent_lowest_price, price_change, price_change_text, recent_price_time, lowest_10_raw, item_name
+    summ = ItemSummary(
+        grouped_hist=grouped_hist,
+        recent_lowest_price=recent_lowest_price,
+        price_change=price_change,
+        price_change_text=price_change_text,
+        recent_price_time=recent_price_time,
+        lowest_10_raw=lowest_10_raw,
+        item_name=item_name
+    )
+    print(summ.json())
+    raise Exception("stop")
+    return
 
 
 @ratelimit(key='ip', rate='10/s', block=True)
-@cache_page(60 * 10)
+# @cache_page(60 * 10)
 def index(request, item_id=None, server_id=1):
+    start = perf_counter()
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
     confirmed_names = confirmed_names.values_list('name', 'id', 'nwdb_id')
     all_servers = Servers.objects.all()
     all_servers = all_servers.values_list('name', 'id')
-
-
+    stop = perf_counter()
+    print(stop-start)
     # is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
     selected_name = request.GET.get('cn_id')
     if selected_name:
@@ -331,7 +349,8 @@ def index(request, item_id=None, server_id=1):
             else:
                 price_change = '<span class="yellow_text">&#8595;{}%</span>'.format(price_change)
             popular_endgame_data.append([item_name, recent_lowest_price, price_change, x])
-
+        stop = perf_counter()
+        print(stop-start)
         popular_base_ids = [1576,120,1566,93,1572,1166,1567,868,1571,538]
         popular_base_data = []
         for x in popular_base_ids:
@@ -342,7 +361,8 @@ def index(request, item_id=None, server_id=1):
             else:
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
             popular_base_data.append([item_name, recent_lowest_price, price_change, x])
-
+        stop = perf_counter()
+        print(stop-start)
         mote_ids = [862,459,649,910,158,869,497]
         mote_data = []
         for x in mote_ids:
@@ -353,7 +373,8 @@ def index(request, item_id=None, server_id=1):
             else:
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
             mote_data.append([item_name, recent_lowest_price, price_change, x])
-
+        stop = perf_counter()
+        print(stop-start)
         refining_ids = [326, 847,1033,977,1334]
         refining_data = []
         for x in refining_ids:
@@ -364,7 +385,8 @@ def index(request, item_id=None, server_id=1):
             else:
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
             refining_data.append([item_name, recent_lowest_price, price_change, x])
-
+        stop = perf_counter()
+        print(stop-start)
         trophy_ids = [1542,1444,1529,1541,1502]
         trophy_data = []
         for x in trophy_ids:
@@ -375,7 +397,8 @@ def index(request, item_id=None, server_id=1):
             else:
                 price_change = """<span class="yellow_text">&#8595;{}%</span>""".format(price_change)
             trophy_data.append([item_name, recent_lowest_price, price_change, x])
-
+        stop = perf_counter()
+        print(stop-start)
         # Most listed bar chart
         try:
             last_run = Runs.objects.filter(server_id=server_id).latest('id').start_date
@@ -392,16 +415,23 @@ def index(request, item_id=None, server_id=1):
 
             most_listed_item = sorted(d.items(), key=lambda item: item[1])
             most_listed_item_top10 = most_listed_item[-9:]
-
+            stop = perf_counter()
+            print(stop - start)
         except Runs.DoesNotExist:
             most_listed_item_top10 = []
 
-
-
-
-
-    return render(request, 'nwmarketapp/index.html', {'cn_list': confirmed_names, 'endgame': popular_endgame_data, 'base': popular_base_data, 'motes': mote_data, 'refining': refining_data, 'trophy': trophy_data, 'top10': most_listed_item_top10,
-                                  "direct_link": item_id, 'servers': all_servers, 'server_id': server_id})
+    return render(request, 'nwmarketapp/index.html', {
+        'cn_list': confirmed_names,
+        'endgame': popular_endgame_data,
+        'base': popular_base_data,
+        'motes': mote_data,
+        'refining': refining_data,
+        'trophy': trophy_data,
+        'top10': most_listed_item_top10,
+        "direct_link": item_id,
+        'servers': all_servers,
+        'server_id': server_id
+    })
 
 @ratelimit(key='ip', rate='10/s', block=True)
 # @cache_page(60 * 120)
