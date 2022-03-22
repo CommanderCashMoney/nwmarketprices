@@ -81,8 +81,9 @@ class Prices(models.Model):
 
     def __unicode__(self):
         return self.price
+
     def __str__(self):
-        return self.price
+        return f"<Price: name='{self.name}' price={self.price} timestamp={self.timestamp}>"
 
 
 class nwdb_lookup(models.Model):
