@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
      <title>New World Market Prices</title>
         {% load static %}
     <link rel="stylesheet" href="{% static 'nwmarketapp/jquery.typeahead.min.css' %}">
@@ -13,26 +12,20 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'nwmarketapp/favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'nwmarketapp/favicon-16x16.png' %}">
     <link rel="manifest" href="{% static 'nwmarketapp/site.webmanifest' %}">
+    <script>let server_id = {{ server_id }};</script>
+    <script type="text/javascript" src="{% static 'nwmarketapp/app.js' %}"></script>
     <script type="text/javascript" src="{% static 'nwmarketapp/createLineGraph.js' %}"></script>
     <script type="text/javascript" src="{% static 'nwmarketapp/configureTypeAhead.js' %}"></script>
-
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-WW3EJQVND0');
-  let server_id = {{ server_id }};
-</script>
-    <script>
-    var nwdbConfig = {
-        scale: 0.80,
-        delay: 5
-    }
-</script>
-<script async src="https://nwdb.info/embed.js"></script>
-
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0"></script>
+    <script async src="https://nwdb.info/embed.js"></script>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="{% static 'nwmarketapp/popper.min.js' %}"></script>
+    <script src="{% static 'nwmarketapp/bootstrap-4.4.1.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script type="text/javascript" src="{%  static 'nwmarketapp/jquery.typeahead.min.js' %}"></script>
 </head>
 <body>
 <!-- Navigation -->
@@ -40,9 +33,7 @@
     <div class="container nopad">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark col-xl-12">
             <a class="navbar-brand" href="#">New World Market Prices</a>
-
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
                 <form class="form-inline my-2 my-lg-0" action="" method="GET" id="search_form">
                     {#          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">#}
                     {#          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>#}
@@ -50,9 +41,7 @@
                         <div class="typeahead__field">
                             <div class="typeahead__query">
                                 <input class="js-typeahead-names" name="cn" placeholder="Search" autocomplete="off" id="cn">
-
                             </div>
-
                         </div>
                     </div>
 {#                    <span style="padding-left: 10px">#}
@@ -65,21 +54,16 @@
                                 Select Server
                             </button>
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                {% for x in servers %}
-                                    {% if x.1 == server_id %}
+                                {% for server in servers %}
+                                    {% if server.1 == server_id %}
                                         <script>
-                                        document.getElementById("dropdownMenuButton").innerHTML = '{{ x.0 }}';
-
+                                        document.getElementById("dropdownMenuButton").innerHTML = '{{ server.0 }}';
                                         </script>
                                     {% else %}
-                                        <a class="dropdown-item" href="#" onclick="change_server({{ x.1 }})">{{ x.0 }}</a>
+                                        <a class="dropdown-item" href="#" onclick="change_server({{ server.1 }})">{{ server.0 }}</a>
                                     {% endif %}
-
-
                                 {% endfor %}
-
                             </div>
-
                         </div>
                     </span>
                 </form>
@@ -92,29 +76,19 @@
         <div class="row">
             <div class="col-md-6-1 col-12 text-center bg-dark" id="price_div">
                 <h5>Lowest Price as of: -/--/----</h5>
-
                 <div class="col-md-12 col-12 large-text" id="price_block">
-
                     0.00
-
                 </div>
-
                 <h5>0% price increase since -/--/----</h5>
-
             </div>
-
             <div style="height: 1px"><img src="https://img.spacergif.org/v1/spacer.gif" aria-hidden="true" alt=""
                                           width="4px" height="1px"></div>
-
             <div class="col-md-6-1 col-12 text-center bg-dark">
-
                 <div class="col-md-12 col-12">
                     <div class="text-center">
                         <canvas id="linechart"></canvas>
                     </div>
-
                 </div>
-
             </div>
         </div>
     </div>
@@ -122,105 +96,75 @@
 <hr>
 <div class="container">
     <div class="row">
-
         <div class="col-lg-4 col-6">
             <h3>Popular End Game Items</h3>
             <hr>
             <div class="row popular-text ">
-                {% for x in endgame %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
-                    <div class="col-3 text-right">{{ x.1 }}</div>
-                    <div class="col-2 small text-right">{{ x.2|safe }}</div>
-
-
+                {% for item in endgame %}
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ item.3 }})">{{ item.0 }}</a></div>
+                    <div class="col-3 text-right">{{ item.1 }}</div>
+                    <div class="col-2 small text-right">{{ item.2|safe }}</div>
                 {% endfor %}
-
-
             </div>
-
         </div>
         <div class="col-lg-4 col-6">
             <h3>Popular Base Items</h3>
             <hr>
             <div class="row popular-text ">
-                {% for x in base %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
-                    <div class="col-3 text-right">{{ x.1 }}</div>
-                    <div class="col-2 small text-right">{{ x.2|safe }}</div>
-
-
+                {% for item in base %}
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ item.3 }})">{{ item.0 }}</a></div>
+                    <div class="col-3 text-right">{{ item.1 }}</div>
+                    <div class="col-2 small text-right">{{ item.2|safe }}</div>
                 {% endfor %}
-
             </div>
         </div>
-
-
         <div class="col-lg-4 col-12">
             <h3>Competitive Items</h3>
             <hr>
             <div class="col-md-12 col-12" style="height: 250px; padding-bottom: 50px;">
                 <canvas id="barchart"></canvas>
                 <p class="detail_text">*This shows the items with the highest number of differing prices today. This usually means a lot of undercutting is going on and pricing is competitive.</p>
-
             </div>
         </div>
-
     </div>
 </div>
-
 <div class="container">
     <div class="row">
-
         <div class="col-lg-4 col-6">
             <h3>Motes</h3>
             <hr>
             <div class="row popular-text ">
-                {% for x in motes %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
-                    <div class="col-3 text-right">{{ x.1 }}</div>
-                    <div class="col-2 small text-right">{{ x.2|safe }}</div>
-
-
+                {% for item in motes %}
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ item.3 }})">{{ item.0 }}</a></div>
+                    <div class="col-3 text-right">{{ item.1 }}</div>
+                    <div class="col-2 small text-right">{{ item.2|safe }}</div>
                 {% endfor %}
-
-
             </div>
-
         </div>
         <div class="col-lg-4 col-6">
             <h3>Refining Reagents</h3>
             <hr>
             <div class="row popular-text ">
-                {% for x in refining %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
-                    <div class="col-3 text-right">{{ x.1 }}</div>
-                    <div class="col-2 small text-right">{{ x.2|safe }}</div>
-
-
+                {% for item in refining %}
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ item.3 }})">{{ item.0 }}</a></div>
+                    <div class="col-3 text-right">{{ item.1 }}</div>
+                    <div class="col-2 small text-right">{{ item.2|safe }}</div>
                 {% endfor %}
-
             </div>
         </div>
-
-
         <div class="col-lg-4 col-12">
             <h3>Trophy Mats</h3>
             <hr>
             <div class="row popular-text ">
-                {% for x in trophy %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
-                    <div class="col-3 text-right">{{ x.1 }}</div>
-                    <div class="col-2 small text-right">{{ x.2|safe }}</div>
-
-
+                {% for item in trophy %}
+                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ item.3 }})">{{ item.0 }}</a></div>
+                    <div class="col-3 text-right">{{ item.1 }}</div>
+                    <div class="col-2 small text-right">{{ item.2|safe }}</div>
                 {% endfor %}
-
             </div>
         </div>
-
     </div>
 </div>
-
 <footer class="text-center">
     <div class="container">
         <div class="row">
@@ -242,19 +186,17 @@
                         <div class="modal-body">
                             <div class="row popular-text" >
                                 <ol>
-                                    <li><a href="/latestprices/?server_id={{ server_id }}" style="text-decoration: underline">Right click here and Save link as..</a></li>
+                                    <li><a href="/{% url "latest_prices" %}/?server_id={{ server_id }}" style="text-decoration: underline">Right click here and Save link as..</a></li>
                                     <li>Go to <a href="https://gaming.tools/newworld/price-customization" style="text-decoration: underline" target="_blank">the price customization page</a></li>
                                     <li>Scroll to the bottom and use the Import Prices function</li>
                                     <li>Change the "Minimum Import Availability" to 1 to get all the prices</li>
                                     <img src="{% static 'nwmarketapp/GamingtoolCustomizations.png' %}" width="400px">
-
                                 </ol>
                                 The prices exported will be an average of the lowest 5 listings seen in the last scan.
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-
                         </div>
                     </div>
                 </div>
@@ -263,67 +205,6 @@
         </div>
     </div>
 </footer>
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="{% static 'nwmarketapp/popper.min.js' %}"></script>
-    <script src="{% static 'nwmarketapp/bootstrap-4.4.1.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
-    <script type="text/javascript" src="{%  static 'nwmarketapp/jquery.typeahead.min.js' %}"></script>
-
-<script>
-    {% if direct_link %}
-
-    link_submit({{ direct_link }});
-
-    {% endif %}
-
-function link_submit(cn) {
-
-    var cn_id = cn
-    var form_data = {cn_id}
-
-    {#console.log(form_data)#}
-    $.ajax({
-        type: 'GET',
-        url: "",
-        data: form_data,
-        success: function (response) {
-            {# Set price block#}
-            update_prices(response);
-            {#   set graph prices #}
-            createLinegraph(response)
-           var name = response.item_name
-            $(".js-typeahead-names").val(name)
-
-            window.scrollTo(0,0)
-            let win_title = 'New World Market Prices' + cn
-            let new_url = `/${cn}/{{ server_id }}`;
-            window.history.pushState('data', win_title, new_url);
-            gtag('event', 'link-search', {'term': name});
-            $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
-        },
-
-        error: function (response) {
-            console.log(response)
-        }
-    })
-}
-
-function change_server(server_id){
-    let pathname = window.location.pathname;
-    if ((pathname.match(/\//g)||[]).length == 2) {
-        let s_id = pathname.substring(pathname.lastIndexOf('/') + 1)
-        let i = pathname.lastIndexOf('/') + 1
-        let str = pathname.slice(0, i)
-        window.location.assign(str + server_id)
-    } else {
-        window.location.assign(pathname + '1223/' + server_id)
-    }
-    server_id = server_id;
-}
-</script>
-
 <script type="text/javascript">
     function update_prices(response) {
         $("#price_div").html(`
@@ -334,10 +215,6 @@ function change_server(server_id){
 <a href="#" data-toggle="modal" data-target="#exampleModal">Raw data</a> |
 <a href="https://nwdb.info/db/item/${response.nwdb_id}" target="_blank">nwdb</a>
             <h5>${response.price_change}</h5>
-
-
-
-
  <!-- Modal -->
             <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
                  aria-hidden="true">
@@ -384,10 +261,7 @@ function change_server(server_id){
 
 
     $(document).ready(function () {
-
-
         // BAR CHART
-
         const bar_labels = [
             {% for name in top10 %}`{{ name.0 | safe }}`, {% endfor %}
         ]
@@ -465,8 +339,6 @@ function change_server(server_id){
             },
         });
     })
-
-
 </script>
 
 </body>

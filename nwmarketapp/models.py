@@ -20,7 +20,6 @@ class ConfirmedNames(models.Model):
         return self.name
 
 
-
 class Perks(models.Model):
     id = models.IntegerField(db_column='ID', primary_key=True)  # Field name made lowercase.
     name = models.CharField(db_column='NAME', max_length=50, blank=True, null=True)  # Field name made lowercase.
@@ -45,6 +44,7 @@ class Runs(models.Model):
     def __str__(self):
         return f"<Run: server_id={self.server_id} username='{self.username}'>"
 
+
 class Servers(models.Model):
     id = models.IntegerField(db_column='id', primary_key=True)
     name = models.CharField(max_length=50, blank=True, null=True)
@@ -52,7 +52,8 @@ class Servers(models.Model):
     class Meta:
         db_table = 'servers'
 
-class Name_cleanup(models.Model):
+
+class NameCleanup(models.Model):
     id = models.AutoField(db_column='id', primary_key=True)
     bad_word = models.CharField(max_length=150, blank=True, null=True)
     good_word = models.CharField(max_length=150, blank=True, null=True)
@@ -86,10 +87,11 @@ class Prices(models.Model):
         return f"<Price: id={self.pk} name='{self.name}' price={self.price} timestamp={self.timestamp}>"
 
 
-class nwdb_lookup(models.Model):
+class NWDBLookup(models.Model):
     id = models.AutoField(db_column='id', primary_key=True)
     name = models.CharField(max_length=150, blank=True, null=True)
     item_id = models.CharField(max_length=150, blank=True, null=True)
+
     class Meta:
         db_table = 'nwdb_lookup'
 

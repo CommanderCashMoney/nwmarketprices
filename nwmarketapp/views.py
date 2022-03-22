@@ -5,7 +5,7 @@ from typing import Iterable, List
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
-from nwmarketapp.models import ConfirmedNames, Runs, Servers, Name_cleanup, nwdb_lookup
+from nwmarketapp.models import ConfirmedNames, Runs, Servers, NameCleanup, NWDBLookup
 from nwmarketapp.models import Prices
 from django.http import JsonResponse, FileResponse
 import numpy as np
@@ -26,7 +26,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection
 
 from nwmarketapp.pydantic_models import ItemPriceHistory, ItemSummary
-from nwmarketapp.utils import get_price_change_percent
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -46,17 +45,21 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
+
 class PriceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prices
-        fields = ['name',
-                  'price',
-                  'avail',
-                  'timestamp',
-                  'name_id',
-                  'server_id',
-                  'approved',
-                  'username']
+        fields = [
+            'name',
+              'price',
+              'avail',
+              'timestamp',
+              'name_id',
+              'server_id',
+              'approved',
+              'username'
+        ]
+
 
 class PricesUploadAPI(CreateAPIView):
     queryset = Prices.objects.all()
@@ -74,7 +77,7 @@ class PricesUploadAPI(CreateAPIView):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
             access_groups = request.user.groups.values_list('name', flat=True)
-            add_run(serializer.data, access_groups)
+            add_run(serializer.data[0], access_groups)
 
 
             return Response({"status": True,
@@ -85,10 +88,10 @@ class PricesUploadAPI(CreateAPIView):
             return Response({"status": False})
 
 
-def add_run(data, access_groups):
-    sd = data[0]['timestamp']
-    sid = data[0]['server_id']
-    un = data[0]['username']
+def add_run(first_item: dict, access_groups):
+    sd = first_item['timestamp']
+    sid = first_item['server_id']
+    un = first_item['username']
     if 'scanner_user' in access_groups:
         approved = True
     else:
@@ -99,12 +102,12 @@ def add_run(data, access_groups):
 
 class NameCleanupSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Name_cleanup
+        model = NameCleanup
         fields = ['bad_word', 'good_word', 'approved', 'timestamp', 'username']
 
 
 class NameCleanupAPI(CreateAPIView):
-    queryset = Name_cleanup.objects.all()
+    queryset = NameCleanup.objects.all()
     serializer_class = NameCleanupSerializer
     permission_classes = (IsAuthenticated,)
 
@@ -114,9 +117,10 @@ class NameCleanupAPI(CreateAPIView):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
 
-            return Response({"status": True,
-                             "message": "Name Cleanup Added"},
-                            status=status.HTTP_201_CREATED, headers=headers)
+            return Response({
+                "status": True,
+                "message": "Name Cleanup Added"
+            }, status=status.HTTP_201_CREATED, headers=headers)
         else:
             print(f'errors: {serializer.errors}')
             return Response({"status": False})
@@ -139,21 +143,13 @@ class ConfirmedNamesAPI(CreateAPIView):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
 
-            return Response({"status": True,
-                             "message": "Confirmed Names Added"},
-                            status=status.HTTP_201_CREATED, headers=headers)
+            return Response({
+                "status": True,
+                "message": "Confirmed Names Added"
+            }, status=status.HTTP_201_CREATED, headers=headers)
         else:
             print(f'errors: {serializer.errors}')
             return Response({"status": False})
-
-
-def check_if_outlier(price: Decimal, prices: List[Decimal], m=33) -> bool:
-    median_price = np.median(prices)
-    diff_arr = np.abs(prices - median_price)
-    median_of_diff = np.median(diff_arr)
-    price_diff_from_median = abs(price - median_price)
-    diff_arr_percent = price_diff_from_median / (median_of_diff if median_of_diff else 1.)
-    return diff_arr_percent > m
 
 
 def remove_outliers(price_objects: Iterable[Prices], m=33) -> List[Prices]:
@@ -173,7 +169,6 @@ def get_price_graph_data(grouped_hist: List[List[ItemPriceHistory]]):
     price_graph_data = []
     for date_group in grouped_hist[-15:]:
         price_graph_data.append((date_group[0].scan_time, date_group[0].price))
-
 
     # get 15 day rolling average
     smooth = Decimal("0.3")
@@ -204,13 +199,6 @@ def get_price_graph_data(grouped_hist: List[List[ItemPriceHistory]]):
         num_listings.append(sum(unique_prices))
 
     return price_graph_data[-10:], avg_price_graph[-10:], num_listings
-
-
-def check_prices_arr_for_outliers(prices: Iterable[Prices]) -> List[Prices]:
-    return [
-        price for price in prices
-        if not check_if_outlier(price.price, [price.price for price in prices])
-    ]
 
 
 def get_list_by_nameid(name_id, server_id) -> ItemSummary:
@@ -274,29 +262,25 @@ def query_item_list(server_id: int, item_id_list: List) -> List[ItemSummary]:
 
 
 @ratelimit(key='ip', rate='10/s', block=True)
-# @cache_page(60 * 10)
-def index(request, item_id=None, server_id=1):
-    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
-    confirmed_names = confirmed_names.values_list('name', 'id', 'nwdb_id')
-    all_servers = Servers.objects.all()
-    all_servers = all_servers.values_list('name', 'id')
-    # is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
-    selected_name = request.GET.get('cn_id')
-    if selected_name:
-        if not selected_name.isnumeric():
+def get_item_history(request: WSGIRequest, server_id: str, item_id: str) -> JsonResponse:
+    if item_id:
+        if not isinstance(item_id, int):
             # nwdb id was passed instead. COnvert this to my ids
-            selected_name = confirmed_names.get(nwdb_id=selected_name.lower())[1]
+            item_id = ConfirmedNames.objects.get(nwdb_id=item_id.lower()).id
 
-        item_history = get_list_by_nameid(selected_name, server_id)
+        item_history = get_list_by_nameid(item_id, server_id)
         if not item_history.grouped_hist:
             # we didnt find any prices with that name id
-            return JsonResponse({"recent_lowest_price": 'N/A', "price_change": 'Not Found', "last_checked": 'Not Found'}, status=200)
+            return JsonResponse({
+                "recent_lowest_price": 'N/A',
+                "price_change": 'Not Found',
+                "last_checked": 'Not Found'
+            }, status=200)
 
         price_graph_data, avg_price_graph, num_listings = get_price_graph_data(item_history.grouped_hist)
 
         try:
-            nwdb_id = nwdb_lookup.objects.get(name=item_history.item_name)
-            nwdb_id = nwdb_id.item_id
+            nwdb_id = NWDBLookup.objects.get(name=item_history.item_name).item_id
         except ObjectDoesNotExist:
             nwdb_id = ''
 
@@ -314,33 +298,44 @@ def index(request, item_id=None, server_id=1):
             'num_listings': num_listings,
             'nwdb_id': nwdb_id
         }, status=200)
-    else:
-        popular_endgame_data = query_item_list(server_id, [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458])
-        popular_base_data = query_item_list(server_id, [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538])
-        mote_data = query_item_list(server_id, [862, 459, 649, 910, 158, 869, 497])
-        refining_data = query_item_list(server_id, [326, 847, 1033, 977, 1334])
-        trophy_data = query_item_list(server_id, [1542, 1444, 1529, 1541, 1502])
-        # Most listed bar chart
-        try:
-            last_run = Runs.objects.filter(server_id=server_id).latest('id').start_date
-            qs_recent_items = Prices.objects.filter(timestamp__gte=last_run, server_id=server_id).values_list(
-                'timestamp', 'price', 'name', 'name_id')
-            qs_format_date = qs_recent_items.annotate(day=TruncDay('timestamp')).values_list('day', 'price', 'name')
-            qs_grouped = list(qs_format_date.annotate(Count('name_id'), Count('price'), Count('day')).order_by('name'))
-            d = collections.defaultdict(int)
-            a = []
 
-            for ts, price, name, c, c1, c2 in qs_grouped:
-                if not name in a: a.append(name)
-                d[name] += 1
 
-            most_listed_item = sorted(d.items(), key=lambda item: item[1])
-            most_listed_item_top10 = most_listed_item[-9:]
-        except Runs.DoesNotExist:
-            most_listed_item_top10 = []
+@ratelimit(key='ip', rate='10/s', block=True)
+# @cache_page(60 * 10)
+def index(request, item_id=None, server_id=1):
+    all_servers = Servers.objects.all()
+    all_servers = all_servers.values_list('name', 'id')
+    start = perf_counter()
+    popular_endgame_data = query_item_list(server_id, [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458])
+    print(perf_counter() - start)
+    popular_base_data = query_item_list(server_id, [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538])
+    print(perf_counter() - start)
+    mote_data = query_item_list(server_id, [862, 459, 649, 910, 158, 869, 497])
+    print(perf_counter() - start)
+    refining_data = query_item_list(server_id, [326, 847, 1033, 977, 1334])
+    print(perf_counter() - start)
+    trophy_data = query_item_list(server_id, [1542, 1444, 1529, 1541, 1502])
+    print(perf_counter() - start)
+    # Most listed bar chart
+    try:
+        last_run = Runs.objects.filter(server_id=server_id).latest('id').start_date
+        qs_recent_items = Prices.objects.filter(timestamp__gte=last_run, server_id=server_id).values_list(
+            'timestamp', 'price', 'name', 'name_id')
+        qs_format_date = qs_recent_items.annotate(day=TruncDay('timestamp')).values_list('day', 'price', 'name')
+        qs_grouped = list(qs_format_date.annotate(Count('name_id'), Count('price'), Count('day')).order_by('name'))
+        d = collections.defaultdict(int)
+        a = []
+
+        for ts, price, name, c, c1, c2 in qs_grouped:
+            if not name in a: a.append(name)
+            d[name] += 1
+
+        most_listed_item = sorted(d.items(), key=lambda item: item[1])
+        most_listed_item_top10 = most_listed_item[-9:]
+    except Runs.DoesNotExist:
+        most_listed_item_top10 = []
 
     return render(request, 'nwmarketapp/index.html', {
-        'cn_list': confirmed_names,
         'endgame': popular_endgame_data,
         'base': popular_base_data,
         'motes': mote_data,
@@ -352,22 +347,23 @@ def index(request, item_id=None, server_id=1):
         'server_id': server_id
     })
 
+
 @ratelimit(key='ip', rate='10/s', block=True)
 # @cache_page(60 * 120)
-def cn(request):
-    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
-    confirmed_names = list(confirmed_names.values_list('name', 'id'))
-    cn = json.dumps(confirmed_names)
+def confirmed_names(request):
+    cns = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
+    cns = list(cns.values_list('name', 'id'))
+    cn = json.dumps(cns)
 
     return JsonResponse({'cn': cn}, status=200)
 
+
 @ratelimit(key='ip', rate='10/s', block=True)
 # @cache_page(60 * 120)
-def nc(request):
-    name_cleanup = Name_cleanup.objects.all().filter(approved=True)
-    name_cleanup = list(name_cleanup.values_list('bad_word', 'good_word').filter(approved=True))
-    nc = json.dumps(name_cleanup)
-
+def name_cleanup(request):
+    ncs = NameCleanup.objects.all().filter(approved=True)
+    ncs = list(ncs.values_list('bad_word', 'good_word').filter(approved=True))
+    nc = json.dumps(ncs)
     return JsonResponse({'nc': nc}, status=200)
 
 
@@ -422,6 +418,7 @@ def latest_prices(request: WSGIRequest) -> FileResponse:
     )
 
 
+@cache_page(60 * 60 * 24)
 def typeahead(request: WSGIRequest) -> JsonResponse:
-    confirmed_names = ConfirmedNames.objects.filter(approved=True).values("name", "id")
-    return JsonResponse(list(confirmed_names), status=200, safe=False)
+    cns = ConfirmedNames.objects.filter(approved=True).values("name", "id")
+    return JsonResponse(list(cns), status=200, safe=False)
