@@ -146,7 +146,7 @@
                         <div class="modal-body">
                             <div class="row popular-text" >
                                 <ol>
-                                    <li><a href="/{% url "latest_prices" %}/?server_id={{ server_id }}" style="text-decoration: underline">Right click here and Save link as..</a></li>
+                                    <li><a href="{% url 'latest_prices' %}?server_id={{ server_id }}" style="text-decoration: underline">Right click here and Save link as..</a></li>
                                     <li>Go to <a href="https://gaming.tools/newworld/price-customization" style="text-decoration: underline" target="_blank">the price customization page</a></li>
                                     <li>Scroll to the bottom and use the Import Prices function</li>
                                     <li>Change the "Minimum Import Availability" to 1 to get all the prices</li>
