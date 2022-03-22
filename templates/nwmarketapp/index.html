@@ -13,6 +13,8 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'nwmarketapp/favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'nwmarketapp/favicon-16x16.png' %}">
     <link rel="manifest" href="{% static 'nwmarketapp/site.webmanifest' %}">
+    <script type="text/javascript" src="{% static 'nwmarketapp/createLineGraph.js' %}"></script>
+    <script type="text/javascript" src="{% static 'nwmarketapp/configureTypeAhead.js' %}"></script>
 
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0"></script>
@@ -20,10 +22,8 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-WW3EJQVND0');
-
-
+  let server_id = {{ server_id }};
 </script>
     <script>
     var nwdbConfig = {
@@ -292,13 +292,13 @@ function link_submit(cn) {
             {# Set price block#}
             update_prices(response);
             {#   set graph prices #}
-            create_linegraph(response)
+            createLinegraph(response)
            var name = response.item_name
             $(".js-typeahead-names").val(name)
 
             window.scrollTo(0,0)
             let win_title = 'New World Market Prices' + cn
-            let new_url = '/' + cn + '/' + {{ server_id }}
+            let new_url = `/${cn}/{{ server_id }}`;
             window.history.pushState('data', win_title, new_url);
             gtag('event', 'link-search', {'term': name});
             $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
@@ -308,33 +308,23 @@ function link_submit(cn) {
             console.log(response)
         }
     })
-
-
 }
 
 function change_server(server_id){
     let pathname = window.location.pathname;
-    console.log(pathname)
-        if ((pathname.match(/\//g)||[]).length == 2) {
-            let s_id = pathname.substring(pathname.lastIndexOf('/') + 1)
-            let i = pathname.lastIndexOf('/') + 1
-            let str = pathname.slice(0, i)
-            window.location.assign(str + server_id)
-
-
-        }else{
-            window.location.assign(pathname + '1223/' + server_id)
-
-        }
-
-
-
-
+    if ((pathname.match(/\//g)||[]).length == 2) {
+        let s_id = pathname.substring(pathname.lastIndexOf('/') + 1)
+        let i = pathname.lastIndexOf('/') + 1
+        let str = pathname.slice(0, i)
+        window.location.assign(str + server_id)
+    } else {
+        window.location.assign(pathname + '1223/' + server_id)
+    }
+    server_id = server_id;
 }
 </script>
 
 <script type="text/javascript">
-
     function update_prices(response) {
         $("#price_div").html(`
             <h5>Lowest Price as of: ${response.last_checked}</h5>
@@ -392,138 +382,20 @@ function change_server(server_id){
 
     }
 
-    function create_linegraph(response) {
-        //	  LINE CHART
-        const dates = []
-        const prices = []
-        var max_price = []
-        $.each(response.price_graph_data, function () {
-            let dateObj = new Date(this[0])
-            let date = dateObj.getDate()
-            let month = dateObj.getMonth() + 1
-            let dt = month + '-' + date
-            dates.push(dt)
-            prices.push(this[1])
 
-            max_price.push(this[1])
-
-        });
-        const avg_prices = []
-        $.each(response.avg_graph_data, function () {
-            avg_prices.push(this[1])
-        });
-        const num_listings = []
-        $.each(response.num_listings, function () {
-            num_listings.push(this)
-        });
-
-
-        {#console.log(dates)#}
-        {#console.log(prices)#}
-        var max_of_array = Math.max.apply(Math, max_price);
-
-
-        {#const labels = ['1/08', '1/9', '1/10', '1/12', '1/13', '1/15', '1/17']#}
-        const line_data = {
-            labels: dates,
-
-            datasets: [{
-                label: 'Lowest Price',
-                yAxisID: 'y',
-                data: prices,
-                fill: false,
-                borderColor: 'rgb(55, 115, 204)',
-                backgroundColor: '#F3F3F3',
-                tension: 0.1
-            },
-            {
-                label: '15 Day Rolling Average',
-                yAxisID: 'y',
-                data: avg_prices,
-                borderDash: [10, 5],
-                fill: false,
-                borderColor: 'rgb(55, 100, 155)',
-
-                tension: 0.6
-            },
-            {
-                type: 'bar',
-                label: "Quantity",
-                yAxisID: 'y2',
-                data: num_listings,
-                fill: false,
-                tension: 0.1,
-                backgroundColor: 'rgb(49,49,55)',
-
-
-            },
-            ]
-        };
-        var options1 = {
-            scales: {
-                x: {
-                    ticks: {
-                        color: "#F3F3F3"
-                    },
-
-                },
-                y: {
-                    type: 'linear',
-                    position: 'left',
-                    ticks: {
-                        color: "#F3F3F3"
-                    }
-                },
-                y2: {
-                type: 'linear',
-                position: 'right',
-                ticks: {
-                    max: 100,
-                    min: 0
-                },
-                grid: {
-                        display: false
-                    }
-            }
-
-            },
-            color: "#F3F3F3",
-
-
-        };
-        if (window.chart != null) {
-            window.chart.destroy();
-
-        }
-
-        var ctx = document.getElementById('linechart');
-        window.chart = new Chart(ctx, {
-            type: 'line',
-            data: line_data,
-            options: options1
-        });
-
-    }
     $(document).ready(function () {
 
 
         // BAR CHART
 
         const bar_labels = [
-            {% for name in top10 %}
-                '{{ name.0 }}',
-            {% endfor %}
-
+            {% for name in top10 %}`{{ name.0 | safe }}`, {% endfor %}
         ]
         const data = {
             labels: bar_labels,
             datasets: [{
-
                 data: [
-                    {% for name in top10 %}
-                        {{ name.1 }},
-                    {% endfor %}
-
+                    {% for name in top10 %}{{ name.1 }},{% endfor %}
                 ],
                 backgroundColor: [
                     'rgba(255, 99, 132, 1)',
@@ -592,89 +464,6 @@ function change_server(server_id){
                 color: "#F3F3F3",
             },
         });
-        var cn_list = []
-        $.typeahead({
-            input: '.js-typeahead-names',
-            order: "asc",
-            display: "name",
-
-
-            source: {
-                 data: [
-                     {% for name in cn_list %}
-                         { name: '{{ name.0 }}', id: {{ name.1 }}},
-                     {% endfor %}
-
-        ]
-
-            },
-            callback: {
-                onInit: function (node) {
-                    console.log('Typeahead Initiated on ' + node.selector);
-                },
-                onClickAfter: function(node, a, item, event){
-
-                    var cn_id = item.id
-                    var form_data = {cn_id}
-
-                     $.ajax({
-                        type: 'GET',
-                        url: "",
-                        data: form_data,
-                        success: function (response) {
-                            {# Set price block#}
-                            update_prices(response);
-                            {#   set graph prices #}
-                            create_linegraph(response)
-                            let name = $(".js-typeahead-names").eq(0).val();
-                             let win_title = 'New World Market Prices' + cn_id
-                            let new_url = '/' + cn_id + '/' + {{ server_id }}
-                            window.history.pushState('data', win_title, new_url);
-                            gtag('event', 'search-input', {'term': name});
-                            $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
-                        },
-
-                        error: function (response) {
-                            console.log(response)
-                        }
-                    })
-
-                },
-                onSubmit: function (node, form, item, event) {
-                    event.preventDefault();
-                    {#console.log(node)#}
-                    {#console.log(form)#}
-                    {#console.log(item)#}
-                    {#console.log(event)#}
-                    {##}
-                    {#console.log(item.id)#}
-                    var cn_id = item.id
-                    var form_data = {cn_id}
-
-                {#console.log(form_data)#}
-                    $.ajax({
-                        type: 'GET',
-                        url: "",
-                        data: form_data,
-                        success: function (response) {
-                            {# Set price block#}
-                            update_prices(response);
-                            {#   set graph prices #}
-                            create_linegraph(response)
-                            let name = $(".js-typeahead-names").eq(0).val();
-
-                            gtag('event', 'search-input', {'term': name});
-                            $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
-                        },
-
-                        error: function (response) {
-                            console.log(response)
-                        }
-                    })
-                }
-
-            }
-        })
     })
 
 

@@ -422,7 +422,6 @@ def latest_prices(request: WSGIRequest) -> FileResponse:
     )
 
 
-
-
-
-
+def typeahead(request: WSGIRequest) -> JsonResponse:
+    confirmed_names = ConfirmedNames.objects.filter(approved=True).values("name", "id")
+    return JsonResponse(list(confirmed_names), status=200, safe=False)
