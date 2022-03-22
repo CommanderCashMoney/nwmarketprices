@@ -67,10 +67,10 @@ document.addEventListener("DOMContentLoaded", () => {
 function change_server(server_id){
     // todo: fully ajax
     const urlParams = getParamsFromUrl();
-    if(!urlParams.server_id && !urlParams.item_id) {
-        window.location.assign(`1223/${server_id}`);
+    if(!urlParams) {
+        window.location.assign(`/1223/${server_id}`);
     } else {
-        window.location.assign(`${urlParams.item_id}/${server_id}`);
+        window.location.assign(`/${urlParams.item_id}/${server_id}`);
     }
     server_id = server_id;
 }
