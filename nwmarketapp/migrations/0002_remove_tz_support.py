@@ -29,5 +29,5 @@ def backwards(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [("nwmarketapp", "0002_alter_prices_name_id")]
+    dependencies = [("nwmarketapp", "0001_initial")]
     operations = [migrations.RunPython(forwards, backwards)]

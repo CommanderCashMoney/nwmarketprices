@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
                 ('perks', models.IntegerField(blank=True, null=True)),
                 ('name', models.CharField(blank=True, max_length=150, null=True)),
                 ('timestamp', models.DateTimeField(blank=True, null=True)),
-                ('name_id', models.IntegerField(blank=True, null=True)),
+                ('name_id', models.IntegerField(blank=True, db_index=True, null=True)),
                 ('server_id', models.IntegerField(blank=True, null=True)),
                 ('username', models.CharField(blank=True, max_length=50, null=True)),
                 ('approved', models.BooleanField(blank=True, null=True)),
@@ -94,6 +94,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(db_column='id', primary_key=True, serialize=False)),
                 ('server_id', models.IntegerField(blank=True, null=True)),
                 ('approved', models.BooleanField(blank=True, null=True)),
+                ('username', models.CharField(blank=True, max_length=100, null=True))
             ],
             options={
                 'db_table': 'runs',
