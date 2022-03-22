@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 urlpatterns = [
     path('', views.index, name='index'),
+    path('api/popular_items/<int:server_id>/', views.popular_items_endpoint, name='popular_items'),
     path('<str:item_id>/<int:server_id>/', views.index, name='index'),
     path('cn/', views.confirmed_names, name='cn'),
     path('nc/', views.name_cleanup, name='nc'),

@@ -1,0 +1,11 @@
+<div class="col-lg-4 col-6">
+    <h3>{{ title }}</h3>
+    <hr>
+    <div class="row popular-text ">
+        {% for item_id, info in popular.items %}
+            <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ item_id }})">{{ info.item_name }}</a></div>
+            <div class="col-3 text-right">{{ info.recent_lowest_price }}</div>
+            <div class="col-2 small text-right">{{ info.price_change|safe }}</div>
+        {% endfor %}
+    </div>
+</div>

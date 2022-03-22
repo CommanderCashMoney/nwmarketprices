@@ -1,7 +1,7 @@
 import json
 from decimal import Decimal
 from time import perf_counter
-from typing import Iterable, List
+from typing import Dict, Iterable, List
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
@@ -247,7 +247,7 @@ def get_list_by_nameid(name_id, server_id) -> ItemSummary:
 
 
 def query_item_list(server_id: int, item_id_list: List) -> List[ItemSummary]:
-    item_data = []
+    item_data = {}
     for item_id in item_id_list:
         item_hist = get_list_by_nameid(item_id, server_id)
         if item_hist is None:
@@ -257,7 +257,11 @@ def query_item_list(server_id: int, item_id_list: List) -> List[ItemSummary]:
             price_change = '<span class="blue_text">&#8593;{}%</span>'.format(item_hist.price_change)
         else:
             price_change = '<span class="yellow_text">&#8595;{}%</span>'.format(item_hist.price_change)
-        item_data.append([item_hist.item_name, item_hist.recent_lowest_price, price_change, item_id])
+        item_data[item_id] = {
+            "item_name": item_hist.item_name,
+            "recent_lowest_price": item_hist.recent_lowest_price,
+            "price_change": price_change,
+        }
     return item_data
 
 
@@ -300,51 +304,55 @@ def get_item_history(request: WSGIRequest, server_id: str, item_id: str) -> Json
         }, status=200)
 
 
+def popular_items(server_id: str) -> Dict[str, List[ItemSummary]]:
+    return {
+        "endgame": query_item_list(server_id, [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458]),
+        "base": query_item_list(server_id, [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538]),
+        "motes": query_item_list(server_id, [862, 459, 649, 910, 158, 869, 497]),
+        "refining": query_item_list(server_id, [326, 847, 1033, 977, 1334]),
+        "trophy": query_item_list(server_id, [1542, 1444, 1529, 1541, 1502])
+    }
+
+
+def popular_items_endpoint(request: WSGIRequest, server_id: str) -> JsonResponse:
+    popular = popular_items(server_id)
+    return JsonResponse(popular, status=200)
+
+
 @ratelimit(key='ip', rate='10/s', block=True)
 # @cache_page(60 * 10)
 def index(request, item_id=None, server_id=1):
     all_servers = Servers.objects.all()
     all_servers = all_servers.values_list('name', 'id')
-    start = perf_counter()
-    popular_endgame_data = query_item_list(server_id, [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458])
-    print(perf_counter() - start)
-    popular_base_data = query_item_list(server_id, [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538])
-    print(perf_counter() - start)
-    mote_data = query_item_list(server_id, [862, 459, 649, 910, 158, 869, 497])
-    print(perf_counter() - start)
-    refining_data = query_item_list(server_id, [326, 847, 1033, 977, 1334])
-    print(perf_counter() - start)
-    trophy_data = query_item_list(server_id, [1542, 1444, 1529, 1541, 1502])
-    print(perf_counter() - start)
+
     # Most listed bar chart
     try:
         last_run = Runs.objects.filter(server_id=server_id).latest('id').start_date
-        qs_recent_items = Prices.objects.filter(timestamp__gte=last_run, server_id=server_id).values_list(
-            'timestamp', 'price', 'name', 'name_id')
+        qs_recent_items = Prices.objects.filter(
+            timestamp__gte=last_run, server_id=server_id
+        ).values_list('timestamp', 'price', 'name', 'name_id')
         qs_format_date = qs_recent_items.annotate(day=TruncDay('timestamp')).values_list('day', 'price', 'name')
         qs_grouped = list(qs_format_date.annotate(Count('name_id'), Count('price'), Count('day')).order_by('name'))
-        d = collections.defaultdict(int)
-        a = []
+        item_count = collections.defaultdict(int)
+        name_list = []
 
-        for ts, price, name, c, c1, c2 in qs_grouped:
-            if not name in a: a.append(name)
-            d[name] += 1
+        for day, price, name, c, c1, c2 in qs_grouped:
+            if name not in name_list:
+                name_list.append(name)
+            item_count[name] += 1
 
-        most_listed_item = sorted(d.items(), key=lambda item: item[1])
+        most_listed_item = sorted(item_count.items(), key=lambda item: item[1])
         most_listed_item_top10 = most_listed_item[-9:]
     except Runs.DoesNotExist:
         most_listed_item_top10 = []
 
     return render(request, 'nwmarketapp/index.html', {
-        'endgame': popular_endgame_data,
-        'base': popular_base_data,
-        'motes': mote_data,
-        'refining': refining_data,
-        'trophy': trophy_data,
-        'top10': most_listed_item_top10,
-        "direct_link": item_id,
-        'servers': all_servers,
-        'server_id': server_id
+        **{
+            'top10': most_listed_item_top10,
+            "direct_link": item_id,
+            'servers': all_servers,
+            'server_id': server_id
+        }, **popular_items(server_id)
     })
 
 

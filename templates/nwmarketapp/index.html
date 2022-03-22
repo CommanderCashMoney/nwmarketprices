@@ -96,28 +96,8 @@
 <hr>
 <div class="container">
     <div class="row">
-        <div class="col-lg-4 col-6">
-            <h3>Popular End Game Items</h3>
-            <hr>
-            <div class="row popular-text ">
-                {% for item in endgame %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ item.3 }})">{{ item.0 }}</a></div>
-                    <div class="col-3 text-right">{{ item.1 }}</div>
-                    <div class="col-2 small text-right">{{ item.2|safe }}</div>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="col-lg-4 col-6">
-            <h3>Popular Base Items</h3>
-            <hr>
-            <div class="row popular-text ">
-                {% for item in base %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ item.3 }})">{{ item.0 }}</a></div>
-                    <div class="col-3 text-right">{{ item.1 }}</div>
-                    <div class="col-2 small text-right">{{ item.2|safe }}</div>
-                {% endfor %}
-            </div>
-        </div>
+        {% include 'nwmarketapp/snippets/popular.html' with popular=endgame title="Popular End Game Items" %}
+        {% include 'nwmarketapp/snippets/popular.html' with popular=base title="Popular Base Items" %}
         <div class="col-lg-4 col-12">
             <h3>Competitive Items</h3>
             <hr>
@@ -130,39 +110,9 @@
 </div>
 <div class="container">
     <div class="row">
-        <div class="col-lg-4 col-6">
-            <h3>Motes</h3>
-            <hr>
-            <div class="row popular-text ">
-                {% for item in motes %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ item.3 }})">{{ item.0 }}</a></div>
-                    <div class="col-3 text-right">{{ item.1 }}</div>
-                    <div class="col-2 small text-right">{{ item.2|safe }}</div>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="col-lg-4 col-6">
-            <h3>Refining Reagents</h3>
-            <hr>
-            <div class="row popular-text ">
-                {% for item in refining %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ item.3 }})">{{ item.0 }}</a></div>
-                    <div class="col-3 text-right">{{ item.1 }}</div>
-                    <div class="col-2 small text-right">{{ item.2|safe }}</div>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="col-lg-4 col-12">
-            <h3>Trophy Mats</h3>
-            <hr>
-            <div class="row popular-text ">
-                {% for item in trophy %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ item.3 }})">{{ item.0 }}</a></div>
-                    <div class="col-3 text-right">{{ item.1 }}</div>
-                    <div class="col-2 small text-right">{{ item.2|safe }}</div>
-                {% endfor %}
-            </div>
-        </div>
+        {% include 'nwmarketapp/snippets/popular.html' with popular=motes title="Motes" %}
+        {% include 'nwmarketapp/snippets/popular.html' with popular=refining title="Refining Reagents" %}
+        {% include 'nwmarketapp/snippets/popular.html' with popular=trophy title="Trophy Mats" %}
     </div>
 </div>
 <footer class="text-center">
