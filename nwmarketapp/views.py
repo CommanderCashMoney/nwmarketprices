@@ -83,11 +83,12 @@ class PricesUploadAPI(CreateAPIView):
 def add_run(data, access_groups):
     sd = data[0]['timestamp']
     sid = data[0]['server_id']
+    un = data[0]['username']
     if 'scanner_user' in access_groups:
         approved = True
     else:
         approved = False
-    runs = Runs(start_date=sd, server_id=sid, approved=approved)
+    runs = Runs(start_date=sd, server_id=sid, approved=approved, username=un)
     runs.save()
 
 
@@ -214,9 +215,9 @@ def get_list_by_nameid(name_id, server_id):
         return None, None, None, None, None, None, None
 
     hist_price = qs_current_price.values_list('timestamp', 'price', 'avail').order_by('timestamp')
-    last_run = Runs.objects.filter(server_id=server_id, approved=True).latest('id').start_date
+    last_run = Runs.objects.filter(server_id=server_id, approved=True).latest('id')
     #get all prices since last run
-    latest_prices = list(hist_price.filter(timestamp__gte=last_run).values_list('timestamp', 'price', 'avail').order_by('price'))
+    latest_prices = list(hist_price.filter(timestamp__gte=last_run.start_date, username=last_run.username).values_list('timestamp', 'price', 'avail').order_by('price'))
     # group by days
     grouped_hist = [list(g) for _, g in itertools.groupby(hist_price, key=lambda x: x[0].date())]
     for count, val in enumerate(grouped_hist):

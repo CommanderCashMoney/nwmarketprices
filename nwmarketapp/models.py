@@ -34,6 +34,7 @@ class Runs(models.Model):
     id = models.AutoField(db_column='id', primary_key=True)
     server_id = models.IntegerField(blank=True, null=True)
     approved = models.BooleanField(blank=True, null=True)
+    username = models.CharField(db_column='username', max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = 'runs'
