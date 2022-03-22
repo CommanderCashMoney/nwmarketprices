@@ -8,6 +8,7 @@
         {% load static %}
     <link rel="stylesheet" href="{% static 'nwmarketapp/jquery.typeahead.min.css' %}">
     <link rel="stylesheet" href="{% static 'nwmarketapp/bootstrap-4.4.1.css' %}">
+    <link rel="stylesheet" href="{% static 'nwmarketapp/styles.css' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'nwmarketapp/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'nwmarketapp/favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'nwmarketapp/favicon-16x16.png' %}">
@@ -73,7 +74,7 @@
 </section>
 <section>
     <div class="container">
-        <div class="row">
+        <div class="row hidden" id="item-info">
             <div class="col-md-6-1 col-12 text-center bg-dark" id="price_div">
                 <h5>Lowest Price as of: -/--/----</h5>
                 <div class="col-md-12 col-12 large-text" id="price_block">
@@ -89,6 +90,15 @@
                         <canvas id="linechart"></canvas>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="row" id="welcome-info">
+            <div class="col-12 text-center bg-dark">
+                <br>
+                <div>Welcome to New World Market Prices!</div>
+                <br>
+                <div>Select an item from the popular item lists, or search for an item from the search bar above.</div>
+                <br>
             </div>
         </div>
     </div>

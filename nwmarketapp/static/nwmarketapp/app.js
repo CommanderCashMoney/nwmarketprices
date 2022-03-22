@@ -13,7 +13,7 @@ const getParamsFromUrl = () => {
     }
     const parts = loc.pathname.split("/");
     let item_id = parts.pop() || parts.pop();
-    if(!!item_id) {
+    if(!item_id) {
         return null;
     } else if (item_id == "#") {
         item_id = parts.pop();
@@ -46,6 +46,9 @@ function link_submit(cn) {
             window.history.pushState('data', win_title, new_url);
             gtag('event', 'link-search', {'term': name});
             $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
+            document.getElementById("item-info").classList.remove("hidden");
+            document.getElementById("welcome-info").classList.add("hidden");
+
         },
 
         error: function (response) {
