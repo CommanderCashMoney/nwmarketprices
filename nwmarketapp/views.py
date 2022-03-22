@@ -1,6 +1,7 @@
 import json
+from decimal import Decimal
 from time import perf_counter
-from typing import List
+from typing import Iterable, List
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
@@ -24,7 +25,8 @@ from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection
 
-from nwmarketapp.pydantic_models import ItemSummary
+from nwmarketapp.pydantic_models import ItemPriceHistory, ItemSummary
+from nwmarketapp.utils import get_price_change_percent
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -145,33 +147,36 @@ class ConfirmedNamesAPI(CreateAPIView):
             return Response({"status": False})
 
 
-def remove_outliers(data, m=33):
+def check_if_outlier(price: Decimal, prices: List[Decimal], m=33) -> bool:
+    median_price = np.median(prices)
+    diff_arr = np.abs(prices - median_price)
+    median_of_diff = np.median(diff_arr)
+    price_diff_from_median = abs(price - median_price)
+    diff_arr_percent = price_diff_from_median / (median_of_diff if median_of_diff else 1.)
+    return diff_arr_percent > m
+
+
+def remove_outliers(price_objects: Iterable[Prices], m=33) -> List[Prices]:
+    data = np.array([price["price"] for price in price_objects])
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
     s = d / (mdev if mdev else 1.)
-    good_list = data[s < m].tolist()
     bad_indices = np.nonzero(s > m)
-    return good_list, bad_indices
+    return_data: List[Prices] = list(price_objects)
+    for idx in bad_indices[0][::-1]:
+        del return_data[idx]
+    return return_data
 
-def get_change(current, previous):
-    current = float(current)
-    previous = float(previous)
-    if current == previous:
-        return 0
-    try:
-        return ((current - previous) / previous) * 100.0
-    except ZeroDivisionError:
-        return 0
 
-def get_price_graph_data(grouped_hist):
+def get_price_graph_data(grouped_hist: List[List[ItemPriceHistory]]):
     # get last 10 lowest prices
     price_graph_data = []
-    for x in grouped_hist[-15:]:
-        price_graph_data.append((x[0][0], x[0][1]))
+    for date_group in grouped_hist[-15:]:
+        price_graph_data.append((date_group[0].scan_time, date_group[0].price))
 
 
     # get 15 day rolling average
-    smooth = 0.3
+    smooth = Decimal("0.3")
     i = 1
     avg = []
     avg_price_graph = []
@@ -184,30 +189,28 @@ def get_price_graph_data(grouped_hist):
         avg_price_graph.append((price_graph_data[i][0], window_average))
         i += 1
 
-
-    # for x in grouped_hist[-10:]:
-    #     sum = 0
-    #     for i in x:
-    #         sum += i[1]
-    #     avg_price = sum / len(x)
-    #     avg_price = "{:.2f}".format(float(avg_price))
-    #     avg_price_graph.append((x[0][0], avg_price))
-
     num_listings = []
-    for x in grouped_hist[-10:]:
+    for date_group in grouped_hist[-10:]:
         unique_prices = []
         temp = set()
 
-        for y in x:
-            if y[1] not in temp:
-                if not y[2]:
+        for item in date_group:
+            if item.price not in temp:
+                if not item.quantity:
                     unique_prices.append(1)
                 else:
-                    unique_prices.append(y[2])
-                temp.add(y[1])
+                    unique_prices.append(item.quantity)
+                temp.add(item.price)
         num_listings.append(sum(unique_prices))
 
     return price_graph_data[-10:], avg_price_graph[-10:], num_listings
+
+
+def check_prices_arr_for_outliers(prices: Iterable[Prices]) -> List[Prices]:
+    return [
+        price for price in prices
+        if not check_if_outlier(price.price, [price.price for price in prices])
+    ]
 
 
 def get_list_by_nameid(name_id, server_id) -> ItemSummary:
@@ -215,82 +218,44 @@ def get_list_by_nameid(name_id, server_id) -> ItemSummary:
     qs_current_price = Prices.objects.filter(
         name_id=str(name_id),
         server_id=server_id,
-        approved=True,
-        timestamp__gte=last_run.start_date,
-        username=last_run.username
+        approved=True
     ).annotate(
         timestamp_date=TruncDate("timestamp")
-    )
-
+    ).order_by("timestamp").values("id", "timestamp_date", "timestamp", "price", "name", "avail")
+    # print(qs_current_price.explain())
     if qs_current_price.count() == 0:
         return None
-    item_name = qs_current_price.latest('name_id').name
 
-    #get all prices since last run
-    lowest_10_raw = qs_current_price.order_by('price')[:10]
-    # group by days
-    grouped_hist = [
-        list(g)
-        for _, g in itertools.groupby(qs_current_price.order_by("price"), key=lambda price: price.timestamp.date())
+    item_name = qs_current_price.latest('id')["name"]
+    grouped_hist: List[List[Prices]] = [
+        sorted([price for price in prices_grouped_by_date], key=lambda x: x["price"])
+        for _, prices_grouped_by_date in itertools.groupby(
+            qs_current_price,
+            key=lambda price: price["timestamp_date"]
+        )
     ]
 
-    # split out dates from prices
-    for idx, day_hist in enumerate(grouped_hist):
-        hist_price_list2 = [price.price for price in day_hist]
-        # filter outliers for each day
-        filtered_prices, bad_indices = remove_outliers(np.array(hist_price_list2))
-        for x in bad_indices[0][::-1]:
-            zz = grouped_hist[idx][x]
-            # clean otuliers group group_hist
-            del grouped_hist[idx][x]
+    lowest_10_raw = qs_current_price.filter(
+        username=last_run.username, timestamp__gte=last_run.start_date
+    ).order_by("price")[:10]
+    latest_run_has_any_of_this_item = len(lowest_10_raw) > 0
 
-    if lowest_10_raw:
-        lowest_10_raw = list(lowest_10_raw)
-        lowest_prices = [price.price for price in lowest_10_raw]
-        filtered_prices, bad_indices = remove_outliers(np.array(lowest_prices))
-        for x in bad_indices[0][::-1]:
-            # clean outliers for list
-            del lowest_10_raw[x]
-        recent_lowest_price = lowest_10_raw[0].price
-        recent_price_time = lowest_10_raw[0].timestamp
+    if latest_run_has_any_of_this_item:
+        recent_lowest = lowest_10_raw.first()
     else:
-        # todo: trigger this, need to test
-        lowest_prices = grouped_hist[-1]
-        recent_lowest_price = lowest_prices[0].price
-        recent_price_time = lowest_prices[0].timestamp
+        recent_lowest = grouped_hist[-1][0]
 
+    recent_lowest_price = Decimal(str(recent_lowest["price"]))
+    recent_price_time = recent_lowest["timestamp"]
 
-    price_change = 0
-    if len(grouped_hist) > 1:
-        # why is this -2?
-        prev_lowest = grouped_hist[-2]
-        prev_date = prev_lowest[0].timestamp_date
-        prev_lowest_price = min(prev_lowest).price
-
-        price_change = get_change(recent_lowest_price, prev_lowest_price)
-        try:
-            price_change =round(price_change)
-        except ValueError:
-            price_change = 0
-
-        if float(price_change) >= 0:
-            price_change_text = '<span class="blue_text">{}% increase</span> since {}'.format(price_change,
-                                                                                              prev_date.strftime("%x"))
-        else:
-            price_change_text = '<span class="yellow_text">{}% decrease</span> since {}'.format(price_change,
-                                                                                                prev_date.strftime("%x"))
-    else:
-        price_change_text = 'Not enough data'
-
-    return ItemSummary(
+    summ = ItemSummary(
         grouped_hist=grouped_hist,
         recent_lowest_price=recent_lowest_price,
-        price_change=price_change,
-        price_change_text=price_change_text,
         recent_price_time=recent_price_time,
         lowest_10_raw=list(lowest_10_raw),
         item_name=item_name
     )
+    return summ
 
 
 def query_item_list(server_id: int, item_id_list: List) -> List[ItemSummary]:
@@ -311,46 +276,45 @@ def query_item_list(server_id: int, item_id_list: List) -> List[ItemSummary]:
 @ratelimit(key='ip', rate='10/s', block=True)
 # @cache_page(60 * 10)
 def index(request, item_id=None, server_id=1):
-    start = perf_counter()
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
     confirmed_names = confirmed_names.values_list('name', 'id', 'nwdb_id')
     all_servers = Servers.objects.all()
     all_servers = all_servers.values_list('name', 'id')
-    stop = perf_counter()
-    print(stop-start)
     # is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
     selected_name = request.GET.get('cn_id')
-    # if selected_name:
-    #     if not selected_name.isnumeric():
-    #         # nwdb id was passed instead. COnvert this to my ids
-    #         selected_name = confirmed_names.get(nwdb_id=selected_name.lower())[1]
-    #
-    #     item_history = get_list_by_nameid(selected_name, server_id)
-    #     if not item_history.grouped_hist:
-    #         # we didnt find any prices with that name id
-    #         return JsonResponse({"recent_lowest_price": 'N/A', "price_change": 'Not Found', "last_checked": 'Not Found'}, status=200)
-    #
-    #     price_graph_data, avg_price_graph, num_listings = get_price_graph_data(item_history.grouped_hist)
-    #
-    #     try:
-    #         nwdb_id = nwdb_lookup.objects.get(name=item_history.item_name)
-    #         nwdb_id = nwdb_id.item_id
-    #     except ObjectDoesNotExist:
-    #         nwdb_id = ''
-    #
-    #     return JsonResponse({
-    #         "recent_lowest_price": recent_lowest_price,
-    #         "last_checked": recent_price_time,
-    #         "price_graph_data": price_graph_data,
-    #         "price_change": price_change_text,
-    #         "avg_graph_data": avg_price_graph,
-    #         "detail_view": lowest_10_raw,
-    #         'item_name': item_name,
-    #         'num_listings': num_listings,
-    #         'nwdb_id': nwdb_id
-    #     }, status=200)
-    # else:
-    if True:
+    if selected_name:
+        if not selected_name.isnumeric():
+            # nwdb id was passed instead. COnvert this to my ids
+            selected_name = confirmed_names.get(nwdb_id=selected_name.lower())[1]
+
+        item_history = get_list_by_nameid(selected_name, server_id)
+        if not item_history.grouped_hist:
+            # we didnt find any prices with that name id
+            return JsonResponse({"recent_lowest_price": 'N/A', "price_change": 'Not Found', "last_checked": 'Not Found'}, status=200)
+
+        price_graph_data, avg_price_graph, num_listings = get_price_graph_data(item_history.grouped_hist)
+
+        try:
+            nwdb_id = nwdb_lookup.objects.get(name=item_history.item_name)
+            nwdb_id = nwdb_id.item_id
+        except ObjectDoesNotExist:
+            nwdb_id = ''
+
+        return JsonResponse({
+            "recent_lowest_price": item_history.recent_lowest_price,
+            "last_checked": item_history.recent_price_time.strftime("%m/%d/%y %H:%M:%S"),
+            "price_graph_data": price_graph_data,
+            "price_change": item_history.price_change_text,
+            "avg_graph_data": avg_price_graph,
+            "detail_view": [
+                item.dict() for item in
+                item_history.lowest_10_raw
+            ],
+            'item_name': item_history.item_name,
+            'num_listings': num_listings,
+            'nwdb_id': nwdb_id
+        }, status=200)
+    else:
         popular_endgame_data = query_item_list(server_id, [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458])
         popular_base_data = query_item_list(server_id, [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538])
         mote_data = query_item_list(server_id, [862, 459, 649, 910, 158, 869, 497])
@@ -372,8 +336,6 @@ def index(request, item_id=None, server_id=1):
 
             most_listed_item = sorted(d.items(), key=lambda item: item[1])
             most_listed_item_top10 = most_listed_item[-9:]
-            stop = perf_counter()
-            print(stop - start)
         except Runs.DoesNotExist:
             most_listed_item_top10 = []
 

@@ -43,7 +43,7 @@ class Runs(models.Model):
         return self.start_date
 
     def __str__(self):
-        return self.start_date
+        return f"<Run: server_id={self.server_id} username='{self.username}'>"
 
 class Servers(models.Model):
     id = models.IntegerField(db_column='id', primary_key=True)
@@ -83,7 +83,7 @@ class Prices(models.Model):
         return self.price
 
     def __str__(self):
-        return f"<Price: name='{self.name}' price={self.price} timestamp={self.timestamp}>"
+        return f"<Price: id={self.pk} name='{self.name}' price={self.price} timestamp={self.timestamp}>"
 
 
 class nwdb_lookup(models.Model):

@@ -376,15 +376,15 @@ function change_server(server_id){
             `)
 
         $.each(response.detail_view, function (k, v) {
-            let dateObj = new Date(v[0])
+            let dateObj = new Date(v['scan_time'])
 
             let dt = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString()
 
             $("#detail_modal").append(`
 
 								<div class="col-7">${dt}</div>
-								<div class="col-3">${v[1]}</div>
-                                <div class="col-2">${v[2]}</div>
+								<div class="col-3">${v['price']}</div>
+                                <div class="col-2">${v['quantity']}</div>
 
              `);
 
