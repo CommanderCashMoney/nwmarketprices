@@ -37,12 +37,13 @@ class Runs(models.Model):
 
     class Meta:
         db_table = 'runs'
+        verbose_name_plural = "Runs"
 
     def __unicode__(self):
         return self.start_date
 
     def __str__(self):
-        return f"<Run: server_id={self.server_id} username='{self.username}'>"
+        return f"<Run: id={self.id} server_id={self.server_id} username='{self.username}'>"
 
 
 class Servers(models.Model):
