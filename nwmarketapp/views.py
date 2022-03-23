@@ -226,23 +226,23 @@ def get_list_by_nameid(name_id, server_id):
     lowest_10_raw = latest_prices[:10]
 
     # split out dates from prices
-    for idx, day_hist in enumerate(grouped_hist):
-        hist_dates2, hist_price_list2, hist_price_avail = zip(*day_hist)
-        # filter outliers for each day
-        filtered_prices, bad_indices = remove_outliers(np.array(hist_price_list2))
-        for x in bad_indices[0][::-1]:
-            zz = grouped_hist[idx][x]
-            # clean otuliers group group_hist
-            del grouped_hist[idx][x]
+    # for idx, day_hist in enumerate(grouped_hist):
+    #     hist_dates2, hist_price_list2, hist_price_avail = zip(*day_hist)
+    #     # filter outliers for each day
+    #     filtered_prices, bad_indices = remove_outliers(np.array(hist_price_list2))
+    #     for x in bad_indices[0][::-1]:
+    #         zz = grouped_hist[idx][x]
+    #         # clean otuliers group group_hist
+    #         del grouped_hist[idx][x]
 
 
     if lowest_10_raw:
         lowest_since_last_run = lowest_10_raw
-        l_dates, lprices, lavail = zip(*lowest_since_last_run)
-        filtered_prices, bad_indices = remove_outliers(np.array(lprices))
-        for x in bad_indices[0][::-1]:
-            # clean outliers for list
-            del lowest_since_last_run[x]
+        # l_dates, lprices, lavail = zip(*lowest_since_last_run)
+        # filtered_prices, bad_indices = remove_outliers(np.array(lprices))
+        # for x in bad_indices[0][::-1]:
+        #     # clean outliers for list
+        #     del lowest_since_last_run[x]
         recent_lowest_price = lowest_since_last_run[0][1]
         recent_price_time = lowest_since_last_run[0][0].strftime('%x %I:%M %p')
     else:
