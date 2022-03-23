@@ -14,36 +14,29 @@ class ConfirmedNames(models.Model):
         ordering = ['name']
 
     def __unicode__(self):
-        return self.name
+        return str(self.name)
 
     def __str__(self):
         return self.name
 
 
-
-class Perks(models.Model):
-    id = models.IntegerField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    name = models.CharField(db_column='NAME', max_length=50, blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-        db_table = 'perks'
-
-
-class Runs(models.Model):
-    start_date = models.DateTimeField(blank=True, null=True)
+class Run(models.Model):
     id = models.AutoField(db_column='id', primary_key=True)
     server_id = models.IntegerField(blank=True, null=True)
     approved = models.BooleanField(blank=True, null=True)
-    username = models.CharField(db_column='username', max_length=100, blank=True, null=True)
+    username = models.CharField(blank=True, max_length=100, null=True)
+    start_date = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         db_table = 'runs'
+        verbose_name_plural = "Runs"
 
     def __unicode__(self):
-        return self.start_date
+        return str(self)
 
     def __str__(self):
-        return self.start_date
+        return f"<Run: id={self.id} server_id={self.server_id} username='{self.username}'>"
+
 
 class Servers(models.Model):
     id = models.IntegerField(db_column='id', primary_key=True)
@@ -52,7 +45,8 @@ class Servers(models.Model):
     class Meta:
         db_table = 'servers'
 
-class Name_cleanup(models.Model):
+
+class NameCleanup(models.Model):
     id = models.AutoField(db_column='id', primary_key=True)
     bad_word = models.CharField(max_length=150, blank=True, null=True)
     good_word = models.CharField(max_length=150, blank=True, null=True)
@@ -64,7 +58,8 @@ class Name_cleanup(models.Model):
         db_table = 'name_cleanup'
 
 
-class Prices(models.Model):
+class Price(models.Model):
+    run = models.ForeignKey(Run, on_delete=models.CASCADE)
     price = models.FloatField(blank=True, null=True)
     avail = models.IntegerField(blank=True, null=True)
     gs = models.IntegerField(blank=True, null=True)
@@ -79,23 +74,14 @@ class Prices(models.Model):
     class Meta:
         db_table = 'prices'
 
-    def __unicode__(self):
-        return self.price
     def __str__(self):
-        return self.price
+        return f"<Price: id={self.pk} name='{self.name}' price={self.price} timestamp={self.timestamp}>"
 
 
-class nwdb_lookup(models.Model):
+class NWDBLookup(models.Model):
     id = models.AutoField(db_column='id', primary_key=True)
     name = models.CharField(max_length=150, blank=True, null=True)
     item_id = models.CharField(max_length=150, blank=True, null=True)
+
     class Meta:
         db_table = 'nwdb_lookup'
-
-
-# temporarily re-adding nodes so that django_content_type migration doesn't break.
-class Nodes(models.Model):
-    id = models.AutoField(db_column='id', primary_key=True)
-
-    class Meta:
-        db_table = 'nodes'
