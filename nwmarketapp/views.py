@@ -78,24 +78,30 @@ class PricesUploadAPI(CreateAPIView):
         username = request.user.username
         run = add_run(username, first_price, access_groups)
         data = [
-            {**price_data, **{"run": run.id, "username": username}}
+            {**price_data, **{"run": 1, "username": username}}
             for price_data in request.data
         ]
+        print(data)
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
             self.perform_create(serializer)
             headers = self.get_success_headers(data)
-            return Response({
+            return JsonResponse({
                 "status": True,
                 "message": "Prices Added"
             }, status=status.HTTP_201_CREATED, headers=headers)
         else:
-            run.delete()
-            print(f'errors: {serializer.errors}')
-            return Response({"status": False})
+            if run:
+                run.delete()
+            return JsonResponse({
+                "status": False,
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 def add_run(username: str, first_price: dict, access_groups) -> Run:
+    if "timestamp" not in first_price or "server_id" not in first_price:
+        return None
     sd = first_price['timestamp']
     sid = first_price['server_id']
     if 'scanner_user' in access_groups:
