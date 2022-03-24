@@ -22,10 +22,10 @@ class ConfirmedNames(models.Model):
 
 class Run(models.Model):
     id = models.AutoField(db_column='id', primary_key=True)
-    server_id = models.IntegerField(blank=True, null=True)
-    approved = models.BooleanField(blank=True, null=True)
-    username = models.CharField(blank=True, max_length=100, null=True)
-    start_date = models.DateTimeField(blank=True, null=True)
+    server_id = models.IntegerField(editable=False)
+    approved = models.BooleanField(editable=False)
+    username = models.CharField(max_length=100, editable=False)
+    start_date = models.DateTimeField(editable=False)
 
     class Meta:
         db_table = 'runs'
@@ -59,16 +59,14 @@ class NameCleanup(models.Model):
 
 class Price(models.Model):
     run = models.ForeignKey(Run, on_delete=models.CASCADE)
-    price = models.FloatField(blank=True, null=True)
-    avail = models.IntegerField(blank=True, null=True)
-    gs = models.IntegerField(blank=True, null=True)
-    perks = models.IntegerField(blank=True, null=True)
-    name = models.CharField(max_length=150, blank=True, null=True)
-    timestamp = models.DateTimeField(blank=True, null=True)
-    name_id = models.IntegerField(blank=True, null=True, db_index=True)
-    server_id = models.IntegerField(blank=True, null=True)
-    username = models.CharField(max_length=50, blank=True, null=True)
-    approved = models.BooleanField(blank=True, null=True)
+    price = models.FloatField()
+    avail = models.IntegerField()
+    name = models.CharField(max_length=150)
+    timestamp = models.DateTimeField()
+    name_id = models.IntegerField(db_index=True)
+    server_id = models.IntegerField()
+    username = models.CharField(max_length=50)
+    approved = models.BooleanField()
 
     class Meta:
         db_table = 'prices'
