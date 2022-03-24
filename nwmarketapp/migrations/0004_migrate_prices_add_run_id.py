@@ -20,12 +20,11 @@ def update_run_ids_for_ts_range(run_id: int, obj_dict: dict) -> None:
         timestamp BETWEEN '{start_date}' AND '{end_date}' AND
         approved={approved}
     """
-    spacer = "\n===================================\n"
-    print(f"{spacer}Updating run id {run_id}")
+    print(f"Updating run id {run_id}")
     print(query)
     with connection.cursor() as cursor:
         cursor.execute(query)
-    print(f"Done{spacer}")
+    print(f"Done\n===================================")
 
 
 def forwards(apps: StateApps, schema_editor):
