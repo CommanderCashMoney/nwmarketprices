@@ -9,9 +9,9 @@ from nwmarketapp.models import Price
 from django.http import JsonResponse, FileResponse
 import numpy as np
 from django.db.models.functions import TruncDate, TruncDay
-from django.db.models import Count, Min
+from django.db.models import Count, Max, Min
 import itertools
-import collections
+from collections import defaultdict
 from django.views.decorators.cache import cache_page
 from ratelimit.decorators import ratelimit
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -347,33 +347,52 @@ def get_popular_items_old(request: WSGIRequest, server_id: int) -> JsonResponse:
 
 
 def get_popular_items(request: WSGIRequest, server_id: int) -> JsonResponse:
-    # item_data["item_name"],
-    # item_data["recent_lowest_price"],
-    # price_change,
-    # item_id
-    popular_items = [
-        1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458,
-        1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538,
-        862, 459, 649, 910, 158, 869, 497,
-        326, 847, 1033, 977, 1334,
-        1542, 1444, 1529, 1541, 1502
-    ]
+    popular_items_dict = {
+        "popular_endgame_data": [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458],
+        "popular_base_data": [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538],
+        "mote_data": [862, 459, 649, 910, 158, 869, 497],
+        "refining_data": [326, 847, 1033, 977, 1334],
+        "trophy_data": [1542, 1444, 1529, 1541, 1502]
+    }
+    popular_items = []
+    for popular_list in popular_items_dict.values():
+        popular_items.extend(popular_list)
     p = perf_counter()
-    recent_runs = Run.objects.filter(server_id=server_id).order_by("-start_date")[:5]
+
+    # get the minimum price on each popular item for the last 2 run dates
+    last_two_dates = Run.objects.filter(server_id=server_id, approved=True).annotate(
+        start_date_date=TruncDate("start_date")
+    ).values_list("start_date_date", flat=True).order_by("-start_date_date").distinct()[:2]
+    recent_runs = Run.objects.annotate(start_date_date=TruncDate("start_date")).filter(
+        server_id=server_id, start_date_date__in=last_two_dates
+    )
+
     prices = Price.objects.filter(run__in=recent_runs, name_id__in=popular_items).annotate(
         price_date=TruncDate("timestamp")
-    ).values("price_date", "name_id").annotate(min_price=Min("price"))
+    ).values("price_date", "name_id", "name").annotate(min_price=Min("price")).order_by("-price_date")
+    max_date = prices.annotate(max_date=Max("price_date")).values_list("max_date", flat=True)[0]
 
-    # response = [
-    #     [
-    #         run.start_date.isoformat(),
-    #         [price for price in prices.filter(run=run)]
-    #     ]
-    #     for run in recent_runs_grouped
-    # ]
-    ps = list(prices)
-    print(perf_counter() - p)
-    return JsonResponse(ps, status=200, safe=False)
+    return_values = defaultdict(lambda: defaultdict(dict))
+    # map the category back
+    for price_data in prices:
+        name_id = price_data["name_id"]
+        category = [cat for cat, ids in popular_items_dict.items() if name_id in ids][0]
+        is_max_date = price_data["price_date"] == max_date
+        values = return_values[category][name_id]
+        already_in_dict = bool(values)
+
+        if not already_in_dict:
+            values.update({
+                "name_id": name_id,
+                "name": price_data["name"],
+                "min_price": price_data["min_price"] if is_max_date else None,
+                "change": 0  # if there is only 1 day of data for this object, no change.
+            })
+        else:
+            price_change = get_change(values["min_price"], price_data["min_price"])
+            values["change"] = round(price_change)
+    return_values["calculation_time"] = perf_counter() - p
+    return JsonResponse(return_values, status=200, safe=False)
 
 
 @ratelimit(key='ip', rate='10/s', block=True)
@@ -429,7 +448,7 @@ def index(request, item_id=None, server_id=1):
                 'timestamp', 'price', 'name', 'name_id')
             qs_format_date = qs_recent_items.annotate(day=TruncDay('timestamp')).values_list('day', 'price', 'name')
             qs_grouped = list(qs_format_date.annotate(Count('name_id'), Count('price'), Count('day')).order_by('name'))
-            d = collections.defaultdict(int)
+            d = defaultdict(int)
             a = []
 
             for ts, price, name, c, c1, c2 in qs_grouped:
