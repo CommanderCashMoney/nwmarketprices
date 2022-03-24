@@ -23,7 +23,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection
 
 
-
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
@@ -41,17 +40,22 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
+
 class PriceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Price
-        fields = ['name',
-                  'price',
-                  'avail',
-                  'timestamp',
-                  'name_id',
-                  'server_id',
-                  'approved',
-                  'username']
+        fields = [
+            'name',
+            'price',
+            'avail',
+            'timestamp',
+            'name_id',
+            'server_id',
+            'approved',
+            'username',
+            'run'
+        ]
+
 
 class PricesUploadAPI(CreateAPIView):
     queryset = Price.objects.all()
@@ -64,32 +68,43 @@ class PricesUploadAPI(CreateAPIView):
         return super(PricesUploadAPI, self).get_serializer(*args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        if len(request.data) == 0:
+            return JsonResponse({
+                "status": False,
+                "message": "There was no request data to act upon."
+            }, status=status.HTTP_200_OK)
+        first_price = request.data[0]
+        access_groups = request.user.groups.values_list('name', flat=True)
+        username = request.user.username
+        run = add_run(username, first_price, access_groups)
+        data = [
+            {**price_data, **{"run": run.id, "username": username}}
+            for price_data in request.data
+        ]
+        serializer = self.get_serializer(data=data)
         if serializer.is_valid():
             self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            access_groups = request.user.groups.values_list('name', flat=True)
-            add_run(serializer.data, access_groups)
-
-
-            return Response({"status": True,
-                             "message": "Prices Added"},
-                            status=status.HTTP_201_CREATED, headers=headers)
+            headers = self.get_success_headers(data)
+            return Response({
+                "status": True,
+                "message": "Prices Added"
+            }, status=status.HTTP_201_CREATED, headers=headers)
         else:
+            run.delete()
             print(f'errors: {serializer.errors}')
             return Response({"status": False})
 
 
-def add_run(data, access_groups):
-    sd = data[0]['timestamp']
-    sid = data[0]['server_id']
-    un = data[0]['username']
+def add_run(username: str, first_price: dict, access_groups) -> Run:
+    sd = first_price['timestamp']
+    sid = first_price['server_id']
     if 'scanner_user' in access_groups:
         approved = True
     else:
         approved = False
-    runs = Run(start_date=sd, server_id=sid, approved=approved, username=un)
-    runs.save()
+    run = Run(start_date=sd, server_id=sid, approved=approved, username=username)
+    run.save()
+    return run
 
 
 class NameCleanupSerializer(serializers.ModelSerializer):
