@@ -22,10 +22,6 @@ class Migration(migrations.Migration):
         migrations.DeleteModel(
             name='Perks',
         ),
-        migrations.AlterModelOptions(
-            name='runs',
-            options={'verbose_name_plural': 'Runs'},
-        ),
         migrations.AddField(
             model_name='prices',
             name='run',

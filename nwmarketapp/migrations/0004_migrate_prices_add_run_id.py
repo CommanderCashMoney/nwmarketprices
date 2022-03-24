@@ -95,6 +95,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='price',
             name='run',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='nwmarketapp.run', null=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='nwmarketapp.run'),
         ),
     ]
