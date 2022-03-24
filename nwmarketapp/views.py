@@ -77,11 +77,11 @@ class PricesUploadAPI(CreateAPIView):
         access_groups = request.user.groups.values_list('name', flat=True)
         username = request.user.username
         run = add_run(username, first_price, access_groups)
+        run_id = getattr(run, "id", None)
         data = [
-            {**price_data, **{"run": 1, "username": username}}
+            {**price_data, **{"run": run_id, "username": username}}
             for price_data in request.data
         ]
-        print(data)
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
             self.perform_create(serializer)
