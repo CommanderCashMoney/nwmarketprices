@@ -9,13 +9,15 @@ def update_run_ids_for_ts_range(run_id: int, obj_dict: dict) -> None:
     start_date = obj_dict["start_date"].isoformat().replace("T", " ")
     end_date = obj_dict["end_date"].isoformat().replace("T", " ")
     server_id = obj_dict["server_id"]
+    approved = int(obj_dict["approved"])
     with connection.cursor() as cursor:
         cursor.execute(f"""
         UPDATE prices
         SET run_id={run_id}
         WHERE
             server_id={server_id} AND
-            timestamp BETWEEN '{start_date}' AND '{end_date}'
+            timestamp BETWEEN '{start_date}' AND '{end_date}' AND
+            approved={approved}
         """)
     print(f"Updated run id {run_id}")
 
@@ -41,7 +43,8 @@ def forwards(apps: StateApps, schema_editor):
                 "server_id": server_id,
                 "start_date": run.start_date,
                 "end_date": datetime.datetime.max,
-                "previous_run_id": last_server_run_id
+                "previous_run_id": last_server_run_id,
+                "approved": run.approved
             }
             if last_server_run_id is not None:
                 server_timestamp_ranges[last_server_run_id]["end_date"] = run.start_date - datetime.timedelta(seconds=1)

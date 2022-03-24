@@ -338,7 +338,7 @@ def get_popular_items(request: WSGIRequest, server_id: int) -> JsonResponse:
         1542, 1444, 1529, 1541, 1502
     ]
     p = perf_counter()
-    recent_runs = Run.objects.filter(server_id=server_id).order_by("start_date")[:10]
+    recent_runs = Run.objects.filter(server_id=server_id).order_by("-start_date")[:5]
     prices = Price.objects.filter(run__in=recent_runs, name_id__in=popular_items).annotate(
         price_date=TruncDate("timestamp")
     ).values("price_date", "name_id").annotate(min_price=Min("price"))
