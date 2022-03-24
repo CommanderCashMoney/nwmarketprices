@@ -29,7 +29,6 @@ class Run(models.Model):
 
     class Meta:
         db_table = 'runs'
-        verbose_name_plural = "Runs"
 
     def __unicode__(self):
         return str(self)
