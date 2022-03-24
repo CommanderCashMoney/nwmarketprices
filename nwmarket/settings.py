@@ -81,7 +81,7 @@ WSGI_APPLICATION = 'nwmarket.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('DB_NAME', "nwmp"),
+        'NAME': os.getenv('DB_NAME', "nwmp_prod"),
         'USER': os.getenv('RDS_USERNAME', "postgres"),
         'PASSWORD': os.getenv('RDS_PASSWORD', "postgres"),
         'HOST': os.getenv('RDS_HOSTNAME', "localhost"),
