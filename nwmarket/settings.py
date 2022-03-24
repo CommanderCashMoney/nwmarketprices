@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = str(os.getenv('SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG") == "False"
+DEBUG = os.getenv("DEBUG") == "True"
 
 ALLOWED_HOSTS = ['Nwmarket-env.eba-rxcymaas.us-west-1.elasticbeanstalk.com', '127.0.0.1', 'localhost', 'nwmarketprices.com']
 
