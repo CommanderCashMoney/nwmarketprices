@@ -2,8 +2,8 @@ import json
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
-from nwmarketapp.models import ConfirmedNames, Runs, Servers, Name_cleanup, nwdb_lookup
-from nwmarketapp.models import Prices
+from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup, NWDBLookup
+from nwmarketapp.models import Price
 from django.http import JsonResponse, FileResponse
 import numpy as np
 from django.db.models.functions import TruncDay
@@ -23,7 +23,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import connection
 
 
-
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
@@ -41,20 +40,25 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
+
 class PriceSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Prices
-        fields = ['name',
-                  'price',
-                  'avail',
-                  'timestamp',
-                  'name_id',
-                  'server_id',
-                  'approved',
-                  'username']
+        model = Price
+        fields = [
+            'name',
+            'price',
+            'avail',
+            'timestamp',
+            'name_id',
+            'server_id',
+            'approved',
+            'username',
+            'run'
+        ]
+
 
 class PricesUploadAPI(CreateAPIView):
-    queryset = Prices.objects.all()
+    queryset = Price.objects.all()
     serializer_class = PriceSerializer
     permission_classes = (IsAuthenticated,)
 
@@ -64,42 +68,59 @@ class PricesUploadAPI(CreateAPIView):
         return super(PricesUploadAPI, self).get_serializer(*args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        if len(request.data) == 0:
+            return JsonResponse({
+                "status": False,
+                "message": "There was no request data to act upon."
+            }, status=status.HTTP_200_OK)
+        first_price = request.data[0]
+        access_groups = request.user.groups.values_list('name', flat=True)
+        username = request.user.username
+        run = add_run(username, first_price, access_groups)
+        run_id = getattr(run, "id", None)
+        data = [
+            {**price_data, **{"run": run_id, "username": username}}
+            for price_data in request.data
+        ]
+        serializer = self.get_serializer(data=data)
         if serializer.is_valid():
             self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            access_groups = request.user.groups.values_list('name', flat=True)
-            add_run(serializer.data, access_groups)
-
-
-            return Response({"status": True,
-                             "message": "Prices Added"},
-                            status=status.HTTP_201_CREATED, headers=headers)
+            headers = self.get_success_headers(data)
+            return JsonResponse({
+                "status": True,
+                "message": "Prices Added"
+            }, status=status.HTTP_201_CREATED, headers=headers)
         else:
-            print(f'errors: {serializer.errors}')
-            return Response({"status": False})
+            if run:
+                run.delete()
+            return JsonResponse({
+                "status": False,
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
-def add_run(data, access_groups):
-    sd = data[0]['timestamp']
-    sid = data[0]['server_id']
-    un = data[0]['username']
+def add_run(username: str, first_price: dict, access_groups) -> Run:
+    if "timestamp" not in first_price or "server_id" not in first_price:
+        return None
+    sd = first_price['timestamp']
+    sid = first_price['server_id']
     if 'scanner_user' in access_groups:
         approved = True
     else:
         approved = False
-    runs = Runs(start_date=sd, server_id=sid, approved=approved, username=un)
-    runs.save()
+    run = Run(start_date=sd, server_id=sid, approved=approved, username=username)
+    run.save()
+    return run
 
 
 class NameCleanupSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Name_cleanup
+        model = NameCleanup
         fields = ['bad_word', 'good_word', 'approved', 'timestamp', 'username']
 
 
 class NameCleanupAPI(CreateAPIView):
-    queryset = Name_cleanup.objects.all()
+    queryset = NameCleanup.objects.all()
     serializer_class = NameCleanupSerializer
     permission_classes = (IsAuthenticated,)
 
@@ -207,15 +228,15 @@ def get_price_graph_data(grouped_hist):
     return price_graph_data[-10:], avg_price_graph[-10:], num_listings
 
 def get_list_by_nameid(name_id, server_id):
-    qs_current_price = Prices.objects.filter(name_id=name_id, server_id=server_id, approved=True)
+    qs_current_price = Price.objects.filter(name_id=name_id, server_id=server_id, approved=True)
     try:
         item_name = qs_current_price.latest('name').name
-    except Prices.DoesNotExist:
+    except Price.DoesNotExist:
 
         return None, None, None, None, None, None, None
 
     hist_price = qs_current_price.values_list('timestamp', 'price', 'avail').order_by('timestamp')
-    last_run = Runs.objects.filter(server_id=server_id, approved=True).latest('id')
+    last_run = Run.objects.filter(server_id=server_id, approved=True).latest('id')
     #get all prices since last run
     latest_prices = list(hist_price.filter(timestamp__gte=last_run.start_date, username=last_run.username).values_list('timestamp', 'price', 'avail').order_by('price'))
     # group by days
@@ -308,7 +329,7 @@ def index(request, item_id=None, server_id=1):
         price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
 
         try:
-            nwdb_id = nwdb_lookup.objects.get(name=item_name)
+            nwdb_id = NWDBLookup.objects.get(name=item_name)
             nwdb_id = nwdb_id.item_id
         except ObjectDoesNotExist:
             nwdb_id = ''
@@ -378,8 +399,8 @@ def index(request, item_id=None, server_id=1):
 
         # Most listed bar chart
         try:
-            last_run = Runs.objects.filter(server_id=server_id).latest('id').start_date
-            qs_recent_items = Prices.objects.filter(timestamp__gte=last_run, server_id=server_id).values_list(
+            last_run = Run.objects.filter(server_id=server_id).latest('id').start_date
+            qs_recent_items = Price.objects.filter(timestamp__gte=last_run, server_id=server_id).values_list(
                 'timestamp', 'price', 'name', 'name_id')
             qs_format_date = qs_recent_items.annotate(day=TruncDay('timestamp')).values_list('day', 'price', 'name')
             qs_grouped = list(qs_format_date.annotate(Count('name_id'), Count('price'), Count('day')).order_by('name'))
@@ -393,7 +414,7 @@ def index(request, item_id=None, server_id=1):
             most_listed_item = sorted(d.items(), key=lambda item: item[1])
             most_listed_item_top10 = most_listed_item[-9:]
 
-        except Runs.DoesNotExist:
+        except Run.DoesNotExist:
             most_listed_item_top10 = []
 
 
@@ -415,7 +436,7 @@ def cn(request):
 @ratelimit(key='ip', rate='10/s', block=True)
 # @cache_page(60 * 120)
 def nc(request):
-    name_cleanup = Name_cleanup.objects.all().filter(approved=True)
+    name_cleanup = NameCleanup.objects.all().filter(approved=True)
     name_cleanup = list(name_cleanup.values_list('bad_word', 'good_word').filter(approved=True))
     nc = json.dumps(name_cleanup)
 
@@ -436,7 +457,7 @@ def latest_prices(request: WSGIRequest) -> FileResponse:
     server_id = request.GET.get('server_id')
     if not server_id or not server_id.isnumeric():
         server_id = 1
-    last_run = Runs.objects.filter(server_id=server_id, approved=True).latest('id').start_date
+    last_run = Run.objects.filter(server_id=server_id, approved=True).latest('id').start_date
     with connection.cursor() as cursor:
         query = f"""
         SELECT  max(rs.nwdb_id),rs.name, trunc(avg(rs.price)::numeric,2), max(rs.avail), max(rs.timestamp)

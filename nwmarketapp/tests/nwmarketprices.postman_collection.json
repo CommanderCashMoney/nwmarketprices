@@ -1,0 +1,226 @@
+{
+	"info": {
+		"_postman_id": "83cbee0c-a813-41c3-8cce-6448a771330e",
+		"name": "nwmarketprices",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "scanner upload success",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Scanner returns 201\", () =>{ \r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    {\r\n        \"name\": \"Yellow Pigment\",\r\n        \"price\": \"1.72\",\r\n        \"avail\": 20,\r\n        \"timestamp\": \"2022-03-23 23:12:48\",\r\n        \"name_id\": 1425,\r\n        \"server_id\": \"1\",\r\n        \"username\": \"cash\",\r\n        \"approved\": \"True\"\r\n    },\r\n    {\r\n        \"name\": \"Yellow Pigment\",\r\n        \"price\": \"1.74\",\r\n        \"avail\": 4,\r\n        \"timestamp\": \"2022-03-23 23:12:48\",\r\n        \"name_id\": 1425,\r\n        \"server_id\": \"1\",\r\n        \"username\": \"cash\",\r\n        \"approved\": \"True\"\r\n    }\r\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/scanner_upload/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"scanner_upload",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Scanner upload no data",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Scanner returns 200\", () =>{ \r",
+							"    const json = pm.response.json()\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.expect(json.status).to.be.false;\r",
+							"    pm.expect(json.message).to.be.eq(\"There was no request data to act upon.\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/scanner_upload/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"scanner_upload",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "scanner upload failure",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Scanner returns error\", () =>{ \r",
+							"    const text = pm.response.text()\r",
+							"    pm.response.to.have.status(400);\r",
+							"    pm.expect(text).to.be.eq('{\"status\": false, \"errors\": [{\"name\": [\"This field is required.\"], \"price\": [\"This field is required.\"], \"avail\": [\"This field is required.\"], \"timestamp\": [\"This field is required.\"], \"name_id\": [\"This field is required.\"], \"server_id\": [\"This field is required.\"], \"approved\": [\"This field is required.\"], \"run\": [\"This field may not be null.\"]}]}')\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    {\"whats\": \"up\"}\r\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/scanner_upload/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"scanner_upload",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"const host = pm.collectionVariables.get(\"host\");",
+					"const username = pm.collectionVariables.get(\"username\");",
+					"const password = pm.environment.get(\"password\");",
+					"const nwmpRequestData = {",
+					"    url: `${host}/api/token/`,",
+					"    method: \"POST\",",
+					"    header: 'Content-Type:application/json',",
+					"    body: {",
+					"        mode: 'application/json',",
+					"        raw: JSON.stringify({",
+					"            username: username,",
+					"            password: password",
+					"        })",
+					"    }",
+					"};",
+					"",
+					"pm.sendRequest(nwmpRequestData, (err, res) => {",
+					"    if(err) {",
+					"        console.log(err);",
+					"    } else if(res.code != 200) {",
+					"        console.log(`Non 200 response for token ${res.code}: ${res.status}`);",
+					"    } else {",
+					"        pm.environment.set('token', res.json().access);",
+					"    }",
+					"});",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "host",
+			"value": "http://127.0.0.1:8000",
+			"type": "default"
+		},
+		{
+			"key": "username",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "password",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
