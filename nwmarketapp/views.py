@@ -491,9 +491,9 @@ def index(request, item_id=None, server_id=1):
                 run=last_run,
                 server_id=server_id
             ).values_list(
-                'name'
+                'name',
             ).annotate(
-                count=Count('price')
+                count=Count('price', distinct=True)
             ).values_list("name", "count").order_by("-count")[:9]
         except Run.DoesNotExist:
             most_listed_item_top10 = []

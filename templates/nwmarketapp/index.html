@@ -436,7 +436,7 @@ function change_server(server_id){
 
         const bar_labels = [
             {% for name, count in top10 %}
-                '{{ name|safe }}',
+                `{{ name|safe }}`,
             {% endfor %}
 
         ]
