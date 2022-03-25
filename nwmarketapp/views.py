@@ -1,6 +1,6 @@
 import json
 from time import perf_counter
-from typing import List
+from typing import Any, Dict, List
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
@@ -309,6 +309,12 @@ def get_list_by_nameid(name_id: int, server_id: str) -> dict:
     }
 
 
+def get_price_change_span(price_change) -> str:
+    if price_change and price_change >= 0:
+        return '<span class="blue_text">&#8593;{}%</span>'.format(price_change)
+    return '<span class="yellow_text">&#8595;{}%</span>'.format(price_change)
+
+
 def get_item_data_list(server_id: int, item_id_list: List[int]) -> List[dict]:
     items_data = []
     for item_id in item_id_list:
@@ -346,7 +352,31 @@ def get_popular_items_old(request: WSGIRequest, server_id: int) -> JsonResponse:
     return JsonResponse(response)
 
 
-def get_popular_items(request: WSGIRequest, server_id: int) -> JsonResponse:
+def convert_popular_items_dict_to_old_style(popular_items_dict: dict) -> Dict[str, List]:
+    p = perf_counter()
+    return_value = {}
+    for category, item_values in popular_items_dict.items():
+        if category == "calculation_time":
+            continue
+        ordered_keys = sorted({
+            k for k, v in item_values.items()
+        }, key=lambda k: item_values[k]["order"])
+        return_value[category] = []
+        for key in ordered_keys:
+            item = item_values[key]
+            return_value[category].append([
+                item["name"],
+                item["min_price"],
+                get_price_change_span(item["change"]),
+                str(item["name_id"])
+            ])
+    return {**return_value, **{
+        "calculation_time": popular_items_dict["calculation_time"],
+        "sorting_time": perf_counter() - p
+    }}
+
+
+def get_popular_items_dict(server_id) -> Dict[str, Dict[str, Any]]:
     popular_items_dict = {
         "popular_endgame_data": [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458],
         "popular_base_data": [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538],
@@ -369,7 +399,7 @@ def get_popular_items(request: WSGIRequest, server_id: int) -> JsonResponse:
 
     prices = Price.objects.filter(run__in=recent_runs, name_id__in=popular_items).annotate(
         price_date=TruncDate("timestamp")
-    ).values("price_date", "name_id", "name").annotate(min_price=Min("price")).order_by("-price_date")
+    ).values("price_date", "name_id", "name").annotate(min_price=Min("price")).order_by("-price_date", )
     max_date = prices.annotate(max_date=Max("price_date")).values_list("max_date", flat=True)[0]
 
     return_values = defaultdict(lambda: defaultdict(dict))
@@ -386,18 +416,25 @@ def get_popular_items(request: WSGIRequest, server_id: int) -> JsonResponse:
                 "name_id": name_id,
                 "name": price_data["name"],
                 "min_price": price_data["min_price"] if is_max_date else None,
-                "change": 0  # if there is only 1 day of data for this object, no change.
+                "change": 0,  # if there is only 1 day of data for this object, no change.\
+                "order": popular_items.index(name_id)
             })
         else:
             price_change = get_change(values["min_price"], price_data["min_price"])
             values["change"] = round(price_change)
+
     return_values["calculation_time"] = perf_counter() - p
-    return JsonResponse(return_values, status=200, safe=False)
+    return convert_popular_items_dict_to_old_style(return_values)
+
+
+def get_popular_items(request: WSGIRequest, server_id: int) -> JsonResponse:
+    return JsonResponse(get_popular_items_dict(server_id), status=status.HTTP_200_OK, safe=False)
 
 
 @ratelimit(key='ip', rate='10/s', block=True)
 # @cache_page(60 * 10)
 def index(request, item_id=None, server_id=1):
+    p = perf_counter()
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
     confirmed_names = confirmed_names.values_list('name', 'id', 'nwdb_id')
     all_servers = Servers.objects.all()
@@ -436,11 +473,7 @@ def index(request, item_id=None, server_id=1):
         }, status=200)
     else:
         # not an ajax post or a direct item link URL, only run this on intial page load or refresh
-        popular_endgame_data = get_item_data_list(server_id, [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458])
-        popular_base_data = get_item_data_list(server_id, [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538])
-        mote_data = get_item_data_list(server_id, [862, 459, 649, 910, 158, 869, 497])
-        refining_data = get_item_data_list(server_id, [326, 847, 1033, 977, 1334])
-        trophy_data = get_item_data_list(server_id, [1542, 1444, 1529, 1541, 1502])
+        popular_items = get_popular_items_dict(server_id)
         # Most listed bar chart
         try:
             last_run = Run.objects.filter(server_id=server_id).latest('id').start_date
@@ -463,16 +496,14 @@ def index(request, item_id=None, server_id=1):
 
     return render(request, 'nwmarketapp/index.html', {
         'cn_list': confirmed_names,
-        'endgame': popular_endgame_data,
-        'base': popular_base_data,
-        'motes': mote_data,
-        'refining': refining_data,
-        'trophy': trophy_data,
+        'popular_items': popular_items,
         'top10': most_listed_item_top10,
         "direct_link": item_id,
         'servers': all_servers,
-        'server_id': server_id
+        'server_id': server_id,
+        'render_time': perf_counter() - p
     })
+
 
 @ratelimit(key='ip', rate='10/s', block=True)
 # @cache_page(60 * 120)

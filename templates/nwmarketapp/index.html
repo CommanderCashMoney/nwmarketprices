@@ -1,3 +1,4 @@
+<!-- Page rendered in {{ render_time }} -->
 <!doctype html>
 <html lang="en-US">
 <head>
@@ -122,39 +123,8 @@
 <hr>
 <div class="container">
     <div class="row">
-
-        <div class="col-lg-4 col-6">
-            <h3>Popular End Game Items</h3>
-            <hr>
-            <div class="row popular-text ">
-                {% for x in endgame %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
-                    <div class="col-3 text-right">{{ x.1 }}</div>
-                    <div class="col-2 small text-right">{{ x.2|safe }}</div>
-
-
-                {% endfor %}
-
-
-            </div>
-
-        </div>
-        <div class="col-lg-4 col-6">
-            <h3>Popular Base Items</h3>
-            <hr>
-            <div class="row popular-text ">
-                {% for x in base %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
-                    <div class="col-3 text-right">{{ x.1 }}</div>
-                    <div class="col-2 small text-right">{{ x.2|safe }}</div>
-
-
-                {% endfor %}
-
-            </div>
-        </div>
-
-
+        {% include "nwmarketapp/snippets/endgame_data_block.html" with name="Popular End Game Items" items=popular_items.popular_endgame_data %}
+        {% include "nwmarketapp/snippets/endgame_data_block.html" with name="Popular Base Items" items=popular_items.popular_base_data %}
         <div class="col-lg-4 col-12">
             <h3>Competitive Items</h3>
             <hr>
@@ -170,54 +140,9 @@
 
 <div class="container">
     <div class="row">
-
-        <div class="col-lg-4 col-6">
-            <h3>Motes</h3>
-            <hr>
-            <div class="row popular-text ">
-                {% for x in motes %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
-                    <div class="col-3 text-right">{{ x.1 }}</div>
-                    <div class="col-2 small text-right">{{ x.2|safe }}</div>
-
-
-                {% endfor %}
-
-
-            </div>
-
-        </div>
-        <div class="col-lg-4 col-6">
-            <h3>Refining Reagents</h3>
-            <hr>
-            <div class="row popular-text ">
-                {% for x in refining %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
-                    <div class="col-3 text-right">{{ x.1 }}</div>
-                    <div class="col-2 small text-right">{{ x.2|safe }}</div>
-
-
-                {% endfor %}
-
-            </div>
-        </div>
-
-
-        <div class="col-lg-4 col-12">
-            <h3>Trophy Mats</h3>
-            <hr>
-            <div class="row popular-text ">
-                {% for x in trophy %}
-                    <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ x.3 }})">{{ x.0 }}</a></div>
-                    <div class="col-3 text-right">{{ x.1 }}</div>
-                    <div class="col-2 small text-right">{{ x.2|safe }}</div>
-
-
-                {% endfor %}
-
-            </div>
-        </div>
-
+        {% include "nwmarketapp/snippets/endgame_data_block.html" with name="Motes" items=popular_items.mote_data %}
+        {% include "nwmarketapp/snippets/endgame_data_block.html" with name="Refining Reagents" items=popular_items.refining_data %}
+        {% include "nwmarketapp/snippets/endgame_data_block.html" with name="Trophy Mats" items=popular_items.trophy_data %}
     </div>
 </div>
 
