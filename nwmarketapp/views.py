@@ -310,9 +310,11 @@ def get_list_by_nameid(name_id: int, server_id: str) -> dict:
 
 
 def get_price_change_span(price_change) -> str:
-    if price_change and price_change >= 0:
+    if price_change > 0:
         return '<span class="blue_text">&#8593;{}%</span>'.format(price_change)
-    return '<span class="yellow_text">&#8595;{}%</span>'.format(price_change)
+    elif price_change < 0:
+        return '<span class="yellow_text">&#8595;{}%</span>'.format(price_change)
+    return ""
 
 
 def get_item_data_list(server_id: int, item_id_list: List[int]) -> List[dict]:
@@ -366,7 +368,7 @@ def convert_popular_items_dict_to_old_style(popular_items_dict: dict) -> Dict[st
             item = item_values[key]
             return_value[category].append([
                 item["name"],
-                item["min_price"],
+                item["min_price"] or "-",
                 get_price_change_span(item["change"]),
                 str(item["name_id"])
             ])
