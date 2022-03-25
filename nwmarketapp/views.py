@@ -236,7 +236,7 @@ def get_list_by_nameid(name_id, server_id):
         return None, None, None, None, None, None, None
 
     hist_price = qs_current_price.values_list('timestamp', 'price', 'avail').order_by('timestamp')
-    last_run = Run.objects.filter(server_id=server_id, approved=True).latest('id')
+    last_run = Run.objects.filter(server_id=server_id, approved=True).exclude(username="january").latest('id')
     #get all prices since last run
     latest_prices = list(hist_price.filter(timestamp__gte=last_run.start_date, username=last_run.username).values_list('timestamp', 'price', 'avail').order_by('price'))
     # group by days
@@ -399,7 +399,7 @@ def index(request, item_id=None, server_id=1):
 
         # Most listed bar chart
         try:
-            last_run = Run.objects.filter(server_id=server_id).latest('id').start_date
+            last_run = Run.objects.filter(server_id=server_id).exclude(username="january").latest('id').start_date
             qs_recent_items = Price.objects.filter(timestamp__gte=last_run, server_id=server_id).values_list(
                 'timestamp', 'price', 'name', 'name_id')
             qs_format_date = qs_recent_items.annotate(day=TruncDay('timestamp')).values_list('day', 'price', 'name')
@@ -457,7 +457,7 @@ def latest_prices(request: WSGIRequest) -> FileResponse:
     server_id = request.GET.get('server_id')
     if not server_id or not server_id.isnumeric():
         server_id = 1
-    last_run = Run.objects.filter(server_id=server_id, approved=True).latest('id').start_date
+    last_run = Run.objects.filter(server_id=server_id, approved=True).exclude(username="january").latest('id').start_date
     with connection.cursor() as cursor:
         query = f"""
         SELECT  max(rs.nwdb_id),rs.name, trunc(avg(rs.price)::numeric,2), max(rs.avail), max(rs.timestamp)
