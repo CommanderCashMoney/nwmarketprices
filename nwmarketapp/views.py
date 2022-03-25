@@ -369,7 +369,7 @@ def convert_popular_items_dict_to_old_style(popular_items_dict: dict) -> Dict[st
             return_value[category].append([
                 item["name"],
                 item["min_price"] or "-",
-                get_price_change_span(item["change"]),
+                get_price_change_span(item["change"] or 0),
                 str(item["name_id"])
             ])
     return {**return_value, **{
@@ -392,24 +392,29 @@ def get_popular_items_dict(server_id) -> Dict[str, Dict[str, Any]]:
     p = perf_counter()
 
     # get the minimum price on each popular item for the last 2 run dates
-    last_two_dates = Run.objects.filter(server_id=server_id, approved=True).annotate(
+    run_dates = Run.objects.filter(server_id=server_id, approved=True).annotate(
         start_date_date=TruncDate("start_date")
-    ).values_list("start_date_date", flat=True).order_by("-start_date_date").distinct()[:2]
+    ).values_list("start_date_date", flat=True).order_by("-start_date")
+    distinct_run_dates = sorted(list(set(run_dates)), reverse=True)[:3]
     recent_runs = Run.objects.annotate(start_date_date=TruncDate("start_date")).filter(
-        server_id=server_id, start_date_date__in=last_two_dates
-    )
+        server_id=server_id, start_date_date__in=distinct_run_dates, approved=True
+    ).order_by("-start_date_date")
 
     prices = Price.objects.filter(run__in=recent_runs, name_id__in=popular_items).annotate(
         price_date=TruncDate("timestamp")
-    ).values("price_date", "name_id", "name").annotate(min_price=Min("price")).order_by("-price_date", )
-    max_date = prices.annotate(max_date=Max("price_date")).values_list("max_date", flat=True)[0]
+    ).order_by("-price_date")
+    min_prices = prices.values("price_date", "name_id", "name").annotate(min_price=Min("price"))
+    max_date = prices.values("name_id", "name").annotate(max_date=Max("price_date")).order_by()
+    max_date_map = {
+        vals["name_id"]: vals["max_date"] for vals in max_date
+    }
 
     return_values = defaultdict(lambda: defaultdict(dict))
     # map the category back
-    for price_data in prices:
+    for price_data in min_prices:
         name_id = price_data["name_id"]
         category = [cat for cat, ids in popular_items_dict.items() if name_id in ids][0]
-        is_max_date = price_data["price_date"] == max_date
+        is_max_date = price_data["price_date"] == max_date_map[name_id]
         values = return_values[category][name_id]
         already_in_dict = bool(values)
 
@@ -418,12 +423,14 @@ def get_popular_items_dict(server_id) -> Dict[str, Dict[str, Any]]:
                 "name_id": name_id,
                 "name": price_data["name"],
                 "min_price": price_data["min_price"] if is_max_date else None,
-                "change": 0,  # if there is only 1 day of data for this object, no change.\
+                "change": None,  # if there is only 1 day of data for this object, no change.\
                 "order": popular_items.index(name_id)
             })
-        else:
+        elif values["change"] is None and values["min_price"] is not None:
             price_change = get_change(values["min_price"], price_data["min_price"])
-            values["change"] = round(price_change)
+
+            if round(price_change) != 0:
+                values["change"] = round(price_change)
 
     return_values["calculation_time"] = perf_counter() - p
     return convert_popular_items_dict_to_old_style(return_values)
@@ -434,7 +441,7 @@ def get_popular_items(request: WSGIRequest, server_id: int) -> JsonResponse:
 
 
 @ratelimit(key='ip', rate='10/s', block=True)
-# @cache_page(60 * 10)
+@cache_page(60 * 10)
 def index(request, item_id=None, server_id=1):
     p = perf_counter()
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
@@ -471,28 +478,23 @@ def index(request, item_id=None, server_id=1):
             "detail_view": item_data["lowest_10_raw"],
             'item_name': item_name,
             'num_listings': num_listings,
-            'nwdb_id': nwdb_id
+            'nwdb_id': nwdb_id,
+            'calculation_time': perf_counter() - p
         }, status=200)
     else:
         # not an ajax post or a direct item link URL, only run this on intial page load or refresh
         popular_items = get_popular_items_dict(server_id)
         # Most listed bar chart
         try:
-            last_run = Run.objects.filter(server_id=server_id).latest('id').start_date
-            qs_recent_items = Price.objects.filter(timestamp__gte=last_run, server_id=server_id).values_list(
-                'timestamp', 'price', 'name', 'name_id')
-            qs_format_date = qs_recent_items.annotate(day=TruncDay('timestamp')).values_list('day', 'price', 'name')
-            qs_grouped = list(qs_format_date.annotate(Count('name_id'), Count('price'), Count('day')).order_by('name'))
-            d = defaultdict(int)
-            a = []
-
-            for ts, price, name, c, c1, c2 in qs_grouped:
-                if not name in a: a.append(name)
-                d[name] += 1
-
-            most_listed_item = sorted(d.items(), key=lambda item: item[1])
-            most_listed_item_top10 = most_listed_item[-9:]
-
+            last_run = Run.objects.filter(server_id=server_id, approved=True).latest("id")
+            most_listed_item_top10 = Price.objects.filter(
+                run=last_run,
+                server_id=server_id
+            ).values_list(
+                'name'
+            ).annotate(
+                count=Count('price')
+            ).values_list("name", "count").order_by("-count")[:9]
         except Run.DoesNotExist:
             most_listed_item_top10 = []
 

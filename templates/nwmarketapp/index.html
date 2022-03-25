@@ -435,8 +435,8 @@ function change_server(server_id){
         // BAR CHART
 
         const bar_labels = [
-            {% for name in top10 %}
-                '{{ name.0 }}',
+            {% for name, count in top10 %}
+                '{{ name|safe }}',
             {% endfor %}
 
         ]
@@ -445,8 +445,8 @@ function change_server(server_id){
             datasets: [{
 
                 data: [
-                    {% for name in top10 %}
-                        {{ name.1 }},
+                    {% for name, count in top10 %}
+                        {{ count }},
                     {% endfor %}
 
                 ],
