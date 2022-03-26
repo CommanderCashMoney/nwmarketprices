@@ -1,6 +1,6 @@
 import json
 from time import perf_counter
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
@@ -21,7 +21,7 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import connection
 
 
@@ -64,27 +64,43 @@ class PricesUploadAPI(CreateAPIView):
     serializer_class = PriceSerializer
     permission_classes = (IsAuthenticated,)
 
-    def get_serializer(self, *args, **kwargs):
-        if isinstance(kwargs.get("data", {}), list):
-            kwargs["many"] = True
-        return super(PricesUploadAPI, self).get_serializer(*args, **kwargs)
+    def get_request_data(self, request_data) -> Tuple[str, List[dict]]:
+        bad_data = False
+        if isinstance(request_data, list):
+            version = "unknown"
+            price_list = request_data
+        elif isinstance(request_data, dict):
+            version = request_data.get("version")
+            price_list = request_data.get("price_data", [])
+        if price_list and not isinstance(price_list[0], dict):
+            raise ValidationError("Request data was malformed.")
+        return version, price_list
+
 
     def create(self, request, *args, **kwargs):
-        if len(request.data) == 0:
+        try:
+            version, price_list = self.get_request_data(request.data)
+        except ValidationError as e:
             return JsonResponse({
                 "status": False,
-                "message": "There was no request data to act upon."
+                "message": e.message
+            }, status=status.HTTP_400_BAD_REQUEST)
+        if len(price_list) == 0:
+            return JsonResponse({
+                "status": False,
+                "message": "No items were submitted."
             }, status=status.HTTP_200_OK)
-        first_price = request.data[0]
+
+        first_price = price_list[0]
         access_groups = request.user.groups.values_list('name', flat=True)
         username = request.user.username
         run = add_run(username, first_price, access_groups)
         run_id = getattr(run, "id", None)
         data = [
             {**price_data, **{"run": run_id, "username": username}}
-            for price_data in request.data
+            for price_data in price_list
         ]
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data=data, many=True)
         if serializer.is_valid():
             self.perform_create(serializer)
             headers = self.get_success_headers(data)
@@ -97,7 +113,8 @@ class PricesUploadAPI(CreateAPIView):
                 run.delete()
             return JsonResponse({
                 "status": False,
-                "errors": serializer.errors
+                "errors": serializer.errors,
+                "message": "Submitted data could not be serialized"
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
