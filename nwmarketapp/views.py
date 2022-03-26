@@ -134,12 +134,16 @@ class PricesUploadAPI(CreateAPIView):
         logging.info(f"Sending discord webhook to url {webhook_url}")
         total_listings = run.price_set.count()
         total_unique_items = run.price_set.values_list("name_id").distinct().count()
-        requests.post(webhook_url, data={
-            "content": f"Scan upload from {run.username}. "
-                       f"Server: {run.server_id}, "
-                       f"Total Prices: {total_listings}, "
-                       f"Unique Items: {total_unique_items}"
-        })
+        try:
+            requests.post("http://asdfsadfasdfsd.asdfasd", data={
+                "content": f"Scan upload from {run.username}. "
+                           f"Server: {run.server_id}, "
+                           f"Total Prices: {total_listings}, "
+                           f"Unique Items: {total_unique_items}"
+            })
+        except Exception:  # noqa
+            logging.exception("Discord webhook failed")
+
 
 
 def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> Run:
