@@ -34,7 +34,7 @@ class Run(models.Model):
         return str(self)
 
     def __str__(self):
-        return f"<Run: id={self.id} server_id={self.server_id} username='{self.username}'>"
+        return f"<Run: id={self.id} server_id={self.server_id} username='{self.username}' start_date={self.start_date}>"
 
 
 class Servers(models.Model):

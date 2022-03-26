@@ -1,0 +1,15 @@
+<div class="col-lg-4 col-6">
+    <h3>{{ name }}</h3>
+    <hr>
+    <div class="row popular-text ">
+    {% if items %}
+        {% for item in items %}
+            <div class="col-7"><a href="javascript:{}" onclick="link_submit({{ item.3 }})">{{ item.0 }}</a></div>
+            <div class="col-3 text-right">{{ item.1 }}</div>
+            <div class="col-2 small text-right">{{ item.2|safe }}</div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">Nothing listed!</div>
+    {% endif %}
+    </div>
+</div>
