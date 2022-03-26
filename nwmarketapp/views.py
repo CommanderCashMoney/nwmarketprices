@@ -108,7 +108,6 @@ class PricesUploadAPI(CreateAPIView):
         ]
         serializer = self.get_serializer(data=data, many=True)
         if not serializer.is_valid():
-            print(data)
             if run:
                 run.delete()
             return JsonResponse({
