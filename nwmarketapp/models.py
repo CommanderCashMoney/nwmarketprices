@@ -26,6 +26,7 @@ class Run(models.Model):
     approved = models.BooleanField(editable=False)
     username = models.CharField(max_length=100, editable=False)
     start_date = models.DateTimeField(editable=False)
+    scraper_version = models.CharField(max_length=10, editable=False)
 
     class Meta:
         db_table = 'runs'

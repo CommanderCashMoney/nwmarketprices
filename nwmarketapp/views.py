@@ -68,12 +68,11 @@ class PricesUploadAPI(CreateAPIView):
 
     @staticmethod
     def get_request_data(request_data) -> Tuple[str, List[dict]]:
-        if isinstance(request_data, list):
-            version = "unknown"
-            price_list = request_data
-        elif isinstance(request_data, dict):
+        if isinstance(request_data, dict):
             version = request_data.get("version")
             price_list = request_data.get("price_data", [])
+        else:
+            raise ValidationError("Please update scanner version.")
         if price_list and not isinstance(price_list[0], dict):
             raise ValidationError("Request data was malformed.")
         return version, price_list
@@ -95,21 +94,21 @@ class PricesUploadAPI(CreateAPIView):
         first_price = price_list[0]
         access_groups = request.user.groups.values_list('name', flat=True)
         username = request.user.username
-        run = add_run(username, first_price, access_groups)
+        run = add_run(username, first_price, request.data, access_groups)
         run_id = getattr(run, "id", None)
         data = [
-            {**price_data, **{"run": run_id, "username": username}}
+            {**price_data, **{
+                "run": run_id,
+                # everything below here should live on the run object, but leave that for now.
+                "server_id": run.server_id,
+                "approved": run.approved,
+                "username": run.username
+            }}
             for price_data in price_list
         ]
         serializer = self.get_serializer(data=data, many=True)
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            headers = self.get_success_headers(data)
-            return JsonResponse({
-                "status": True,
-                "message": "Prices Added"
-            }, status=status.HTTP_201_CREATED, headers=headers)
-        else:
+        if not serializer.is_valid():
+            print(data)
             if run:
                 run.delete()
             return JsonResponse({
@@ -118,17 +117,26 @@ class PricesUploadAPI(CreateAPIView):
                 "message": "Submitted data could not be serialized"
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        self.perform_create(serializer)
+        headers = self.get_success_headers(data)
+        return JsonResponse({
+            "status": True,
+            "message": "Prices Added"
+        }, status=status.HTTP_201_CREATED, headers=headers)
 
-def add_run(username: str, first_price: dict, access_groups) -> Run:
-    if "timestamp" not in first_price or "server_id" not in first_price:
+
+def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> Run:
+    if "timestamp" not in first_price:
         return None
     sd = first_price['timestamp']
-    sid = first_price['server_id']
-    if 'scanner_user' in access_groups:
-        approved = True
-    else:
-        approved = False
-    run = Run(start_date=sd, server_id=sid, approved=approved, username=username)
+    sid = run_info['server_id']
+    run = Run(
+        start_date=sd,
+        server_id=sid,
+        approved='scanner_user' in access_groups,  # todo: actual checking
+        username=username,
+        scraper_version=run_info["version"]
+    )
     run.save()
     return run
 
