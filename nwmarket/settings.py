@@ -166,5 +166,6 @@ CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 DEFAULT_SCRAPER_DOWNLOAD_URL = "https://www.dropbox.com/s/fi430dk4t0289d3/Trading_Post_Scraper.msi?dl=1"
 CONSTANCE_CONFIG = {
     'LATEST_SCANNER_VERSION': ("1.0.8", 'Latest version of the scanner'),
-    'DOWNLOAD_LINK': (DEFAULT_SCRAPER_DOWNLOAD_URL, "Where to download from")
+    'DOWNLOAD_LINK': (DEFAULT_SCRAPER_DOWNLOAD_URL, "Where to download from"),
+    "DISCORD_WEBHOOK_URL": ("", "The discord webhook url, in full")
 }

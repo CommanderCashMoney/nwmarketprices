@@ -2,6 +2,7 @@ import json
 from time import perf_counter
 from typing import Any, Dict, List, Tuple
 
+import requests
 from constance import config  # noqa
 
 from django.core.handlers.wsgi import WSGIRequest
@@ -68,11 +69,10 @@ class PricesUploadAPI(CreateAPIView):
 
     @staticmethod
     def get_request_data(request_data) -> Tuple[str, List[dict]]:
-        if isinstance(request_data, dict):
-            version = request_data.get("version")
-            price_list = request_data.get("price_data", [])
-        else:
+        if not isinstance(request_data, dict) or request_data.get("version") is None or request_data.get("server_id") is None:
             raise ValidationError("Please update scanner version.")
+        version = request_data.get("version")
+        price_list = request_data.get("price_data", [])
         if price_list and not isinstance(price_list[0], dict):
             raise ValidationError("Request data was malformed.")
         return version, price_list
@@ -118,10 +118,19 @@ class PricesUploadAPI(CreateAPIView):
 
         self.perform_create(serializer)
         headers = self.get_success_headers(data)
+        self.send_discord_notification(run)
         return JsonResponse({
             "status": True,
             "message": "Prices Added"
         }, status=status.HTTP_201_CREATED, headers=headers)
+
+    @staticmethod
+    def send_discord_notification(run: Run) -> None:
+        webhook_url = config.DISCORD_WEBHOOK_URL
+        total_listings = run.price_set.count()
+        requests.post(webhook_url, data={
+            "message": f"Scan upload from {run.username}. Server: {run.server_id} Count: {total_listings}"
+        })
 
 
 def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> Run:
