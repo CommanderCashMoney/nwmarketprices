@@ -2,6 +2,8 @@ import json
 from time import perf_counter
 from typing import Any, Dict, List, Tuple
 
+from constance import config  # noqa
+
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
 from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup, NWDBLookup
@@ -25,7 +27,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import connection
 
 
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+class TokenPairSerializer(TokenObtainPairSerializer):  # noqa
     def validate(self, attrs):
         data = super().validate(attrs)
         refresh = self.get_token(self.user)
@@ -40,7 +42,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
+    serializer_class = TokenPairSerializer
 
 
 class PriceSerializer(serializers.ModelSerializer):
@@ -64,8 +66,8 @@ class PricesUploadAPI(CreateAPIView):
     serializer_class = PriceSerializer
     permission_classes = (IsAuthenticated,)
 
-    def get_request_data(self, request_data) -> Tuple[str, List[dict]]:
-        bad_data = False
+    @staticmethod
+    def get_request_data(request_data) -> Tuple[str, List[dict]]:
         if isinstance(request_data, list):
             version = "unknown"
             price_list = request_data
@@ -75,7 +77,6 @@ class PricesUploadAPI(CreateAPIView):
         if price_list and not isinstance(price_list[0], dict):
             raise ValidationError("Request data was malformed.")
         return version, price_list
-
 
     def create(self, request, *args, **kwargs):
         try:
@@ -594,9 +595,3 @@ def latest_prices(request: WSGIRequest) -> FileResponse:
         content_type='application/json',
         filename='nwmarketprices.json'
     )
-
-
-
-
-
-

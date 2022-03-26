@@ -36,6 +36,8 @@ ALLOWED_HOSTS = ['Nwmarket-env.eba-rxcymaas.us-west-1.elasticbeanstalk.com', '12
 
 INSTALLED_APPS = [
     'clearcache',
+    'constance',
+    'constance.backends.database',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -158,3 +160,9 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# constance settings
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+CONSTANCE_CONFIG = {
+    'LATEST_SCANNER_VERSION': ("1.0.8", 'Latest version of the scanner'),
+}
