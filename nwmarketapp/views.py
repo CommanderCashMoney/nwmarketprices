@@ -1,4 +1,5 @@
 import json
+import logging
 from time import perf_counter
 from typing import Any, Dict, List, Tuple
 
@@ -127,9 +128,17 @@ class PricesUploadAPI(CreateAPIView):
     @staticmethod
     def send_discord_notification(run: Run) -> None:
         webhook_url = config.DISCORD_WEBHOOK_URL
+        if not webhook_url:
+            logging.warning("No discord webhook set")
+            return
+        logging.info(f"Sending discord webhook to url {webhook_url}")
         total_listings = run.price_set.count()
+        total_unique_items = run.price_set.values_list("name_id").distinct().count()
         requests.post(webhook_url, data={
-            "message": f"Scan upload from {run.username}. Server: {run.server_id} Count: {total_listings}"
+            "content": f"Scan upload from {run.username}. "
+                       f"Server: {run.server_id}, "
+                       f"Total Prices: {total_listings}, "
+                       f"Unique Items: {total_unique_items}"
         })
 
 
