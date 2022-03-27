@@ -8,6 +8,8 @@ from constance import config  # noqa
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
+
+from nwmarketapp.api.utils import check_version_compatibility
 from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup, NWDBLookup
 from nwmarketapp.models import Price
 from django.http import JsonResponse, FileResponse
@@ -29,8 +31,14 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import connection
 
 
-class TokenPairSerializer(TokenObtainPairSerializer):  # noqa
+class TokenPairSerializer(TokenObtainPairSerializer):
+    def __init__(self, *args, **kwargs):
+        self.user_version = kwargs["data"].get("version", "0.0.0")
+        super().__init__(*args, **kwargs)
+
     def validate(self, attrs):
+        if not check_version_compatibility(self.user_version):
+            raise ValidationError("Version is outdated")
         data = super().validate(attrs)
         refresh = self.get_token(self.user)
         data['refresh'] = str(refresh)
@@ -119,30 +127,10 @@ class PricesUploadAPI(CreateAPIView):
 
         self.perform_create(serializer)
         headers = self.get_success_headers(data)
-        self.send_discord_notification(run)
         return JsonResponse({
             "status": True,
             "message": "Prices Added"
         }, status=status.HTTP_201_CREATED, headers=headers)
-
-    @staticmethod
-    def send_discord_notification(run: Run) -> None:
-        webhook_url = config.DISCORD_WEBHOOK_URL
-        if not webhook_url:
-            logging.warning("No discord webhook set")
-            return
-        logging.info(f"Sending discord webhook to url {webhook_url}")
-        total_listings = run.price_set.count()
-        total_unique_items = run.price_set.values_list("name_id").distinct().count()
-        try:
-            requests.post(webhook_url, data={
-                "content": f"Scan upload from {run.username}. "
-                           f"Server: {run.server_id}, "
-                           f"Total Prices: {total_listings}, "
-                           f"Unique Items: {total_unique_items}"
-            })
-        except Exception:  # noqa
-            logging.exception("Discord webhook failed")
 
 
 def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> Run:
