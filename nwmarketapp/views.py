@@ -1,7 +1,9 @@
 import json
+import logging
 from time import perf_counter
 from typing import Any, Dict, List, Tuple
 
+import requests
 from constance import config  # noqa
 
 from django.core.handlers.wsgi import WSGIRequest
@@ -76,12 +78,10 @@ class PricesUploadAPI(CreateAPIView):
 
     @staticmethod
     def get_request_data(request_data) -> Tuple[str, List[dict]]:
-        if isinstance(request_data, dict):
-            version = request_data.get("version")
-            price_list = request_data.get("price_data", [])
-        else:
-            # this should be impossible since login packet would have been blocked. but for now let's keep it.
+        if not isinstance(request_data, dict) or request_data.get("version") is None or request_data.get("server_id") is None:
             raise ValidationError("Please update scanner version.")
+        version = request_data.get("version")
+        price_list = request_data.get("price_data", [])
         if price_list and not isinstance(price_list[0], dict):
             raise ValidationError("Request data was malformed.")
         return version, price_list
@@ -141,7 +141,7 @@ def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> 
     run = Run(
         start_date=sd,
         server_id=sid,
-        approved='scanner_user' in access_groups,
+        approved='scanner_user' in access_groups,  # todo: actual checking
         username=username,
         scraper_version=run_info["version"]
     )

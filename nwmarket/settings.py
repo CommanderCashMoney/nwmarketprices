@@ -167,5 +167,6 @@ DEFAULT_SCRAPER_DOWNLOAD_URL = "https://www.dropbox.com/s/fi430dk4t0289d3/Tradin
 CONSTANCE_CONFIG = {
     'LATEST_SCANNER_VERSION': ("1.0.8", 'Latest version of the scanner'),
     'BLOCK_LOGIN_ON_SCANNER_DIFF': (1, '1 for patch, 2 for minor, 3 for major'),
-    'DOWNLOAD_LINK': (DEFAULT_SCRAPER_DOWNLOAD_URL, "Where to download from")
+    'DOWNLOAD_LINK': (DEFAULT_SCRAPER_DOWNLOAD_URL, "Where to download from"),
+    "DISCORD_WEBHOOK_URL": ("", "The discord webhook url, in full")
 }
