@@ -27,8 +27,14 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import connection
 
 
-class TokenPairSerializer(TokenObtainPairSerializer):  # noqa
+class TokenPairSerializer(TokenObtainPairSerializer):
+    def __init__(self, *args, **kwargs):
+        self.user_version = kwargs["data"].get("version", "0.0.0")
+        super().__init__(*args, **kwargs)
+
     def validate(self, attrs):
+        if self.user_version == "0.0.0":
+            raise ValidationError("Version is outdated")
         data = super().validate(attrs)
         refresh = self.get_token(self.user)
         data['refresh'] = str(refresh)
