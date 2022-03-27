@@ -36,6 +36,8 @@ ALLOWED_HOSTS = ['Nwmarket-env.eba-rxcymaas.us-west-1.elasticbeanstalk.com', '12
 
 INSTALLED_APPS = [
     'clearcache',
+    'constance',
+    'constance.backends.database',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -158,3 +160,12 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# constance settings
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+DEFAULT_SCRAPER_DOWNLOAD_URL = "https://www.dropbox.com/s/fi430dk4t0289d3/Trading_Post_Scraper.msi?dl=1"
+CONSTANCE_CONFIG = {
+    'LATEST_SCANNER_VERSION': ("1.0.8", 'Latest version of the scanner'),
+    'BLOCK_LOGIN_ON_SCANNER_DIFF': (1, '1 for patch, 2 for minor, 3 for major'),
+    'DOWNLOAD_LINK': (DEFAULT_SCRAPER_DOWNLOAD_URL, "Where to download from")
+}

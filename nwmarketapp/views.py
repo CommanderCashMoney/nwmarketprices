@@ -1,9 +1,13 @@
 import json
 from time import perf_counter
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
+
+from constance import config  # noqa
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
+
+from nwmarketapp.api.utils import check_version_compatibility
 from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup, NWDBLookup
 from nwmarketapp.models import Price
 from django.http import JsonResponse, FileResponse
@@ -21,12 +25,18 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import connection
 
 
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+class TokenPairSerializer(TokenObtainPairSerializer):
+    def __init__(self, *args, **kwargs):
+        self.user_version = kwargs["data"].get("version", "0.0.0")
+        super().__init__(*args, **kwargs)
+
     def validate(self, attrs):
+        if not check_version_compatibility(self.user_version):
+            raise ValidationError("Version is outdated")
         data = super().validate(attrs)
         refresh = self.get_token(self.user)
         data['refresh'] = str(refresh)
@@ -40,7 +50,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
+    serializer_class = TokenPairSerializer
 
 
 class PriceSerializer(serializers.ModelSerializer):
@@ -64,53 +74,77 @@ class PricesUploadAPI(CreateAPIView):
     serializer_class = PriceSerializer
     permission_classes = (IsAuthenticated,)
 
-    def get_serializer(self, *args, **kwargs):
-        if isinstance(kwargs.get("data", {}), list):
-            kwargs["many"] = True
-        return super(PricesUploadAPI, self).get_serializer(*args, **kwargs)
+    @staticmethod
+    def get_request_data(request_data) -> Tuple[str, List[dict]]:
+        if isinstance(request_data, dict):
+            version = request_data.get("version")
+            price_list = request_data.get("price_data", [])
+        else:
+            # this should be impossible since login packet would have been blocked. but for now let's keep it.
+            raise ValidationError("Please update scanner version.")
+        if price_list and not isinstance(price_list[0], dict):
+            raise ValidationError("Request data was malformed.")
+        return version, price_list
 
     def create(self, request, *args, **kwargs):
-        if len(request.data) == 0:
+        try:
+            version, price_list = self.get_request_data(request.data)
+        except ValidationError as e:
             return JsonResponse({
                 "status": False,
-                "message": "There was no request data to act upon."
+                "message": e.message
+            }, status=status.HTTP_400_BAD_REQUEST)
+        if len(price_list) == 0:
+            return JsonResponse({
+                "status": False,
+                "message": "No items were submitted."
             }, status=status.HTTP_200_OK)
-        first_price = request.data[0]
+
+        first_price = price_list[0]
         access_groups = request.user.groups.values_list('name', flat=True)
         username = request.user.username
-        run = add_run(username, first_price, access_groups)
+        run = add_run(username, first_price, request.data, access_groups)
         run_id = getattr(run, "id", None)
         data = [
-            {**price_data, **{"run": run_id, "username": username}}
-            for price_data in request.data
+            {**price_data, **{
+                "run": run_id,
+                # everything below here should live on the run object, but leave that for now.
+                "server_id": run.server_id,
+                "approved": run.approved,
+                "username": run.username
+            }}
+            for price_data in price_list
         ]
-        serializer = self.get_serializer(data=data)
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            headers = self.get_success_headers(data)
-            return JsonResponse({
-                "status": True,
-                "message": "Prices Added"
-            }, status=status.HTTP_201_CREATED, headers=headers)
-        else:
+        serializer = self.get_serializer(data=data, many=True)
+        if not serializer.is_valid():
             if run:
                 run.delete()
             return JsonResponse({
                 "status": False,
-                "errors": serializer.errors
+                "errors": serializer.errors,
+                "message": "Submitted data could not be serialized"
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        self.perform_create(serializer)
+        headers = self.get_success_headers(data)
+        return JsonResponse({
+            "status": True,
+            "message": "Prices Added"
+        }, status=status.HTTP_201_CREATED, headers=headers)
 
-def add_run(username: str, first_price: dict, access_groups) -> Run:
-    if "timestamp" not in first_price or "server_id" not in first_price:
+
+def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> Run:
+    if "timestamp" not in first_price:
         return None
     sd = first_price['timestamp']
-    sid = first_price['server_id']
-    if 'scanner_user' in access_groups:
-        approved = True
-    else:
-        approved = False
-    run = Run(start_date=sd, server_id=sid, approved=approved, username=username)
+    sid = run_info['server_id']
+    run = Run(
+        start_date=sd,
+        server_id=sid,
+        approved='scanner_user' in access_groups,
+        username=username,
+        scraper_version=run_info["version"]
+    )
     run.save()
     return run
 
@@ -577,9 +611,3 @@ def latest_prices(request: WSGIRequest) -> FileResponse:
         content_type='application/json',
         filename='nwmarketprices.json'
     )
-
-
-
-
-
-

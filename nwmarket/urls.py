@@ -39,6 +39,5 @@ urlpatterns = [
     path('api/scanner_upload/', PricesUploadAPI.as_view(), name='scanner_upload'),
     path('api/name_cleanup_upload/', NameCleanupAPI.as_view(), name='name_cleanup_upload'),
     path('api/confirmed_names_upload/', ConfirmedNamesAPI.as_view(), name='confirmed_names_upload'),
-
-
+    path('api/', include('nwmarketapp.api.urls')),
 ]
