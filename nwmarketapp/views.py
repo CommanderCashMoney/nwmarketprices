@@ -6,6 +6,8 @@ from constance import config  # noqa
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
+
+from nwmarketapp.api.utils import check_version_compatibility
 from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup, NWDBLookup
 from nwmarketapp.models import Price
 from django.http import JsonResponse, FileResponse
@@ -33,7 +35,7 @@ class TokenPairSerializer(TokenObtainPairSerializer):
         super().__init__(*args, **kwargs)
 
     def validate(self, attrs):
-        if self.user_version == "0.0.0":
+        if not check_version_compatibility(self.user_version):
             raise ValidationError("Version is outdated")
         data = super().validate(attrs)
         refresh = self.get_token(self.user)
@@ -78,6 +80,7 @@ class PricesUploadAPI(CreateAPIView):
             version = request_data.get("version")
             price_list = request_data.get("price_data", [])
         else:
+            # this should be impossible since login packet would have been blocked. but for now let's keep it.
             raise ValidationError("Please update scanner version.")
         if price_list and not isinstance(price_list[0], dict):
             raise ValidationError("Request data was malformed.")
@@ -138,7 +141,7 @@ def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> 
     run = Run(
         start_date=sd,
         server_id=sid,
-        approved='scanner_user' in access_groups,  # todo: actual checking
+        approved='scanner_user' in access_groups,
         username=username,
         scraper_version=run_info["version"]
     )
