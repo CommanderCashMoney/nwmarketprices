@@ -127,11 +127,30 @@ class PricesUploadAPI(CreateAPIView):
 
         self.perform_create(serializer)
         headers = self.get_success_headers(data)
+        self.send_discord_notification(run)
         return JsonResponse({
             "status": True,
             "message": "Prices Added"
         }, status=status.HTTP_201_CREATED, headers=headers)
 
+    @staticmethod
+    def send_discord_notification(run: Run) -> None:
+        webhook_url = config.DISCORD_WEBHOOK_URL
+        if not webhook_url:
+            logging.warning("No discord webhook set")
+            return
+        logging.info(f"Sending discord webhook to url {webhook_url}")
+        total_listings = run.price_set.count()
+        total_unique_items = run.price_set.values_list("name_id").distinct().count()
+        try:
+            requests.post(webhook_url, data={
+                "content": f"Scan upload from {run.username}. "
+                           f"Server: {run.server_id}, "
+                           f"Total Prices: {total_listings}, "
+                           f"Unique Items: {total_unique_items}"
+            })
+        except Exception:  # noqa
+            logging.exception("Discord webhook failed")
 
 def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> Run:
     if "timestamp" not in first_price:
