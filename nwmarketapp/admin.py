@@ -4,7 +4,7 @@ from nwmarketapp.models import Run
 
 
 class RunAdmin(admin.ModelAdmin):
-    readonly_fields = ["id", "server_id", "username", "price_count_field", "start_date", "approved", "scraper_version"]
+    readonly_fields = ["id", "server_id", "username", "price_count_field", "start_date", "approved", "scraper_version", "tz_name"]
     list_display = ["id", "server_id", "username", "price_count_field", "start_date", "approved"]
     list_filter = ["server_id", "username", "start_date", "approved"]
 

@@ -10354,7 +10354,9 @@ a.text-dark:hover, a.text-dark:focus {
 }
 .yellow_text{
   color: darkkhaki;
-
+}
+.grey_text {
+  color: #b9b9b9;
 }
 
 
