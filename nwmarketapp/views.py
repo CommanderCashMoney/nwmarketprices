@@ -143,7 +143,8 @@ def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> 
         server_id=sid,
         approved='scanner_user' in access_groups,  # todo: actual checking
         username=username,
-        scraper_version=run_info["version"]
+        scraper_version=run_info["version"],
+        tz_name=run_info.get("timezone")
     )
     run.save()
     return run
@@ -348,7 +349,8 @@ def get_price_change_span(price_change) -> str:
         return '<span class="blue_text">&#8593;{}%</span>'.format(price_change)
     elif price_change < 0:
         return '<span class="yellow_text">&#8595;{}%</span>'.format(price_change)
-    return ""
+
+    return '<span class="grey_text">0%</span>'
 
 
 def get_item_data_list(server_id: int, item_id_list: List[int]) -> List[dict]:
