@@ -1,7 +1,9 @@
+import datetime
 import json
 import logging
 from time import perf_counter
 from typing import Any, Dict, List, Tuple
+from backports.zoneinfo import ZoneInfo
 
 import requests
 from constance import config  # noqa
@@ -14,7 +16,7 @@ from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup, NWDBLo
 from nwmarketapp.models import Price
 from django.http import JsonResponse, FileResponse
 import numpy as np
-from django.db.models.functions import TruncDate, TruncDay
+from django.db.models.functions import Extract, TruncDate, TruncDay
 from django.db.models import Count, Max, Min
 import itertools
 from collections import defaultdict
@@ -292,16 +294,22 @@ def get_list_by_nameid(name_id: int, server_id: str) -> dict:
 
         return None, None, None, None, None, None, None
 
-    hist_price = qs_current_price.values_list('timestamp', 'price', 'avail').order_by('timestamp')
+    hist_price = qs_current_price.values_list('price_timestamp', 'price', 'avail').order_by('price_timestamp')
     last_run = Run.objects.filter(server_id=server_id, approved=True).exclude(username="january").latest('id')
     #get all prices since last run
-    latest_prices = list(hist_price.filter(run=last_run).values_list('timestamp', 'price', 'avail').order_by('price'))
+    latest_prices = list(hist_price.filter(run=last_run).values_list('price_timestamp', 'price', 'avail').order_by('price'))
     # group by days
     grouped_hist = [list(g) for _, g in itertools.groupby(hist_price, key=lambda x: x[0].date())]
     for count, val in enumerate(grouped_hist):
         grouped_hist[count].sort(key = lambda x: x[1])
 
     lowest_10_raw = latest_prices[:10]
+    tz = "America/Los_Angeles"
+    tzinfo = ZoneInfo(tz)
+    lowest_10_raw = [
+        [lowest[0].astimezone(tzinfo), *lowest[1:]]
+        for lowest in lowest_10_raw
+    ]
 
     # split out dates from prices
     # for idx, day_hist in enumerate(grouped_hist):
@@ -336,7 +344,7 @@ def get_list_by_nameid(name_id: int, server_id: str) -> dict:
 
         price_change = get_change(recent_lowest_price, prev_lowest_price)
         try:
-            price_change =round(price_change)
+            price_change = round(price_change)
         except ValueError:
             price_change = 0
 
@@ -390,25 +398,6 @@ def get_item_data_list(server_id: int, item_id_list: List[int]) -> List[dict]:
     return items_data
 
 
-def get_popular_items_old(request: WSGIRequest, server_id: int) -> JsonResponse:
-    p = perf_counter()
-    popular_endgame_data = get_item_data_list(server_id, [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458])
-    popular_base_data = get_item_data_list(server_id, [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538])
-    mote_data = get_item_data_list(server_id, [862, 459, 649, 910, 158, 869, 497])
-    refining_data = get_item_data_list(server_id, [326, 847, 1033, 977, 1334])
-    trophy_data = get_item_data_list(server_id, [1542, 1444, 1529, 1541, 1502])
-
-    response = {
-        "popular_endgame_data": popular_endgame_data,
-        "popular_base_data": popular_base_data,
-        "mote_data": mote_data,
-        "refining_data": refining_data,
-        "trophy_data": trophy_data
-    }
-    print(perf_counter() - p)
-    return JsonResponse(response)
-
-
 def convert_popular_items_dict_to_old_style(popular_items_dict: dict) -> Dict[str, List]:
     p = perf_counter()
     return_value = {}
@@ -447,16 +436,24 @@ def get_popular_items_dict(server_id) -> Dict[str, Dict[str, Any]]:
     p = perf_counter()
 
     # get the minimum price on each popular item for the last 2 run dates
+    # todo: get the server timezone here
+    tz = "America/Los_Angeles"
+    started_at_date = TruncDate("started_at", tzinfo=ZoneInfo(tz))
+    price_date = TruncDate("price_timestamp", tzinfo=ZoneInfo(tz))
     run_dates = Run.objects.filter(server_id=server_id, approved=True).annotate(
-        start_date_date=TruncDate("start_date")
-    ).values_list("start_date_date", flat=True).order_by("-start_date")
+        started_at_date=started_at_date
+    ).values_list("started_at_date", flat=True).order_by("-started_at_date")
     distinct_run_dates = sorted(list(set(run_dates)), reverse=True)[:3]
-    recent_runs = Run.objects.annotate(start_date_date=TruncDate("start_date")).filter(
-        server_id=server_id, start_date_date__in=distinct_run_dates, approved=True
-    ).order_by("-start_date_date")
+    recent_runs = Run.objects.annotate(
+        started_at_date=started_at_date
+    ).filter(
+        server_id=server_id, started_at_date__in=distinct_run_dates, approved=True
+    ).order_by("-started_at_date")
+    # print(recent_runs.query)
+    # print(recent_runs)
 
     prices = Price.objects.filter(run__in=recent_runs, name_id__in=popular_items).annotate(
-        price_date=TruncDate("timestamp")
+        price_date=price_date
     ).order_by("-price_date")
     min_prices = prices.values("price_date", "name_id", "name").annotate(min_price=Min("price"))
     max_date = prices.values("name_id", "name").annotate(max_date=Max("price_date")).order_by()
@@ -496,7 +493,7 @@ def get_popular_items(request: WSGIRequest, server_id: int) -> JsonResponse:
 
 
 @ratelimit(key='ip', rate='10/s', block=True)
-@cache_page(60 * 10)
+# @cache_page(60 * 10)
 def index(request, item_id=None, server_id=1):
     p = perf_counter()
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)

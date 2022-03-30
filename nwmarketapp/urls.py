@@ -10,5 +10,4 @@ urlpatterns = [
     path('<int:item_id>', views.index, name='index'),
     path('<int:item_id>/<int:server_id>', views.index, name='index'),
     path('popular_items/<int:server_id>', views.get_popular_items, name='index'),
-    path('popular_items_old/<int:server_id>', views.get_popular_items_old, name='index'),
 ]
