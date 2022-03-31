@@ -59,6 +59,18 @@ class NameCleanup(models.Model):
         db_table = 'name_cleanup'
 
 
+# non functional for now - just submit data to it until it is functional
+class NameCleanupV2(models.Model):
+    bad_name = models.TextField(editable=False)
+    correct_item = models.ForeignKey(ConfirmedNames, null=True, on_delete=models.CASCADE)
+    number_times_seen = models.IntegerField(editable=False)
+
+    def __str__(self) -> str:
+        if self.correct_item is not None:
+            return f"Mapped Item: '{self.bad_name}''"
+        return f"Unmapped Item: '{self.bad_name}''"
+
+
 class Price(models.Model):
     run = models.ForeignKey(Run, on_delete=models.CASCADE)
     price = models.FloatField()
