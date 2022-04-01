@@ -9,6 +9,7 @@ from constance import config  # noqa
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
 
+from nwmarket import settings
 from nwmarketapp.api.utils import check_version_compatibility
 from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup, NWDBLookup
 from nwmarketapp.models import Price
@@ -135,7 +136,7 @@ class PricesUploadAPI(CreateAPIView):
 
     @staticmethod
     def send_discord_notification(run: Run) -> None:
-        webhook_url = config.DISCORD_WEBHOOK_URL
+        webhook_url = settings.DISCORD_WEBHOOK_URL
         if not webhook_url:
             logging.warning("No discord webhook set")
             return

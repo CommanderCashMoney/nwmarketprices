@@ -4,6 +4,7 @@ import logging
 from constance import config  # noqa
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import JsonResponse
+from rest_framework import status
 from rest_framework.decorators import api_view
 
 from nwmarketapp.api.utils import check_version_compatibility
@@ -47,7 +48,7 @@ def submit_bad_names(request: WSGIRequest) -> JsonResponse:
             user_submitted=request.user
         ).save()
 
-    return JsonResponse({"ok": "computer"})
+    return JsonResponse({"status": "ok"}, status=status.HTTP_201_CREATED)
 
 
 def confirmed_names(request: WSGIRequest) -> JsonResponse:

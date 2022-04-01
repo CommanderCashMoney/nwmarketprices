@@ -5,6 +5,29 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
+def forwards(apps, schema_editor):
+    NameCleanupV2 = apps.get_model("nwmarketapp", "NameCleanupV2")  # noqa
+    NameCleanupV1 = apps.get_model("nwmarketapp", "NameCleanup")  # noqa
+    ConfirmedNames = apps.get_model("nwmarketapp", "ConfirmedNames")  # noqa
+
+    all_confirmed_names_qs = ConfirmedNames.objects.all().values("name", "id")
+    all_confirmed_names = {
+        obj["name"]: obj["id"]
+        for obj in all_confirmed_names_qs
+    }
+    for obj in NameCleanupV1.objects.exclude(bad_word__isnull=True):
+        if obj.good_word in all_confirmed_names:
+            NameCleanupV2(
+                bad_name=obj.bad_word,
+                correct_item_id=all_confirmed_names[obj.good_word],
+                number_times_seen=1
+            ).save()
+
+
+def backwards(apps, schema_editor):
+    pass
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -24,4 +47,5 @@ class Migration(migrations.Migration):
                 ('user_submitted', models.ForeignKey(default=3, on_delete=django.db.models.deletion.PROTECT, related_name='user_submitted', to=settings.AUTH_USER_MODEL)),
             ],
         ),
+        migrations.RunPython(forwards, backwards),
     ]
