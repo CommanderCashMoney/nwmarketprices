@@ -14,7 +14,7 @@ def forwards(apps, schema_editor):
         obj["name"]: obj["id"]
         for obj in all_confirmed_names_qs
     }
-    for obj in NameCleanupV1.objects.exclude(bad_word=None):
+    for obj in NameCleanupV1.objects.exclude(bad_word__isnull=True):
         if obj.good_word in all_confirmed_names:
             NameCleanupV2(
                 bad_name=obj.bad_word,

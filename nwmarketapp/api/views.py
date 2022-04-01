@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view
 
 from nwmarketapp.api.utils import check_version_compatibility
-from nwmarketapp.models import NameCleanupV2
+from nwmarketapp.models import ConfirmedNames, NameCleanupV2
 
 
 def current_scanner_version(request: WSGIRequest) -> JsonResponse:
@@ -46,9 +46,15 @@ def submit_bad_names(request: WSGIRequest) -> JsonResponse:
     return JsonResponse({"ok": "computer"})
 
 
-@api_view(['GET'])
+def confirmed_names(request: WSGIRequest) -> JsonResponse:
+    return JsonResponse({
+        cn.name: cn.nwdb_id
+        for cn in ConfirmedNames.objects.exclude(nwdb_id__isnull=True)
+    })
+
+
 def get_mapping_corrections(request: WSGIRequest) -> JsonResponse:
-    mapped_items = NameCleanupV2.objects.exclude(correct_item=None)
+    mapped_items = NameCleanupV2.objects.exclude(correct_item__isnull=True)
     return JsonResponse({
         item.bad_name: {
             "name": item.correct_item.name,
