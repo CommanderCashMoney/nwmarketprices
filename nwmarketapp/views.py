@@ -566,21 +566,18 @@ def index(request, item_id=None, server_id=1):
 
 
 @ratelimit(key='ip', rate='10/s', block=True)
-# @cache_page(60 * 120)
-def cn(request):
+def confirmed_names_v1(request):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
     confirmed_names = list(confirmed_names.values_list('name', 'id'))
     cn = json.dumps(confirmed_names)
-
     return JsonResponse({'cn': cn}, status=200)
 
-@ratelimit(key='ip', rate='10/s', block=True)
-# @cache_page(60 * 120)
-def nc(request):
-    name_cleanup = NameCleanup.objects.all().filter(approved=True)
-    name_cleanup = list(name_cleanup.values_list('bad_word', 'good_word').filter(approved=True))
-    nc = json.dumps(name_cleanup)
 
+@ratelimit(key='ip', rate='10/s', block=True)
+def name_cleanup_v1(request):
+    ncs = NameCleanup.objects.all()
+    ncs = list(ncs.values_list('bad_word', 'good_word'))
+    nc = json.dumps(ncs)
     return JsonResponse({'nc': nc}, status=200)
 
 

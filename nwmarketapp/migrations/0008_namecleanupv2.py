@@ -6,7 +6,7 @@ import django.db.models.deletion
 
 
 def forwards(apps, schema_editor):
-    NameCleanupV2 = apps.get_model("nwmarketapp", "NameCleanupV2")  # noqa
+    NameCleanupV2 = apps.get_model("nwmarketapp", "NameMap")  # noqa
     NameCleanupV1 = apps.get_model("nwmarketapp", "NameCleanup")  # noqa
     ConfirmedNames = apps.get_model("nwmarketapp", "ConfirmedNames")  # noqa
 
@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='NameCleanupV2',
+            name='NameMap',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('bad_name', models.TextField(editable=False)),
@@ -46,6 +46,11 @@ class Migration(migrations.Migration):
                 ('user_corrected', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='user_corrected', to=settings.AUTH_USER_MODEL)),
                 ('user_submitted', models.ForeignKey(default=3, on_delete=django.db.models.deletion.PROTECT, related_name='user_submitted', to=settings.AUTH_USER_MODEL)),
             ],
+            options={
+                'verbose_name': 'Name Mapping',
+                'verbose_name_plural': 'Name Mappings',
+                'db_table': 'name_map',
+            },
         ),
         migrations.RunPython(forwards, backwards),
     ]

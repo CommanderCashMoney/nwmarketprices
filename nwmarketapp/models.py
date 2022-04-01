@@ -49,19 +49,18 @@ class Servers(models.Model):
 
 
 class NameCleanup(models.Model):
-    id = models.AutoField(db_column='id', primary_key=True)
-    bad_word = models.CharField(max_length=150, blank=True, null=True)
-    good_word = models.CharField(max_length=150, blank=True, null=True)
-    approved = models.BooleanField(blank=True, null=True)
-    timestamp = models.DateTimeField(blank=True, null=True)
-    username = models.CharField(max_length=50, blank=True, null=True)
+    bad_word = models.CharField(max_length=150, unique=True)
+    good_word = models.CharField(max_length=150)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'name_cleanup'
+        verbose_name = "Word Map"
+        verbose_name_plural = "Word Mappings"
 
 
 # non functional for now - just submit data to it until it is functional
-class NameCleanupV2(models.Model):
+class NameMap(models.Model):
     bad_name = models.TextField(editable=False)
     correct_item = models.ForeignKey(ConfirmedNames, null=True, on_delete=models.CASCADE)
     number_times_seen = models.IntegerField(editable=False)
@@ -72,6 +71,11 @@ class NameCleanupV2(models.Model):
         if self.correct_item is not None:
             return f"Mapped Item: '{self.bad_name}''"
         return f"Unmapped Item: '{self.bad_name}''"
+
+    class Meta:
+        db_table = 'name_map'
+        verbose_name_plural = "Name Mappings"
+        verbose_name = "Name Mapping"
 
 
 class Price(models.Model):

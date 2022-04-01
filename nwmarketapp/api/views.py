@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 
 from nwmarketapp.api.utils import check_version_compatibility
-from nwmarketapp.models import ConfirmedNames, NameCleanupV2
+from nwmarketapp.models import ConfirmedNames, NameCleanup, NameMap
 
 
 def current_scanner_version(request: WSGIRequest) -> JsonResponse:
@@ -35,14 +35,14 @@ def submit_bad_names(request: WSGIRequest) -> JsonResponse:
 
     bad_names = set(item["bad_name"] for item in bad_items_list)
     bad_name_map = {item["bad_name"]: item["number_times_seen"] for item in bad_items_list}
-    existing = NameCleanupV2.objects.filter(bad_name__in=bad_names, correct_item__isnull=True)
+    existing = NameMap.objects.filter(bad_name__in=bad_names, correct_item__isnull=True)
     for obj in existing:
         obj.number_times_seen += bad_name_map[obj.bad_name]
         obj.save()
         bad_names.remove(obj.bad_name)
 
     for bad_name in bad_names:
-        NameCleanupV2(
+        NameMap(
             bad_name=bad_name,
             number_times_seen=bad_name_map[bad_name],
             user_submitted=request.user
@@ -63,7 +63,7 @@ def confirmed_names(request: WSGIRequest) -> JsonResponse:
 
 
 def get_mapping_corrections(request: WSGIRequest) -> JsonResponse:
-    mapped_items = NameCleanupV2.objects.exclude(correct_item__isnull=True)
+    mapped_items = NameMap.objects.exclude(correct_item__isnull=True)
     return JsonResponse({
         item.bad_name: {
             "name": item.correct_item.name,
@@ -71,3 +71,11 @@ def get_mapping_corrections(request: WSGIRequest) -> JsonResponse:
             "name_id": item.correct_item.id,
         } for item in mapped_items
     })
+
+
+def word_cleanup(request: WSGIRequest) -> JsonResponse:
+    mapped_items = {
+        nc.bad_word: nc.good_word
+        for nc in NameCleanup.objects.all()
+    }
+    return JsonResponse(mapped_items)

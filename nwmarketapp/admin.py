@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
+from django.core.exceptions import ValidationError
+from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from nwmarketapp.models import ConfirmedNames, NameCleanupV2, Run
+from nwmarketapp.models import ConfirmedNames, NameCleanup, NameMap, Run
 
 
 class RunAdmin(admin.ModelAdmin):
@@ -13,6 +15,12 @@ class RunAdmin(admin.ModelAdmin):
     @staticmethod
     def price_count_field(obj: Run) -> int:
         return obj.price_set.count()
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 class ConfirmedNamesAdmin(admin.ModelAdmin):
@@ -49,20 +57,20 @@ class CleanupFilter(SimpleListFilter):
         return queryset.exclude(correct_item=None)
 
 
-class NameCleanupAdmin(admin.ModelAdmin):
+class NameMapAdmin(admin.ModelAdmin):
     readonly_fields = ["bad_name", "user_submitted", "user_corrected"]
     fields = ["bad_name", "correct_item", "user_submitted", "user_corrected"]
     list_display = ["bad_name", "number_times_seen", "mapped"]
     autocomplete_fields = ['correct_item']
     list_filter = [CleanupFilter]
 
-    def mapped(self, obj: NameCleanupV2) -> bool:
+    def mapped(self, obj: NameMap) -> bool:
         return obj.correct_item is not None
 
     def has_add_permission(self, request, obj=None):
         return False
 
-    def save_model(self, request, obj: NameCleanupV2, form, change):
+    def save_model(self, request, obj: NameMap, form, change):
         if obj.correct_item is not None:
             obj.user_corrected = request.user
         super().save_model(request, obj, form, change)
@@ -70,6 +78,39 @@ class NameCleanupAdmin(admin.ModelAdmin):
     mapped.boolean = True
 
 
+class NameCleanupAdminForm(forms.ModelForm):
+    def clean_good_word(self):
+        good_word = self.data["good_word"]
+        if not good_word or len(good_word.split(" ")) != 1:
+            raise ValidationError("Good word must be a word, not multiple words.")
+        count = NameCleanup.objects.filter(bad_word=good_word).exclude(id=self.instance.pk).count()
+        if count > 0:
+            raise ValidationError("Good word cannot be the same as a bad word.")
+        return self.cleaned_data["good_word"]
+
+    def clean_bad_word(self):
+        print(self.data)
+        bad_word = self.data["bad_word"]
+        if not bad_word or len(bad_word.split(" ")) != 1:
+            raise ValidationError("Bad word must be a word, not multiple words.")
+        count = NameCleanup.objects.filter(good_word=bad_word).exclude(id=self.instance.pk).count()
+        if count > 0:
+            raise ValidationError("Bad word cannot be the same as a good word.")
+        return self.cleaned_data["bad_word"]
+
+
+class NameCleanupAdmin(admin.ModelAdmin):
+    form = NameCleanupAdminForm
+    readonly_fields = ["user"]
+    fields = ["good_word", "bad_word", "user"]
+    list_display = ["bad_word", "good_word", "user"]
+
+    def save_model(self, request, obj: NameMap, form, change):
+        obj.user = request.user
+        super().save_model(request, obj, form, change)
+
+
 admin.site.register(Run, RunAdmin)
-admin.site.register(NameCleanupV2, NameCleanupAdmin)
+admin.site.register(NameMap, NameMapAdmin)
+admin.site.register(NameCleanup, NameCleanupAdmin)
 admin.site.register(ConfirmedNames, ConfirmedNamesAdmin)
