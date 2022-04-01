@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 
 
@@ -64,6 +65,8 @@ class NameCleanupV2(models.Model):
     bad_name = models.TextField(editable=False)
     correct_item = models.ForeignKey(ConfirmedNames, null=True, on_delete=models.CASCADE)
     number_times_seen = models.IntegerField(editable=False)
+    user_submitted = models.ForeignKey(User, default=3, on_delete=models.PROTECT, related_name="user_submitted")
+    user_corrected = models.ForeignKey(User, null=True, on_delete=models.PROTECT, related_name="user_corrected")
 
     def __str__(self) -> str:
         if self.correct_item is not None:

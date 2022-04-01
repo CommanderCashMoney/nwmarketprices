@@ -50,8 +50,8 @@ class CleanupFilter(SimpleListFilter):
 
 
 class NameCleanupAdmin(admin.ModelAdmin):
-    readonly_fields = ["bad_name"]
-    fields = ["bad_name", "correct_item"]
+    readonly_fields = ["bad_name", "user_submitted", "user_corrected"]
+    fields = ["bad_name", "correct_item", "user_submitted", "user_corrected"]
     list_display = ["bad_name", "number_times_seen", "mapped"]
     autocomplete_fields = ['correct_item']
     list_filter = [CleanupFilter]
@@ -61,6 +61,11 @@ class NameCleanupAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request, obj=None):
         return False
+
+    def save_model(self, request, obj: NameCleanupV2, form, change):
+        if obj.correct_item is not None:
+            obj.user_corrected = request.user
+        super().save_model(request, obj, form, change)
 
     mapped.boolean = True
 
