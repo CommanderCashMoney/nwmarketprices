@@ -3,12 +3,10 @@ from django.db import models
 
 
 class ConfirmedNames(models.Model):
-    id = models.AutoField(db_column='id', primary_key=True)  # Field name made lowercase.
-    name = models.CharField(db_column='name', max_length=150, blank=True, null=True)  # Field name made lowercase.
-    timestamp = models.DateTimeField(blank=True, null=True)
-    approved = models.BooleanField(blank=True, null=True)
-    username = models.CharField(max_length=50, blank=True, null=True)
-    nwdb_id = models.CharField(max_length=100, blank=True, null=True)
+    name = models.TextField(unique=True)  # Field name made lowercase.
+    nwdb_id = models.TextField(unique=True)
+    item_type = models.TextField()
+    item_classes = models.JSONField()
 
     class Meta:
         db_table = 'confirmed_names'

@@ -9,7 +9,7 @@ import django.db.models.deletion
 
 
 def migrate_name_map(apps, schema_editor):
-    NameCleanupV2 = apps.get_model("nwmarketapp", "NameMap")  # noqa
+    NameMap = apps.get_model("nwmarketapp", "NameMap")  # noqa
     NameCleanupV1 = apps.get_model("nwmarketapp", "NameCleanup")  # noqa
     ConfirmedNames = apps.get_model("nwmarketapp", "ConfirmedNames")  # noqa
 
@@ -20,7 +20,7 @@ def migrate_name_map(apps, schema_editor):
     }
     for obj in NameCleanupV1.objects.exclude(bad_word__isnull=True):
         if obj.good_word in all_confirmed_names:
-            NameCleanupV2(
+            NameMap(
                 bad_name=obj.bad_word,
                 correct_item_id=all_confirmed_names[obj.good_word],
                 number_times_seen=1
@@ -46,31 +46,93 @@ def migrate_name_cleanups(apps, schema_editor):
         obj.save()
 
 
+def do_manual_cn_fixes(apps, ConfirmedNames):
+    Price = apps.get_model("nwmarketapp", "Price")  # noqa
+
+    def change(item_name: str, nwdb_id: str = None, new_name: str = None):
+        try:
+            cn = ConfirmedNames.objects.get(name=item_name)
+        except:
+            raise Exception(f"{item_name} does not exist")
+        if nwdb_id is not None:
+            cn.nwdb_id = nwdb_id
+        if new_name is not None:
+            cn.name = new_name
+        cn.save()
+
+    Price.objects.filter(name_id=1978).update(name_id=2361)  # maritime velvet footstool
+    ConfirmedNames.objects.get(id=1978).delete()
+    Price.objects.filter(name_id=633).update(name_id=2024)  # Recipe: Filet in Mushroom Sauce
+    ConfirmedNames.objects.get(id=633).delete()
+    Price.objects.filter(name_id=2342).update(name_id=2346)  # Schematic: Rosewood Writing Desk
+    ConfirmedNames.objects.get(id=2342).delete()
+    Price.objects.filter(name_id=1191).update(name_id=2333)  # seafoam velvet stool
+    ConfirmedNames.objects.get(id=1191).delete()
+
+    change("Captain Quicksilver's Lamp Bronze Replica", "house_housingitem_lighting_pirate_lightwall01_b", "Captain Quicksilver's Lamp, Bronze Replica")
+    change("Captain Quicksilver's Lamp Gold Replica", "house_housingitem_lighting_pirate_lightwall01_c", "Captain Quicksilver's Lamp, Gold Replica")
+    change("Curved Grassy Rug", "house_housingitem_rug_settler_decor_floor_rug02")
+    change("Fragrant Incense Censer", "house_housingitem_dynasty_decor_wall_incense01")
+    change("Infused Beast Ward Potion", "potionfamilywardbeastt5")
+    change("Mahogany End Table", "house_housingitem_table_settler_bedsidetable_d")
+    change("Schematic: Captain Quicksilver's Lamp Silver Replica", "schematic_house_housingitem_lighting_pirate_lightwall01_a", "Schematic: Captain Quicksilver's Lamp, Silver Replica")
+    change("Brass Telescope", "house_housingitem_pirate_decor_telescope01")
+    change("Gothic Velvet Stool", new_name="Gothic Velvet Footstool")
+    change("Melon Créme Tart", new_name="Melon Crème Tart")
+
+
 def migrate_new_nwdb_ids(apps, schema_editor):
     ConfirmedNames = apps.get_model("nwmarketapp", "ConfirmedNames")  # noqa
-    nwdb_data_file = Path(settings.BASE_DIR) / "nwmarketapp" / "data" / "nwdb_20220401.json"
-    with nwdb_data_file.open("r") as f:
-        nwdb_data = json.load(f)
 
-    nwdb_data_map = {item["nwdb_id"]: item["name"] for item in nwdb_data}
-    cn_matches = ConfirmedNames.objects.filter(nwdb_id__in=[item["nwdb_id"] for item in nwdb_data])
+    nwdb_data_file = Path(settings.BASE_DIR) / "nwmarketapp" / "data" / "confirmed_names.json"
+    with nwdb_data_file.open("r") as f:
+        nwdb_data = {
+            item["nwdb_id"]: item
+            for item in json.load(f)
+        }
+
+    do_manual_cn_fixes(apps, ConfirmedNames)
+
+    cn_matches = ConfirmedNames.objects.filter(name__in=[values["name"] for values in nwdb_data.values()])
+    for match in cn_matches:
+        correct_nwdb_id = None
+        for values in nwdb_data.values():
+            if values["name"] == match.name and values["nwdb_id"] != match.nwdb_id:
+                correct_nwdb_id = values["nwdb_id"]
+                break
+        if correct_nwdb_id is None:
+            continue
+        match.nwdb_id = correct_nwdb_id
+        match.save()
+
+    cn_matches = ConfirmedNames.objects.filter(nwdb_id__in=[nwdb_id for nwdb_id in nwdb_data])
     to_remove = set()
     for match in cn_matches:
         try:
-            real_name = nwdb_data_map[match.nwdb_id]
+            real_name = nwdb_data[match.nwdb_id]["name"]
+            item_classes = nwdb_data[match.nwdb_id]["itemClass"].replace("{", "").replace("}", "").split(",")
+            item_type = nwdb_data[match.nwdb_id]["itemType"]
         except KeyError:
             print(match.nwdb_id)
             raise
+        match.item_type = item_type
+        match.item_classes = item_classes
         if match.name != real_name:
+            print(match.nwdb_id, match.name, real_name)
             match.name = real_name
-            match.save()  # checked, there are very few and they are all sensible.
+        match.save()
         to_remove.add(match.nwdb_id)
 
-    for key in to_remove:
-        nwdb_data_map.pop(key)
-
-    for nwdb_id, name in nwdb_data_map.items():
-        ConfirmedNames(name=name, nwdb_id=nwdb_id, username="nwdb").save()
+    for nwdb_id, data in nwdb_data.items():
+        if nwdb_id in to_remove:
+            continue
+        ConfirmedNames(
+            name=data["name"],
+            nwdb_id=nwdb_id,
+            username="nwdb",
+            item_type=data["itemType"],
+            item_classes=data["itemClass"].replace("{", "").replace("}", "").split(",")
+        ).save()
 
 
 def backwards(apps, schema_editor):
@@ -85,6 +147,18 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AddField(
+            model_name='confirmednames',
+            name='item_classes',
+            field=models.JSONField(default=''),
+            preserve_default=False,
+        ),
+        migrations.AddField(
+            model_name='confirmednames',
+            name='item_type',
+            field=models.TextField(default=''),
+            preserve_default=False,
+        ),
         migrations.CreateModel(
             name='NameMap',
             fields=[
@@ -116,7 +190,6 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL,
                                     to=settings.AUTH_USER_MODEL),
         ),
-        migrations.RunPython(migrate_name_map, backwards),
         migrations.RunPython(migrate_name_cleanups, backwards),
         migrations.AlterField(
             model_name='namecleanup',
@@ -148,5 +221,33 @@ class Migration(migrations.Migration):
             model_name='namecleanup',
             name='bad_word',
             field=models.CharField(max_length=150, unique=True),
+        ),
+        # migrations.RemoveField(
+        #     model_name='confirmednames',
+        #     name='approved',
+        # ),
+        # migrations.RemoveField(
+        #     model_name='confirmednames',
+        #     name='timestamp',
+        # ),
+        # migrations.RemoveField(
+        #     model_name='confirmednames',
+        #     name='username',
+        # ),
+        migrations.AlterField(
+            model_name='confirmednames',
+            name='id',
+            field=models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
+        ),
+        migrations.AlterField(
+            model_name='confirmednames',
+            name='name',
+            field=models.TextField(default=None, unique=True),
+            preserve_default=False,
+        ),
+        migrations.AlterField(
+            model_name='confirmednames',
+            name='nwdb_id',
+            field=models.TextField(unique=True),
         ),
     ]
