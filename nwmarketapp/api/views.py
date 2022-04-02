@@ -58,7 +58,7 @@ def confirmed_names(request: WSGIRequest) -> JsonResponse:
             "nwdb_id": cn.nwdb_id,
             "name_id": cn.id
         }
-        for cn in ConfirmedNames.objects.exclude(nwdb_id__isnull=True)
+        for cn in ConfirmedNames.objects.all()
     })
 
 

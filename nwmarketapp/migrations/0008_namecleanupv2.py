@@ -113,12 +113,10 @@ def migrate_new_nwdb_ids(apps, schema_editor):
             item_classes = nwdb_data[match.nwdb_id]["itemClass"].replace("{", "").replace("}", "").split(",")
             item_type = nwdb_data[match.nwdb_id]["itemType"]
         except KeyError:
-            print(match.nwdb_id)
             raise
         match.item_type = item_type
         match.item_classes = item_classes
         if match.name != real_name:
-            print(match.nwdb_id, match.name, real_name)
             match.name = real_name
         match.save()
         to_remove.add(match.nwdb_id)
@@ -222,18 +220,6 @@ class Migration(migrations.Migration):
             name='bad_word',
             field=models.CharField(max_length=150, unique=True),
         ),
-        # migrations.RemoveField(
-        #     model_name='confirmednames',
-        #     name='approved',
-        # ),
-        # migrations.RemoveField(
-        #     model_name='confirmednames',
-        #     name='timestamp',
-        # ),
-        # migrations.RemoveField(
-        #     model_name='confirmednames',
-        #     name='username',
-        # ),
         migrations.AlterField(
             model_name='confirmednames',
             name='id',
@@ -249,5 +235,17 @@ class Migration(migrations.Migration):
             model_name='confirmednames',
             name='nwdb_id',
             field=models.TextField(unique=True),
+        ),
+        migrations.RemoveField(
+            model_name='confirmednames',
+            name='approved',
+        ),
+        migrations.RemoveField(
+            model_name='confirmednames',
+            name='timestamp',
+        ),
+        migrations.RemoveField(
+            model_name='confirmednames',
+            name='username',
         ),
     ]

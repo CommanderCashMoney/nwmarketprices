@@ -500,7 +500,7 @@ def get_popular_items(request: WSGIRequest, server_id: int) -> JsonResponse:
 @cache_page(60 * 10)
 def index(request, item_id=None, server_id=1):
     p = perf_counter()
-    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
+    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = confirmed_names.values_list('name', 'id', 'nwdb_id')
     all_servers = Servers.objects.all()
     all_servers = all_servers.values_list('name', 'id')
@@ -567,7 +567,7 @@ def index(request, item_id=None, server_id=1):
 
 @ratelimit(key='ip', rate='10/s', block=True)
 def confirmed_names_v1(request):
-    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
+    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = list(confirmed_names.values_list('name', 'id'))
     cn = json.dumps(confirmed_names)
     return JsonResponse({'cn': cn}, status=200)
