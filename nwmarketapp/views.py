@@ -495,7 +495,7 @@ def get_popular_items(request: WSGIRequest, server_id: int) -> JsonResponse:
     return JsonResponse(get_popular_items_dict(server_id), status=status.HTTP_200_OK, safe=False)
 
 
-@ratelimit(key='ip', rate='10/s', block=True)
+@ratelimit(key='ip', rate='7/s', block=True)
 @cache_page(60 * 10)
 def index(request, item_id=None, server_id=1):
     p = perf_counter()
@@ -564,8 +564,8 @@ def index(request, item_id=None, server_id=1):
     })
 
 
-@ratelimit(key='ip', rate='10/s', block=True)
-# @cache_page(60 * 120)
+@ratelimit(key='ip', rate='5/s', block=True)
+@cache_page(60 * 10)
 def cn(request):
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
     confirmed_names = list(confirmed_names.values_list('name', 'id'))
@@ -573,8 +573,8 @@ def cn(request):
 
     return JsonResponse({'cn': cn}, status=200)
 
-@ratelimit(key='ip', rate='10/s', block=True)
-# @cache_page(60 * 120)
+@ratelimit(key='ip', rate='5/s', block=True)
+@cache_page(60 * 10)
 def nc(request):
     name_cleanup = NameCleanup.objects.all().filter(approved=True)
     name_cleanup = list(name_cleanup.values_list('bad_word', 'good_word').filter(approved=True))
@@ -583,7 +583,7 @@ def nc(request):
     return JsonResponse({'nc': nc}, status=200)
 
 
-@ratelimit(key='ip', rate='10/s', block=True)
+@ratelimit(key='ip', rate='3/s', block=True)
 def servers(request):
     server_list = Servers.objects.all().values_list('name', 'id'). order_by('id')
     server_list = list(server_list)
