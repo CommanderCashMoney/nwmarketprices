@@ -9,6 +9,7 @@ from constance import config  # noqa
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
 
+from nwmarket import settings
 from nwmarketapp.api.utils import check_version_compatibility
 from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup, NWDBLookup
 from nwmarketapp.models import Price
@@ -135,7 +136,7 @@ class PricesUploadAPI(CreateAPIView):
 
     @staticmethod
     def send_discord_notification(run: Run) -> None:
-        webhook_url = config.DISCORD_WEBHOOK_URL
+        webhook_url = settings.DISCORD_WEBHOOK_URL
         if not webhook_url:
             logging.warning("No discord webhook set")
             return
@@ -499,7 +500,7 @@ def get_popular_items(request: WSGIRequest, server_id: int) -> JsonResponse:
 @cache_page(60 * 10)
 def index(request, item_id=None, server_id=1):
     p = perf_counter()
-    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
+    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = confirmed_names.values_list('name', 'id', 'nwdb_id')
     all_servers = Servers.objects.all()
     all_servers = all_servers.values_list('name', 'id')
@@ -564,22 +565,22 @@ def index(request, item_id=None, server_id=1):
     })
 
 
+
 @ratelimit(key='ip', rate='5/s', block=True)
 @cache_page(60 * 10)
-def cn(request):
-    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"').filter(approved=True)
+def confirmed_names_v1(request):
+    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
     confirmed_names = list(confirmed_names.values_list('name', 'id'))
     cn = json.dumps(confirmed_names)
-
     return JsonResponse({'cn': cn}, status=200)
+
 
 @ratelimit(key='ip', rate='5/s', block=True)
 @cache_page(60 * 10)
-def nc(request):
-    name_cleanup = NameCleanup.objects.all().filter(approved=True)
-    name_cleanup = list(name_cleanup.values_list('bad_word', 'good_word').filter(approved=True))
-    nc = json.dumps(name_cleanup)
-
+def name_cleanup_v1(request):
+    ncs = NameCleanup.objects.all()
+    ncs = list(ncs.values_list('bad_word', 'good_word'))
+    nc = json.dumps(ncs)
     return JsonResponse({'nc': nc}, status=200)
 
 
