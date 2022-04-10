@@ -44,6 +44,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.discord',
     'nwmarketapp.apps.NwmarketappConfig',
 ]
 
@@ -137,6 +142,26 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+SOCIALACCOUNT_PROVIDERS = {
+    "discord": {
+        "APP": {
+            "client_id": "962639763721060363",
+            "secret": "diJ-f8T7nJMQZ2hB56mwNoXHMM6nq66n",
+
+        }
+    }
+}
+
+SITE_ID = 1
+LOGIN_REDIRECT_URL = "/"
 
 
 # Internationalization
