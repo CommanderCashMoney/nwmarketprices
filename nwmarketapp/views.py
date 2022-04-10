@@ -166,7 +166,7 @@ def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> 
         username=username,
         scraper_version=run_info["version"],
         tz_name=run_info.get("timezone"),
-        resolution=run_info.get("resolution"),
+        resolution=run_info.get("resolution", "1440p"),
         price_accuracy=run_info.get("price_accuracy"),
         name_accuracy=run_info.get("name_accuracy"),
     )
