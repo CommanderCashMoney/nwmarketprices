@@ -8,8 +8,8 @@ from nwmarketapp.models import ConfirmedNames, NameCleanup, NameMap, Run
 
 
 class RunAdmin(admin.ModelAdmin):
-    readonly_fields = ["id", "server_id", "username", "price_count_field", "start_date", "approved", "scraper_version", "tz_name"]
-    list_display = ["id", "server_id", "username", "price_count_field", "start_date", "approved"]
+    readonly_fields = ["id", "server_id", "username", "price_count_field", "start_date", "approved", "scraper_version", "tz_name", "price_accuracy", "name_accuracy", "resolution"]
+    list_display = ["id", "server_id", "username", "price_count_field", "start_date", "price_accuracy", "name_accuracy", "resolution"]
     list_filter = ["server_id", "username", "start_date", "approved"]
 
     @staticmethod

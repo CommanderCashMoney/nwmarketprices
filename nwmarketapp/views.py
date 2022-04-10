@@ -68,7 +68,7 @@ class PriceSerializer(serializers.ModelSerializer):
             'server_id',
             'approved',
             'username',
-            'run'
+            'run',
         ]
 
 
@@ -112,7 +112,7 @@ class PricesUploadAPI(CreateAPIView):
                 # everything below here should live on the run object, but leave that for now.
                 "server_id": run.server_id,
                 "approved": run.approved,
-                "username": run.username
+                "username": run.username,
             }}
             for price_data in price_list
         ]
@@ -153,6 +153,7 @@ class PricesUploadAPI(CreateAPIView):
         except Exception:  # noqa
             logging.exception("Discord webhook failed")
 
+
 def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> Run:
     if "timestamp" not in first_price:
         return None
@@ -164,7 +165,10 @@ def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> 
         approved='scanner_user' in access_groups,  # todo: actual checking
         username=username,
         scraper_version=run_info["version"],
-        tz_name=run_info.get("timezone")
+        tz_name=run_info.get("timezone"),
+        resolution=run_info.get("resolution", "1440p"),
+        price_accuracy=run_info.get("price_accuracy"),
+        name_accuracy=run_info.get("name_accuracy"),
     )
     run.save()
     return run
