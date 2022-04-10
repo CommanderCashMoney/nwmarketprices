@@ -27,6 +27,9 @@ class Run(models.Model):
     start_date = models.DateTimeField(editable=False)
     scraper_version = models.CharField(max_length=10, editable=False)
     tz_name = models.TextField(null=True, editable=False)
+    resolution = models.CharField(max_length=50, editable=False, default="1440p")
+    price_accuracy = models.DecimalField(max_length=50, max_digits=4, decimal_places=1, null=True, editable=False)
+    name_accuracy = models.DecimalField(max_length=50, max_digits=4, decimal_places=1, null=True, editable=False)
 
     class Meta:
         db_table = 'runs'
