@@ -1,0 +1,116 @@
+html {
+  box-sizing: border-box;
+  background: url(background.png) no-repeat center center fixed;
+  background-size: cover;
+  background-color: #0c0c0cf0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  color: #d5d5d5;
+}
+
+.navbar {
+    background-color: rgb(40, 47, 47)!important;
+}
+
+.nav-title {
+
+}
+
+.is-dark {
+    background-color: rgb(40, 47, 47)!important;
+}
+
+.item-search-container {
+    margin: 0!important;
+}
+
+.discord-text {
+    margin-left: 10px;
+}
+
+.navbar-brand {
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 2em;
+}
+
+.login {
+    margin: auto;
+    width: 100%;
+}
+
+.burger-menu {
+    margin-right: 0!important;
+}
+
+.box {
+    background-color:  rgb(40, 47, 47)!important;
+}
+
+.divider {
+    background-color: grey;
+    height: 1px;
+    margin-top: 0.5em;
+    margin-bottom: 2em;
+}
+
+.no-pad-bottom {
+    margin-bottom: 0;
+}
+
+.popular-item {
+    color: inherit;
+    text-decoration: none;
+    padding-top: 0.5em;
+    padding-bottom: 0.4em;
+}
+
+.popular-item:hover > a {
+    color: #9fc8df;
+}
+
+.popular-item-title {
+    color: #d5d5d5;
+    font-size: 1.5em;
+}
+
+.server-select {
+    font-size: 20px;
+}
+
+.server {
+    font-size: 18px;
+}
+
+.item-search {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+.item-search::placeholder {
+    color: #6c6b6bc4;
+}
+
+.lowest-price-text {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    font-size: 5em;
+}
+
+.item {
+    display:flex;
+    flex-direction:column;
+}
+
+.lowest-price-div {
+    font-size: 1.25em;
+}
+
+.blue_text{
+  color: lightsteelblue;
+}
+.yellow_text{
+  color: darkkhaki;
+}
+.grey_text {
+  color: #b9b9b9;
+}

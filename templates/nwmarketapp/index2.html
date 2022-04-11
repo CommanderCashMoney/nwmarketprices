@@ -1,0 +1,25 @@
+{% extends 'nwmarketapp/base.html' %}
+{% block content %}
+<div class="container py-0 px-2">
+    <div class="columns tile is-ancestor my-1 px-1">
+        <div class="column is-two-fifths tile box has-text-centered mr-1 mb-0 is-flex-direction-column">
+            {% include 'nwmarketapp/snippets/lowest-price.html' %}
+        </div>
+        <div class="column box has-text-centered">
+            {% include 'nwmarketapp/snippets/item-graph.html' %}
+        </div>
+    </div>
+</div>
+<div class="container py-0 px-2">
+    <div class="columns tile is-ancestor my-1 px-1">
+        {% include 'nwmarketapp/snippets/endgame_data_block2.html' with name="Popular End Game Items" items=popular_items.popular_endgame_data %}
+        {% include 'nwmarketapp/snippets/endgame_data_block2.html' with name="Popular Base Items" items=popular_items.popular_base_data  %}
+        {% include 'nwmarketapp/snippets/competitive-items.html' %}
+    </div>
+    <div class="columns tile is-ancestor my-1 px-1">
+        {% include "nwmarketapp/snippets/endgame_data_block2.html" with name="Motes" items=popular_items.mote_data %}
+        {% include "nwmarketapp/snippets/endgame_data_block2.html" with name="Refining Reagents" items=popular_items.refining_data %}
+        {% include "nwmarketapp/snippets/endgame_data_block2.html" with name="Trophy Mats" items=popular_items.trophy_data %}
+    </div>
+</div>
+{% endblock %}

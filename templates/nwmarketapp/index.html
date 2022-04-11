@@ -9,7 +9,7 @@
      <title>New World Market Prices</title>
         {% load static %}
     <link rel="stylesheet" href="{% static 'nwmarketapp/jquery.typeahead.min.css' %}">
-    <link rel="stylesheet" href="{% static 'nwmarketapp/bootstrap-4.4.1.css' %}">
+    <link rel="stylesheet" href="{% static 'nwmarketapp/bootstrap.css' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'nwmarketapp/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'nwmarketapp/favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'nwmarketapp/favicon-16x16.png' %}">
@@ -37,57 +37,8 @@
 </head>
 <body>
 <!-- Navigation -->
-<section>
-    <div class="container nopad">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark col-xl-12">
-            <a class="navbar-brand" href="#">New World Market Prices</a>
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-
-                <form class="form-inline my-2 my-lg-0" action="" method="GET" id="search_form">
-                    {#          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">#}
-                    {#          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>#}
-                    <div class="typeahead__container search-bar">
-                        <div class="typeahead__field">
-                            <div class="typeahead__query">
-                                <input class="js-typeahead-names" name="cn" placeholder="Search" autocomplete="off" id="cn">
-
-                            </div>
-
-                        </div>
-                    </div>
-{#                    <span style="padding-left: 10px">#}
-{#                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>#}
-{#                    </span>#}
-                    <span style="padding-left: 10px">
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Select Server
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                {% for x in servers %}
-                                    {% if x.1 == server_id %}
-                                        <script>
-                                        document.getElementById("dropdownMenuButton").innerHTML = '{{ x.0 }}';
-
-                                        </script>
-                                    {% else %}
-                                        <a class="dropdown-item" href="#" onclick="change_server({{ x.1 }})">{{ x.0 }}</a>
-                                    {% endif %}
 
 
-                                {% endfor %}
-
-                            </div>
-
-                        </div>
-                    </span>
-                </form>
-            </div>
-        </nav>
-    </div>
-</section>
 <section>
     <div class="container">
         <div class="row">

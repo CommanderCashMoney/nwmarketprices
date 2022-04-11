@@ -1,0 +1,81 @@
+<!-- Page rendered in {{ render_time }} -->
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+     <title>New World Market Prices</title>
+        {% load static %}
+{#    <link rel="stylesheet" href="{% static 'nwmarketapp/jquery.typeahead.min.css' %}">#}
+{#    <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.min.css' %}">#}
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'nwmarketapp/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'nwmarketapp/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'nwmarketapp/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'nwmarketapp/site.webmanifest' %}">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/9.3.3/highcharts.min.js"
+            integrity="sha512-eLEbReXan83DpgMlsiPxeAt9A57TSiWUhYEBYVoUQnHs2crCedKj3AeKux6zuH9Yr52PhOO+p7y2+7OgVN91EA=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="{% static 'nwmarketapp/popper.min.js' %}"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="{% static 'nwmarketapp/graphs/item-line-chart.js' %}"></script>
+    <script src="{% static 'nwmarketapp/graphs/competitive-bar-chart.js' %}"></script>
+{#    <script src="{% static 'nwmarketapp/bulma.css' %}"></script>#}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script type="text/javascript" src="{%  static 'nwmarketapp/jquery.typeahead.min.js' %}"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <link rel="stylesheet" href="{% static 'nwmarketapp/bulma.css' %}">
+
+    <link rel="stylesheet" href="{% static 'nwmarketapp/styles.css' %}">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-WW3EJQVND0');
+        var nwdbConfig = {
+            scale: 0.80,
+            delay: 5
+        }
+    </script>
+    <script async src="https://nwdb.info/embed.js"></script>
+</head>
+<body>
+    <div class="container mt-2 mb-0 py-0">
+        {% include 'nwmarketapp/navbar.html' %}
+    </div>
+    {% block content %}{% endblock %}
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+  // Get all "navbar-burger" elements
+  const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+
+  // Check if there are any navbar burgers
+  if ($navbarBurgers.length > 0) {
+
+    // Add a click event on each of them
+    $navbarBurgers.forEach( el => {
+      el.addEventListener('click', () => {
+
+        // Get the target from the "data-target" attribute
+        const target = el.dataset.target;
+        const $target = document.getElementById(target);
+
+        // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+        el.classList.toggle('is-active');
+        $target.classList.toggle('is-active');
+
+      });
+    });
+  }
+
+});
+</script>
+</html>

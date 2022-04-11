@@ -501,7 +501,7 @@ def get_popular_items(request: WSGIRequest, server_id: int) -> JsonResponse:
 
 
 @ratelimit(key='ip', rate='7/s', block=True)
-@cache_page(60 * 10)
+# @cache_page(60 * 10)
 def index(request, item_id=None, server_id=1):
     p = perf_counter()
     confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
@@ -558,7 +558,7 @@ def index(request, item_id=None, server_id=1):
         except Run.DoesNotExist:
             most_listed_item_top10 = []
 
-    return render(request, 'nwmarketapp/index.html', {
+    return render(request, 'nwmarketapp/index2.html', {
         'cn_list': confirmed_names,
         'popular_items': popular_items,
         'top10': most_listed_item_top10,
