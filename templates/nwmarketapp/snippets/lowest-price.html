@@ -1,8 +1,8 @@
-<div class="container item lowest-price-div">
-    <div  style="margin-bottom: auto">Lowest price as of 04/10/22 12:22 AM</div>
-    <div class="lowest-price-text"  style="margin: auto">438.95</div>
-    <div style="margin-top: auto">
-        <div><a href="#">Raw Data</a> | <a href="#">nwdb</a></div>
-        <div><span style="font-weight: bold">6% increase</span> since 04/09/22</div>
+<div class="lowest-price-div full-height">
+    <div class="lowest-price-item top">Lowest price as of {{ last_checked }}</div>
+    <div class="lowest-price-text lowest-price-item middle">{{ recent_lowest_price }}</div>
+    <div class="lowest-price-item bottom">
+        <div><a class="link-soft" href="#">Raw Data</a> | <a class="link-soft" href="https://nwdb.info/db/item/{{ nwdb_id }}">nwdb</a></div>
+        <div>{{ price_change|safe }}</div>
     </div>
 </div>

@@ -8,6 +8,8 @@ from constance import config  # noqa
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
+from django.template.loader import render_to_string
+from django.template.response import TemplateResponse
 
 from nwmarket import settings
 from nwmarketapp.api.utils import check_version_compatibility
@@ -563,7 +565,9 @@ def index(request, item_id=None, server_id=1):
         'popular_items': popular_items,
         'top10': most_listed_item_top10,
         "direct_link": item_id,
-        'servers': all_servers,
+        'servers': {
+            server[1]: server[0] for server in all_servers
+        },
         'server_id': server_id,
         'render_time': perf_counter() - p
     })
@@ -637,3 +641,39 @@ def latest_prices(request: WSGIRequest) -> FileResponse:
         content_type='application/json',
         filename='nwmarketprices.json'
     )
+
+
+def price_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
+    p = perf_counter()
+    item_data = get_list_by_nameid(item_id, server_id)
+    grouped_hist = item_data["grouped_hist"]
+    item_name = item_data["item_name"]
+    if not grouped_hist:
+        # we didnt find any prices with that name id
+        return JsonResponse(status=404)
+
+    price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
+
+    try:
+        nwdb_id = NWDBLookup.objects.get(name=item_data["item_name"])
+        nwdb_id = nwdb_id.item_id
+    except ObjectDoesNotExist:
+        nwdb_id = ''
+
+    return JsonResponse(
+        {
+            "graph_data": {
+                "price_graph_data": price_graph_data,
+                "avg_graph_data": avg_price_graph,
+                "num_listings": num_listings,
+            },
+            "lowest_price": render_to_string("nwmarketapp/snippets/lowest-price.html", {
+                "recent_lowest_price": item_data["recent_lowest_price"],
+                "last_checked": item_data["recent_price_time"],
+                "price_change": item_data["price_change_text"],
+                "detail_view": item_data["lowest_10_raw"],
+                'item_name': item_name,
+                'nwdb_id': nwdb_id,
+                'calculation_time': perf_counter() - p
+            })
+        }, safe=False)

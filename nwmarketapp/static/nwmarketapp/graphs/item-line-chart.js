@@ -21,7 +21,8 @@ function create_linegraph(data) {
     //	  LINE CHART
     Highcharts.chart('line-graph-container', {
     chart: {
-        zoomType: 'x'
+        zoomType: 'x',
+        height: 300
     },
     title: {
         text: null
@@ -110,35 +111,7 @@ window.addEventListener("load",function(event) {
             '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'
         ],
         chart: {
-            backgroundColor: {
-                linearGradient: {
-                    x1: 0,
-                    y1: 0,
-                    x2: 0,
-                    y2: 0
-                },
-                stops: [
-                    [0, 'rgb(40, 47, 47)'],
-                    [1, 'rgb(40, 47, 47)']
-                ]
-            },
-            style: {
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";'
-            },
-            plotBorderColor: '#606063'
-        },
-        title: {
-            style: {
-                color: '#E0E0E3',
-                textTransform: 'uppercase',
-                fontSize: '20px'
-            }
-        },
-        subtitle: {
-            style: {
-                color: '#E0E0E3',
-                textTransform: 'uppercase'
-            }
+            backgroundColor: 'rgb(40, 47, 47)',
         },
         xAxis: {
             gridLineColor: '#707073',
@@ -148,7 +121,6 @@ window.addEventListener("load",function(event) {
                 }
             },
             lineColor: '#707073',
-            minorGridLineColor: '#505053',
             tickColor: '#707073',
             title: {
                 style: {
@@ -203,7 +175,7 @@ window.addEventListener("load",function(event) {
             }
         },
         legend: {
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backgroundColor: 'rgb(40, 47, 47)',
             itemStyle: {
                 color: '#E0E0E3'
             },
@@ -313,11 +285,4 @@ window.addEventListener("load",function(event) {
 
 // Apply the theme
     Highcharts.setOptions(Highcharts.theme);
-    fetch(`/?cn_id=1223`)
-        .then(res => {
-            return res.json();
-        })
-        .then(data => {
-            create_linegraph(data);
-        })
 });

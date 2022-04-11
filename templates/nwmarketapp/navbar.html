@@ -11,30 +11,15 @@
             <span aria-hidden="true"></span>
         </a>
     </div>
-    <div class="navbar-item field item-search-container">
-        <p class="control has-icons-right">
-            <input class="input item-search" size="40" type="search" placeholder="Start searching...">
-        </p>
-    </div>
+    {% if not is_login_nav %}
+    {% include 'nwmarketapp/snippets/typeahead-search.html' %}
     <div id="burger" class="navbar-menu is-dark burger-menu">
-
         {% include 'nwmarketapp/server-select.html' %}
-        <div class="navbar-end is-dark">
-            <div class="navbar-item">
-                <div class="buttons">
-                    {% if not request.user %}
-                        <a class="button is-primary login" href="accounts/discord/login/">
-                            <img src="{% static 'images/discord-button.png' %}">
-                            <strong class="discord-text">Sign In With Discord</strong>
-                        </a>
-                    {% else %}
-                        <a class="button is-primary login" href="accounts/discord/login/">
-                            <img src="{% static 'images/discord-button.png' %}">
-                            <strong class="discord-text">Log Out ({{ request.user.first_name }})</strong>
-                        </a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+        {% include 'nwmarketapp/snippets/login_button.html' %}
     </div>
+    {% else %}
+        <a class="button is-primary login" href="/">
+            <strong class="discord-text">Back To Home</strong>
+        </a>
+    {% endif %}
 </nav>

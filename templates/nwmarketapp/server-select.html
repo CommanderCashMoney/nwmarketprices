@@ -1,16 +1,12 @@
 <div class="navbar-item has-dropdown is-hoverable server-select">
-    <a class="navbar-link">
+    <a class="navbar-link" id="server-name">
       Server Select
     </a>
     <div class="navbar-dropdown is-dark">
-      <a class="navbar-item server">
-        Camelot
+    {% for server_id, server_name in servers.items %}
+      <a class="navbar-item server" onclick="changeServer({{ server_id }})">
+          {{ server_name }}
       </a>
-      <a class="navbar-item server">
-        Delos
-      </a>
-      <a class="navbar-item server">
-        Lagado
-      </a>
+    {% endfor %}
     </div>
 </div>

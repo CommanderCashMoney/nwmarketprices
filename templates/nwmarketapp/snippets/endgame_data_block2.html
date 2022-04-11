@@ -1,21 +1,19 @@
-<div class="column is-one-third tile box item mr-1 mb-0">
-    <span class="popular-item-title">{{ name }}</span>
-    <hr class="solid divider">
-    {% if items %}
-        {% for item in items %}
-            <div class="columns is-mobile popular-item-row">
-                <div class="column is-three-fifths-fifths popular-item">
-                    <a href="javascript:{}" onclick="link_submit({{ item.3 }})" class="popular-item">{{ item.0 }}</a>
-                </div>
-                <div class="column is-one-fifths has-text-right popular-item">
-                    {{ item.1 }}
-                </div>
-                <div class="column is-one-fifth has-text-right popular-item">
-                    {{ item.2|safe }}
-                </div>
+<span class="popular-item-title">{{ name }}</span>
+<hr class="solid divider">
+{% if items %}
+    {% for item in items %}
+        <div class="columns is-mobile popular-item-row">
+            <div class="column is-three-fifths-fifths popular-item">
+                <a href="javascript:{}" onclick="loadItem({{ item.3 }})" class="popular-item">{{ item.0 }}</a>
             </div>
-        {% endfor %}
-    {% else %}
-        <div class="column is-full">Nothing listed!</div>
-    {% endif %}
-</div>
+            <div class="column is-one-fifths has-text-right popular-item">
+                {{ item.1 }}
+            </div>
+            <div class="column is-one-fifth has-text-right popular-item">
+                {{ item.2|safe }}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="column is-full">Nothing listed!</div>
+{% endif %}

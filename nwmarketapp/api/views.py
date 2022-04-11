@@ -4,6 +4,7 @@ import logging
 from constance import config  # noqa
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import JsonResponse
+from django.template.response import TemplateResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
 

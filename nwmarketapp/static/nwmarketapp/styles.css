@@ -1,7 +1,5 @@
 html {
   box-sizing: border-box;
-  background: url(background.png) no-repeat center center fixed;
-  background-size: cover;
   background-color: #0c0c0cf0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   color: #d5d5d5;
@@ -68,6 +66,22 @@ html {
     color: #9fc8df;
 }
 
+.navbar-link:hover {
+    color: #9fc8df;
+}
+
+.server:hover {
+    color: #9fc8df!important;
+}
+
+.link-soft {
+    color: inherit;
+    text-decoration: none;
+}
+.link-soft:hover {
+    color: #9fc8df!important;
+}
+
 .popular-item-title {
     color: #d5d5d5;
     font-size: 1.5em;
@@ -85,14 +99,24 @@ html {
     background-color: #1a1a1a;
     color: #ffffff;
 }
+.typeahead__list {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+.typeahead__item > a {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+.typeahead__item.active {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
 
 .item-search::placeholder {
     color: #6c6b6bc4;
 }
 
 .lowest-price-text {
-    padding-top: 20px;
-    padding-bottom: 20px;
     font-size: 5em;
 }
 
@@ -102,7 +126,26 @@ html {
 }
 
 .lowest-price-div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     font-size: 1.25em;
+}
+
+.lowest-price-item {
+    align-self: center;
+}
+
+.lowest-price-item.top {
+    margin-bottom: auto;
+}
+
+.lowest-price-item.middle {
+    margin: auto;
+}
+
+.lowest-price-item.bottom {
+    margin-top: auto;
 }
 
 .blue_text{
@@ -113,4 +156,12 @@ html {
 }
 .grey_text {
   color: #b9b9b9;
+}
+
+.full-height {
+    height:100%;
+}
+
+.hidden {
+    display: none!important;
 }

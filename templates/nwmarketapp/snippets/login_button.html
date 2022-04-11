@@ -1,0 +1,18 @@
+{% load static %}
+<div class="navbar-end is-dark">
+    <div class="navbar-item">
+        <div class="buttons">
+            {% if not request.user.is_authenticated %}
+                <a class="button is-primary login" href="accounts/discord/login/">
+                    <img src="{% static 'images/discord-button.png' %}">
+                    <strong class="discord-text">Sign In With Discord</strong>
+                </a>
+            {% else %}
+                <a class="button is-primary login" href="accounts/discord/login/">
+                    <img src="{% static 'images/discord-button.png' %}">
+                    <strong class="discord-text">Log Out ({{ request.user.first_name }})</strong>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
