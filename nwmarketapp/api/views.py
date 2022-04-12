@@ -3,6 +3,7 @@ import logging
 
 from constance import config  # noqa
 from django.core.handlers.wsgi import WSGIRequest
+from django.db.models.functions import Length
 from django.http import JsonResponse
 from django.template.response import TemplateResponse
 from rest_framework import status
@@ -80,3 +81,12 @@ def word_cleanup(request: WSGIRequest) -> JsonResponse:
         for nc in NameCleanup.objects.all()
     }
     return JsonResponse(mapped_items)
+
+
+def typeahead(request: WSGIRequest) -> JsonResponse:
+    return JsonResponse([{
+            "name": cn.name,
+            "id": cn.id
+        }
+        for cn in ConfirmedNames.objects.all()
+    ], safe=False)

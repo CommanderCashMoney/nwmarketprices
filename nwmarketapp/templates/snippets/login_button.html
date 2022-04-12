@@ -1,0 +1,34 @@
+{% load static %}
+<div class="navbar-end is-dark">
+    <div class="navbar-item">
+        {% if not request.user.is_authenticated %}
+            <div>
+                <form method="post" action="/account/discord/login/">
+                    {% csrf_token %}
+                    <button class="button is-primary login">
+                        <img src="{% static 'images/discord-button.png' %}">
+                        <strong class="discord-text">Sign In With Discord</strong>
+                    </button>
+                </form>
+            </div>
+        {% else %}
+
+            <div class="navbar-item has-dropdown server-select" id="settings">
+                <a class="navbar-link no-pad-mobile">Profile</a>
+                <div class="navbar-dropdown is-dark pb-0 hidden" style="min-width: 250px;">
+                    <a class="navbar-item server">
+                        do something
+                    </a>
+                    <form method="post" action="{% url 'account_logout' %}" class="pb-0">
+                        {% csrf_token %}
+                        <button class="button is-primary login" href="/account/logout/">
+                            <img src="{% static 'images/discord-button.png' %}">
+                            <strong class="discord-text">Log Out ({{ request.user.first_name }})</strong>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        {% endif %}
+    </div>
+</div>

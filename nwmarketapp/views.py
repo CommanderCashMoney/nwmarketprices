@@ -544,7 +544,7 @@ def index(request, item_id=None, server_id=1):
             'calculation_time': perf_counter() - p
         }, status=200)
 
-    return render(request, 'nwmarketapp/index2.html', {
+    return render(request, 'index2.html', {
         'cn_list': confirmed_names,
         "direct_link": item_id,
         'servers': {
@@ -644,12 +644,13 @@ def price_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRespon
 
     return JsonResponse(
         {
+            "item_name": item_name,
             "graph_data": {
                 "price_graph_data": price_graph_data,
                 "avg_graph_data": avg_price_graph,
                 "num_listings": num_listings,
             },
-            "lowest_price": render_to_string("nwmarketapp/snippets/lowest-price.html", {
+            "lowest_price": render_to_string("snippets/lowest-price.html", {
                 "recent_lowest_price": item_data["recent_lowest_price"],
                 "last_checked": item_data["recent_price_time"],
                 "price_change": item_data["price_change_text"],
@@ -684,7 +685,8 @@ def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
     }
 
     popular_rendered = {
-        popular_item_name_map[k].replace(" ", "-").lower(): render_to_string("nwmarketapp/snippets/endgame_data_block2.html", context={
+        popular_item_name_map[k].replace(" ", "-").lower(): render_to_string(
+            "snippets/endgame_data_block2.html", context={
             "name": popular_item_name_map[k],
             "items": v
         })

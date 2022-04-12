@@ -170,3 +170,20 @@ html {
     background-color: rgb(40, 47, 47)!important;
     border-color: rgb(40, 47, 47)!important;
 }
+
+@media only screen and (max-width: 600px) {
+  .no-pad-mobile {
+    padding: 0;
+  }
+}
+
+.typeahead__list {
+    background-color: rgb(40, 47, 47);
+    border-color: white;
+    border-bottom-color: white;
+}
+
+.typeahead__item > a {
+    color: white!important;
+    background-color: rgb(40, 47, 47);
+}

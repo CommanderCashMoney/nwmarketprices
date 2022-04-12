@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="{% static 'nwmarketapp/bulma.css' %}">
     <link rel="stylesheet" href="{% static 'nwmarketapp/styles.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/placeholder-loading/dist/css/placeholder-loading.min.css">
-    <script src="{% static 'nwmarketapp/app.js' %}"></script>
+    {% block additional_includes %}{% endblock %}
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0"></script>
     <script>
@@ -44,7 +44,7 @@
 <body>
 <div class="container mt-2">
     <div class="container">
-        {% include 'nwmarketapp/navbar.html' with is_login_nav=False %}
+        {% include 'navbar.html' with is_login_nav=False %}
     </div>
     <div class="container">
         {% block content %}{% endblock %}
