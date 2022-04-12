@@ -11,26 +11,6 @@ const fetchAutocompleteData = () => {
     )
 }
 
-const getParamsFromUrl = () => {
-    // convert this to something more elegant as needed
-    const loc = window.location;
-    if(!loc.pathname) {
-        return null;
-    }
-    const parts = loc.pathname.split("/");
-    let server_id = parts.pop() || parts.pop();
-    if(!server_id) {
-        return null;
-    } else if (server_id == "#") {
-        server_id = parts.pop();
-    }
-
-    return {
-        "item_id": parts.pop(),
-        "server_id": server_id
-    }
-}
-
 function changeServer(server_id, initialLoad=false){
     localStorage.setItem('lastServerId', server_id);
     document.getElementById("server-name").innerText = servers[server_id];
@@ -65,10 +45,7 @@ const loadItem = (item_id, initialLoad = false) => {
         }, "New World Market Prices", `/${serverId}`)
         return;
     }
-    fetch(`/price-data/${serverId}/${itemId}/`)
-    .then(res => {
-        return res.json();
-    })
+    nwmpRequest(`/price-data/${serverId}/${itemId}/`)
     .then(data => {
         if(!initialLoad) {
             window.history.pushState({
@@ -83,6 +60,9 @@ const loadItem = (item_id, initialLoad = false) => {
         elem.innerHTML = data["lowest_price"];
         create_linegraph(data["graph_data"]);
         setupModal("lowest-10-modal-trigger", "lowest-10-modal");
+    }).catch((data) => {
+        const errorMsg = data["errors"].join("<br><br>")
+        createNotifiation(errorMsg, "danger");
     })
 };
 
@@ -143,15 +123,3 @@ window.addEventListener('load', function() {
 
     setupModal("export-data-modal-trigger", "export-data-modal");
 });
-
-const setupModal = (triggerId, modalId) => {
-    document.getElementById(triggerId).onclick = () => {
-        const exportDataModal = document.getElementById(modalId);
-        exportDataModal.classList.add("is-active");
-        exportDataModal.querySelectorAll(".close-modal").forEach((elem) => {
-            elem.onclick = () => {
-                exportDataModal.classList.remove("is-active");
-            }
-        });
-    }
-}

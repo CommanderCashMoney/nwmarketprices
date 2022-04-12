@@ -296,8 +296,7 @@ def get_list_by_nameid(name_id: int, server_id: str) -> dict:
     try:
         item_name = qs_current_price.latest('name').name
     except Price.DoesNotExist:
-
-        return None, None, None, None, None, None, None
+        return None
 
     hist_price = qs_current_price.values_list('timestamp', 'price', 'avail').order_by('timestamp')
     last_run = Run.objects.filter(server_id=server_id, approved=True).exclude(username="january").latest('id')
@@ -511,6 +510,8 @@ def get_selected_item(server_id: int, selected_name: str) -> JsonResponse:
         selected_name = confirmed_names.get(nwdb_id=selected_name.lower())[1]
 
     item_data = get_list_by_nameid(selected_name, server_id)
+    if item_data is None:
+        return JsonResponse(status=404)
     grouped_hist = item_data["grouped_hist"]
     item_name = item_data["item_name"]
     if not grouped_hist:
@@ -624,6 +625,8 @@ def latest_prices(request: WSGIRequest) -> FileResponse:
 def price_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
     p = perf_counter()
     item_data = get_list_by_nameid(item_id, server_id)
+    if item_data is None:
+        return JsonResponse({"errors": ["No price data for item."]}, status=status.HTTP_404_NOT_FOUND)
     grouped_hist = item_data["grouped_hist"]
     item_name = item_data["item_name"]
     if not grouped_hist:

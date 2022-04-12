@@ -1,5 +1,6 @@
 import json
 
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.password_validation import get_default_password_validators, validate_password
 from django.core.exceptions import ValidationError
 from django.core.handlers.wsgi import WSGIRequest
@@ -12,7 +13,6 @@ def profile(request: WSGIRequest) -> TemplateResponse:
 
 
 def set_password(request: WSGIRequest) -> JsonResponse:
-    print(request.POST)
     password = request.POST.get("password")
     password_validators = get_default_password_validators()
     errors = []
@@ -24,5 +24,7 @@ def set_password(request: WSGIRequest) -> JsonResponse:
     status = "failed"
     if not errors:
         request.user.set_password(password)
+        request.user.save()
+        update_session_auth_hash(request, request.user)
         status = "ok"
     return JsonResponse({"status": status, "errors": errors})
