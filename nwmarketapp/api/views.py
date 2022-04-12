@@ -3,6 +3,7 @@ import logging
 
 from constance import config  # noqa
 from django.core.handlers.wsgi import WSGIRequest
+from django.db.models.functions import Length
 from django.http import JsonResponse
 from django.views.decorators.cache import cache_page
 from rest_framework import status
@@ -89,5 +90,5 @@ def typeahead(request: WSGIRequest) -> JsonResponse:
             "name": cn.name,
             "id": cn.id
         }
-        for cn in ConfirmedNames.objects.all()
+        for cn in ConfirmedNames.objects.all().order_by(Length("name"))
     ], safe=False)

@@ -1,7 +1,6 @@
 const initTypeahead = (data) => {
     $.typeahead({
         input: '.item-search',
-        order: "asc",
         display: "name",
         source: {data: data},
         callback: {
@@ -13,7 +12,12 @@ const initTypeahead = (data) => {
             },
             onSubmit: function (node, form, item, event) {
                 loadItem(item.id);
-            }
+            },
+
         }
     })
 }
+
+$('.typeahead').bind('typeahead:render', function(ev, suggestion) {
+  console.log('Selection: ' + suggestion);
+});
