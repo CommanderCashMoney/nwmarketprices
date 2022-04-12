@@ -13,9 +13,8 @@
                 </form>
             </div>
         {% else %}
-
             <div class="navbar-item has-dropdown server-select" id="settings">
-                <a class="navbar-link no-pad-mobile">{{ user.first_name }}</a>
+                <a class="navbar-link no-pad-mobile">{{ request.user.first_name|default:request.user.username }}</a>
                 <div class="navbar-dropdown is-dark pb-0 hidden " style="min-width: 250px;">
                     <a class="navbar-item server settings-item" href="/account/profile/">
                         Settings
@@ -23,7 +22,7 @@
                     <form method="post" action="{% url 'account_logout' %}" class="pb-0">
                         {% csrf_token %}
                         <button class="button is-primary login" href="/account/logout/">
-                            Log Out ({{ request.user.first_name }})
+                            Log Out ({{ request.user.first_name|default:request.user.username }})
                         </button>
                     </form>
                 </div>

@@ -204,6 +204,8 @@ html {
 .discord-img {
     border-radius: 50%;
     border: 2px solid white;
+    height: 100px;
+    width: 100px;
 }
 
 .highlight {

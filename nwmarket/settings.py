@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'clearcache',
     'constance',
     'constance.backends.database',
+    'django.contrib.humanize',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

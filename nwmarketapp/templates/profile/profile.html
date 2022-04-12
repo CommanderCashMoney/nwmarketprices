@@ -1,13 +1,17 @@
 {% load profile_extras %}
 {% load account %}
+{% load static %}
 <div class="box full-height">
     <div class="card full-height">
         <div class="card-content">
             <div class="media">
                 <div class="media-left">
                     <figure class="image is-48x48">
-                        <img class="discord-img" src="{{ user.socialaccount_set.all.0.get_avatar_url }}"
-                             width="96" height="96"/>
+                        {% if user.socialaccount_set.all.0.get_avatar_url %}
+                        <img class="discord-img" src="{{ user.socialaccount_set.all.0.get_avatar_url }}"/>
+                        {% else %}
+                        <img class="discord-img" src="{% static 'images/default-user.png' %}"/>
+                        {% endif %}
                     </figure>
                 </div>
                 <div class="media-content">
