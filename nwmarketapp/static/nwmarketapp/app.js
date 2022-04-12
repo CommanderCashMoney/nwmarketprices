@@ -116,6 +116,13 @@ function changeServer(server_id, initialLoad=false){
 
 const loadItem = (item_id, initialLoad = false) => {
     itemId = item_id;
+    if(item_id == null) {
+        window.history.pushState({
+            serverId: serverId,
+            itemId: itemId
+        }, "New World Market Prices", `/${serverId}`)
+        return;
+    }
     fetch(`/price-data/${serverId}/${itemId}/`)
     .then(res => {
         return res.json();
@@ -159,3 +166,23 @@ window.addEventListener('load', function() {
 window.onpopstate = function(e){
     init();
 };
+
+
+// dropdown click event listener
+window.addEventListener('load', function() {
+    const serverSelect = document.getElementById("server-select");
+    const dropdownElems = serverSelect.getElementsByClassName("navbar-dropdown")[0];
+    serverSelect.onclick = () => {
+        dropdownElems.classList.toggle("hidden");
+        serverSelect.classList.toggle("is-active");
+    }
+    window.onclick = (event) => {
+        const elem = event.target;
+        const isChildOfServerSelect = elem === serverSelect || serverSelect.contains(elem);
+        if(!isChildOfServerSelect) {
+            serverSelect.classList.remove("is-active");
+            dropdownElems.toggle("hidden");
+        }
+
+    }
+});
