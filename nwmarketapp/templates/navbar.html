@@ -18,8 +18,12 @@
         {% include 'snippets/login_button.html' %}
     </div>
     {% else %}
+    <div class="navbar-end is-dark">
+        <div class="navbar-item">
         <a class="button is-primary login" href="/">
             <strong class="discord-text">Back To Home</strong>
         </a>
+        </div>
+    </div>
     {% endif %}
 </nav>

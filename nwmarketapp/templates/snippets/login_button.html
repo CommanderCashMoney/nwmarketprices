@@ -1,4 +1,5 @@
 {% load static %}
+{% load account %}
 <div class="navbar-end is-dark">
     <div class="navbar-item">
         {% if not request.user.is_authenticated %}
@@ -14,16 +15,15 @@
         {% else %}
 
             <div class="navbar-item has-dropdown server-select" id="settings">
-                <a class="navbar-link no-pad-mobile">Profile</a>
-                <div class="navbar-dropdown is-dark pb-0 hidden" style="min-width: 250px;">
-                    <a class="navbar-item server">
-                        do something
+                <a class="navbar-link no-pad-mobile">{{ user.first_name }}</a>
+                <div class="navbar-dropdown is-dark pb-0 hidden " style="min-width: 250px;">
+                    <a class="navbar-item server settings-item" href="/account/profile/">
+                        Settings
                     </a>
                     <form method="post" action="{% url 'account_logout' %}" class="pb-0">
                         {% csrf_token %}
                         <button class="button is-primary login" href="/account/logout/">
-                            <img src="{% static 'images/discord-button.png' %}">
-                            <strong class="discord-text">Log Out ({{ request.user.first_name }})</strong>
+                            Log Out ({{ request.user.first_name }})
                         </button>
                     </form>
                 </div>

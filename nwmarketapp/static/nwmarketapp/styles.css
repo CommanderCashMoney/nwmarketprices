@@ -187,3 +187,16 @@ html {
     color: white!important;
     background-color: rgb(40, 47, 47);
 }
+
+.clickable {
+    cursor: pointer;
+}
+
+.clickable:hover {
+    color: #9fc8df;
+}
+
+.column-title {
+    font-weight: bold;
+    font-size: 18px;
+}

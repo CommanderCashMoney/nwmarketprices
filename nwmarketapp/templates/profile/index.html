@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block nav %}
+    {% with is_login_nav=True %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% load static %}
+{% load account %}
+
+{% block content %}
+<div class="container mt-2">
+    <div class="box">
+    Hello {% user_display user %}
+    </div>
+</div>
+{% endblock %}

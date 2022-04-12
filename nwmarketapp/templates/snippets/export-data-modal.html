@@ -1,0 +1,21 @@
+{% load static %}
+<div class="modal" id="export-data-modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Exporting prices to the gaming.tools crafting calculator</p>
+      <button class="delete close-modal" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+        <div class="pb-2">1. Right click <a href="/latestprices/?server_id=1">here</a> and save link as.</div>
+        <div class="pb-2">2. Go to the <a href="https://gaming.tools/newworld/price-customization">price customization page</a>.</div>
+        <div class="pb-2">3. Scroll to the bottom and use the Import Prices function</div>
+        <div class="pb-4">4. Change the "Minimum Import Availability" to 1 to get all the prices</div>
+        <img src="{% static 'nwmarketapp/GamingtoolCustomizations.png' %}">
+        <div>The prices exported will be an average of the lowest 5 listings seen in the last scan.</div>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button close-modal">Close</button>
+    </footer>
+  </div>
+</div>

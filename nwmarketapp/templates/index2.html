@@ -69,11 +69,12 @@
 <div class="container py-0">
     <div class="container box my-4 mx-0 is-size-5 has-text-centered">
         Data from additional servers coming soon. We are looking for more Market Watchers, head over to the <a href="https://discord.gg/9xfcG6jTVj" style="text-decoration: underline">discord channel</a> to find out more.
-How to <a href="#" data-toggle="modal" data-target="#exportModal" style="text-decoration: underline">export prices</a> for use with gaming.tools crafting calculator
+How to <a id="export-data-modal-trigger" style="text-decoration: underline">export prices</a> for use with gaming.tools crafting calculator
     </div>
 </div>
 <script>
 const servers = {{ servers|safe }};
 let top10data = null;
 </script>
+{% include 'snippets/export-data-modal.html' %}
 {% endblock %}

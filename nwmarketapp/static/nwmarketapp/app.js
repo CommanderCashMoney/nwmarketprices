@@ -81,6 +81,7 @@ const loadItem = (item_id, initialLoad = false) => {
         const elem = document.getElementById("lowest-price-data");
         elem.innerHTML = data["lowest_price"];
         create_linegraph(data["graph_data"]);
+        setupModal("lowest-10-modal-trigger", "lowest-10-modal");
     })
 };
 
@@ -140,4 +141,18 @@ window.addEventListener('load', function() {
             dropdownElems.classList.add("hidden");
         }
     });
+
+    setupModal("export-data-modal-trigger", "export-data-modal");
 });
+
+const setupModal = (triggerId, modalId) => {
+        document.getElementById(triggerId).onclick = () => {
+        const exportDataModal = document.getElementById(modalId);
+        exportDataModal.classList.add("is-active");
+        exportDataModal.querySelectorAll(".close-modal").forEach((elem) => {
+            elem.onclick = () => {
+                exportDataModal.classList.remove("is-active");
+            }
+        });
+    }
+}
