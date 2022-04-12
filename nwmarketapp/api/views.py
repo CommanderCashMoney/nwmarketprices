@@ -3,9 +3,8 @@ import logging
 
 from constance import config  # noqa
 from django.core.handlers.wsgi import WSGIRequest
-from django.db.models.functions import Length
 from django.http import JsonResponse
-from django.template.response import TemplateResponse
+from django.views.decorators.cache import cache_page
 from rest_framework import status
 from rest_framework.decorators import api_view
 
@@ -53,6 +52,7 @@ def submit_bad_names(request: WSGIRequest) -> JsonResponse:
     return JsonResponse({"status": "ok"}, status=status.HTTP_201_CREATED)
 
 
+@cache_page(60 * 60 * 24)
 def confirmed_names(request: WSGIRequest) -> JsonResponse:
     return JsonResponse({
         cn.name: {
@@ -83,6 +83,7 @@ def word_cleanup(request: WSGIRequest) -> JsonResponse:
     return JsonResponse(mapped_items)
 
 
+@cache_page(60 * 60 * 24)
 def typeahead(request: WSGIRequest) -> JsonResponse:
     return JsonResponse([{
             "name": cn.name,

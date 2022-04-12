@@ -502,58 +502,53 @@ def get_popular_items(request: WSGIRequest, server_id: int) -> JsonResponse:
     return JsonResponse(get_popular_items_dict(server_id), status=status.HTTP_200_OK, safe=False)
 
 
-@ratelimit(key='ip', rate='7/s', block=True)
-# @cache_page(60 * 10)
-def index(request, item_id=None, server_id=1):
+def get_selected_item(server_id: int, selected_name: str) -> JsonResponse:
     p = perf_counter()
-    confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
-    confirmed_names = confirmed_names.values_list('name', 'id', 'nwdb_id')
-    all_servers = Servers.objects.all()
-    all_servers = all_servers.values_list('name', 'id')
+    if not selected_name.isnumeric():
+        # nwdb id was passed instead. COnvert this to my ids
+        confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
+        confirmed_names = confirmed_names.values_list('name', 'id', 'nwdb_id')
+        selected_name = confirmed_names.get(nwdb_id=selected_name.lower())[1]
+
+    item_data = get_list_by_nameid(selected_name, server_id)
+    grouped_hist = item_data["grouped_hist"]
+    item_name = item_data["item_name"]
+    if not grouped_hist:
+        # we didnt find any prices with that name id
+        return JsonResponse({"recent_lowest_price": 'N/A', "price_change": 'Not Found', "last_checked": 'Not Found'},
+                            status=200)
+
+    price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
+
+    try:
+        nwdb_id = NWDBLookup.objects.get(name=item_data["item_name"])
+        nwdb_id = nwdb_id.item_id
+    except ObjectDoesNotExist:
+        nwdb_id = ''
+
+    return JsonResponse({
+        "recent_lowest_price": item_data["recent_lowest_price"],
+        "last_checked": item_data["recent_price_time"],
+        "price_graph_data": price_graph_data,
+        "price_change": item_data["price_change_text"],
+        "avg_graph_data": avg_price_graph,
+        "detail_view": item_data["lowest_10_raw"],
+        'item_name': item_name,
+        'num_listings': num_listings,
+        'nwdb_id': nwdb_id,
+        'calculation_time': perf_counter() - p
+    }, status=200)
+
+
+@ratelimit(key='ip', rate='7/s', block=True)
+def index(request, item_id=None, server_id=1):
     selected_name = request.GET.get('cn_id')
     if selected_name:
-        if not selected_name.isnumeric():
-            # nwdb id was passed instead. COnvert this to my ids
-            selected_name = confirmed_names.get(nwdb_id=selected_name.lower())[1]
+        return get_selected_item(server_id, selected_name)
 
-        item_data = get_list_by_nameid(selected_name, server_id)
-        grouped_hist = item_data["grouped_hist"]
-        item_name = item_data["item_name"]
-        if not grouped_hist:
-            # we didnt find any prices with that name id
-            return JsonResponse({"recent_lowest_price": 'N/A', "price_change": 'Not Found', "last_checked": 'Not Found'}, status=200)
-
-        price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
-
-        try:
-            nwdb_id = NWDBLookup.objects.get(name=item_data["item_name"])
-            nwdb_id = nwdb_id.item_id
-        except ObjectDoesNotExist:
-            nwdb_id = ''
-
-        return JsonResponse({
-            "recent_lowest_price": item_data["recent_lowest_price"],
-            "last_checked": item_data["recent_price_time"],
-            "price_graph_data": price_graph_data,
-            "price_change": item_data["price_change_text"],
-            "avg_graph_data": avg_price_graph,
-            "detail_view": item_data["lowest_10_raw"],
-            'item_name': item_name,
-            'num_listings': num_listings,
-            'nwdb_id': nwdb_id,
-            'calculation_time': perf_counter() - p
-        }, status=200)
-
-    return render(request, 'index2.html', {
-        'cn_list': confirmed_names,
-        "direct_link": item_id,
-        'servers': {
-            server[1]: server[0] for server in all_servers
-        },
-        'server_id': server_id,
-        'render_time': perf_counter() - p
+    return render(request, 'index.html', {
+        'servers': {server.name: server.id for server in Servers.objects.all()}
     })
-
 
 
 @ratelimit(key='ip', rate='5/s', block=True)
@@ -625,6 +620,7 @@ def latest_prices(request: WSGIRequest) -> FileResponse:
     )
 
 
+@cache_page(60 * 10)
 def price_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
     p = perf_counter()
     item_data = get_list_by_nameid(item_id, server_id)
@@ -662,6 +658,7 @@ def price_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRespon
         }, safe=False)
 
 
+@cache_page(60 * 10)
 def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
     try:
         last_run = Run.objects.filter(server_id=server_id, approved=True).latest("id")
