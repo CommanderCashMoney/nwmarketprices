@@ -547,7 +547,7 @@ def index(request, item_id=None, server_id=1):
         return get_selected_item(server_id, selected_name)
 
     return render(request, 'index.html', {
-        'servers': {server.name: server.id for server in Servers.objects.all()}
+        'servers': {server.id: server.name  for server in Servers.objects.all()}
     })
 
 
