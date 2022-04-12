@@ -200,3 +200,28 @@ html {
     font-weight: bold;
     font-size: 18px;
 }
+
+.discord-img {
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.highlight {
+    color: #f9ffbf;
+}
+
+.password-input {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    height: 2em;
+    min-width: 15em;
+}
+
+.password-submit {
+    height: 2em;
+    padding-top: 2px;
+}
+
+.password-input::placeholder {
+    color: #6c6b6bc4;
+}

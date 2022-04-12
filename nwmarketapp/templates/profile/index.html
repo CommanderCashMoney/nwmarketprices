@@ -5,13 +5,23 @@
     {% endwith %}
 {% endblock %}
 
-{% load static %}
-{% load account %}
-
 {% block content %}
-<div class="container mt-2">
-    <div class="box">
-    Hello {% user_display user %}
+    <div class="container mt-2">
+        <div class="columns">
+            <div class="column is-half">
+                {% include 'profile/profile.html' %}
+            </div>
+            <div class="column is-half">
+                {% include 'profile/scanner-settings.html' %}
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column is-half">
+                {% include 'profile/site-settings.html' %}
+            </div>
+            <div class="column is-half">
+                <!-- nothing for now -->
+            </div>
+        </div>
     </div>
-</div>
 {% endblock %}

@@ -32,6 +32,7 @@ const getParamsFromUrl = () => {
 }
 
 function changeServer(server_id, initialLoad=false){
+    localStorage.setItem('lastServerId', server_id);
     document.getElementById("server-name").innerText = servers[server_id];
     serverId = server_id;
     fetch(`/server-price-data/${serverId}/`)
@@ -86,13 +87,15 @@ const loadItem = (item_id, initialLoad = false) => {
 };
 
 const init = () => {
+    const lastServerId = localStorage.getItem("lastServerId");
     document.getElementById("price-data").classList.add("hidden");
     document.getElementById("welcome-banner").classList.add("hidden");
 
     fetchAutocompleteData();
 
     const params = getParamsFromUrl();
-    serverId = params && params.server_id || 1;
+    // first, use the server id in the url. if there's none, use the last server id the person was on. otherwise 1.
+    serverId = params && params.server_id || lastServerId || 1;
     changeServer(serverId, true);
     if(params && params.item_id) {
         loadItem(params.item_id, true);
@@ -102,17 +105,13 @@ const init = () => {
     document.getElementById("server-name").innerText = servers[serverId];
 }
 
-window.addEventListener('load', function() {
-    init();
-});
-
 window.onpopstate = function(e){
     init();
 };
 
-
 // dropdown click event listener
 window.addEventListener('load', function() {
+    init();
     const serverSelect = document.getElementById("server-select");
     const dropdownElems = serverSelect.getElementsByClassName("navbar-dropdown")[0];
     serverSelect.onclick = () => {
@@ -146,7 +145,7 @@ window.addEventListener('load', function() {
 });
 
 const setupModal = (triggerId, modalId) => {
-        document.getElementById(triggerId).onclick = () => {
+    document.getElementById(triggerId).onclick = () => {
         const exportDataModal = document.getElementById(modalId);
         exportDataModal.classList.add("is-active");
         exportDataModal.querySelectorAll(".close-modal").forEach((elem) => {

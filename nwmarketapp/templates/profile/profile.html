@@ -1,0 +1,31 @@
+{% load profile_extras %}
+{% load account %}
+<div class="box full-height">
+    <div class="card full-height">
+        <div class="card-content">
+            <div class="media">
+                <div class="media-left">
+                    <figure class="image is-48x48">
+                        <img class="discord-img" src="{{ user.socialaccount_set.all.0.get_avatar_url }}"
+                             width="96" height="96"/>
+                    </figure>
+                </div>
+                <div class="media-content">
+                    <p class="title is-4">{{ request.user.first_name }}</p>
+                    <p class="subtitle is-6">{% user_display user %}</p>
+                </div>
+            </div>
+            <div class="content">
+                <time datetime="2016-1-1">User since {{ request.user.date_joined|date }}.</time>
+                {% if request.user|user_is_scanner_of %}
+                    <div class="mt-3">You are a scanner on servers
+                        <span class="highlight">{% for server in request.user|user_is_scanner_of %}
+                            {{ server }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+                    </div>
+                {% else %}
+                    <div class="mt-3">You are not a scanner on any server. Request on <a href="https://discord.gg/9xfcG6jTVj" style="text-decoration: underline">discord</a> to become one!</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
