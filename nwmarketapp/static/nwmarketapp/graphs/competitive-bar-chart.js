@@ -1,4 +1,14 @@
 const drawBar = () => {
+    let names = [];
+    let colors = ["pink", "orange", "yellow", "lightblue", "blue", "purple", "darkgreen", "violet", "brown", "red"];
+    let numData = [];
+    for(let i=0; i<top10data.length; i++) {
+        names.push(top10data[i][0]);
+        numData.push({
+            color: colors[i],
+            y: top10data[i][1]
+        });
+    }
     Highcharts.chart('competitive-bar-container', {
         chart: {
             type: 'bar',
@@ -8,7 +18,7 @@ const drawBar = () => {
             text: null
         },
         xAxis: {
-            categories: ['Reinforced Orichalcum Great Axe Charm', "Iron Guardsman's Insignia", "Another Item", "Some super long text to test what happens when its long", "Another","Another","Another","Another","Another","Another",],
+            categories: names,
         },
         yAxis: {
             min: 0,
@@ -32,20 +42,10 @@ const drawBar = () => {
         },
         series: [{
             name: 'Number of Different Prices',
-            data: [
-                {color: 'pink', y: 80},
-                {color: 'orange', y: 65},
-                {color: 'yellow', y: 55},
-                {color: 'lightblue', y: 50},
-                {color: 'blue', y: 45},
-                {color: 'purple', y: 40},
-                {color: 'darkgreen', y: 35},
-                {color: 'violet', y: 30},
-                {color: 'brown', y: 25},
-                {color: 'red', y: 20},
-            ]
+            data: numData
         }]
     });
+    document.getElementById("competitive-items-ph").classList.add("hidden");
 }
 
 window.onload = () => {
@@ -68,5 +68,4 @@ window.onload = () => {
         },
     };
     Highcharts.setOptions(Highcharts.theme);
-    drawBar();
 }

@@ -543,27 +543,9 @@ def index(request, item_id=None, server_id=1):
             'nwdb_id': nwdb_id,
             'calculation_time': perf_counter() - p
         }, status=200)
-    else:
-        # not an ajax post or a direct item link URL, only run this on intial page load or refresh
-        popular_items = get_popular_items_dict(server_id)
-        # Most listed bar chart
-        try:
-            last_run = Run.objects.filter(server_id=server_id, approved=True).latest("id")
-            most_listed_item_top10 = Price.objects.filter(
-                run=last_run,
-                server_id=server_id
-            ).values_list(
-                'name',
-            ).annotate(
-                count=Count('price', distinct=True)
-            ).values_list("name", "count").order_by("-count")[:9]
-        except Run.DoesNotExist:
-            most_listed_item_top10 = []
 
     return render(request, 'nwmarketapp/index2.html', {
         'cn_list': confirmed_names,
-        'popular_items': popular_items,
-        'top10': most_listed_item_top10,
         "direct_link": item_id,
         'servers': {
             server[1]: server[0] for server in all_servers
@@ -677,3 +659,39 @@ def price_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRespon
                 'calculation_time': perf_counter() - p
             })
         }, safe=False)
+
+
+def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
+    try:
+        last_run = Run.objects.filter(server_id=server_id, approved=True).latest("id")
+        most_listed_item_top10 = Price.objects.filter(
+            run=last_run,
+            server_id=server_id
+        ).values_list(
+            'name',
+        ).annotate(
+            count=Count('price', distinct=True)
+        ).values_list("name", "count").order_by("-count")[:9]
+    except Run.DoesNotExist:
+        most_listed_item_top10 = []
+    popular_items = get_popular_items_dict(server_id)
+    popular_item_name_map = {
+        "popular_endgame_data": "Popular End Game Items",
+        "popular_base_data": "Popular Base Materials",
+        "mote_data": "Motes",
+        "refining_data": "Refining Reagents",
+        "trophy_data": "Trophy Materials"
+    }
+
+    popular_rendered = {
+        popular_item_name_map[k].replace(" ", "-").lower(): render_to_string("nwmarketapp/snippets/endgame_data_block2.html", context={
+            "name": popular_item_name_map[k],
+            "items": v
+        })
+        for k, v in popular_items.items()
+        if k not in ["calculation_time", "sorting_time"]
+    }
+    return JsonResponse({
+        "most_listed": list(most_listed_item_top10),
+        **popular_rendered
+    })

@@ -1,0 +1,20 @@
+<span class="popular-item-title">{{ name }}</span>
+<hr class="solid divider">
+<span id="{{ id }}">
+    <div class="ph-item">
+        <div class="ph-col-12">
+            <div class="ph-row">
+                {% for _ in '01234567'|make_list %}
+                <div class="ph-col-4"></div>
+                <div class="ph-col-2 empty"></div>
+                <div class="ph-col-2"></div>
+                <div class="ph-col-2 empty"></div>
+                <div class="ph-col-2"></div>
+                    {% if not forloop.last %}
+                <div class="ph-col-12 empty"></div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</span>

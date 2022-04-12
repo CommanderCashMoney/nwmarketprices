@@ -28,13 +28,13 @@
 <div class="container py-0 px-2">
     <div class="columns mt-0 mb-0">
         <div class="column is-one-third is-flex mx-0 p-1">
-            <div class="container box my-auto full-height">
-                {% include 'nwmarketapp/snippets/endgame_data_block2.html' with name="Popular End Game Items" items=popular_items.popular_endgame_data %}
+            <div class="container box my-auto full-height" >
+            {% include "nwmarketapp/snippets/popular-end-game-empty.html" with name="Popular End Game Items" id="popular-end-game-items" %}
             </div>
         </div>
         <div class="column is-one-third is-flex mx-0 p-1">
             <div class="container box my-auto full-height">
-                {% include 'nwmarketapp/snippets/endgame_data_block2.html' with name="Popular Base Items" items=popular_items.popular_base_data  %}
+            {% include "nwmarketapp/snippets/popular-end-game-empty.html" with name="Popular Base Materials" id="popular-base-materials"  %}
             </div>
         </div>
         <div class="column is-one-third is-flex mx-0 p-1">
@@ -46,17 +46,17 @@
     <div class="columns mt-1">
         <div class="column is-one-third is-flex mx-0 p-1">
             <div class="container box my-auto full-height">
-                {% include "nwmarketapp/snippets/endgame_data_block2.html" with name="Motes" items=popular_items.mote_data %}
+                {% include "nwmarketapp/snippets/popular-end-game-empty.html" with name="Motes" id="motes" %}
             </div>
         </div>
         <div class="column is-one-third is-flex mx-0 p-1">
             <div class="container box my-auto full-height">
-                {% include "nwmarketapp/snippets/endgame_data_block2.html" with name="Refining Reagents" items=popular_items.refining_data %}
+                {% include "nwmarketapp/snippets/popular-end-game-empty.html" with name="Refining Reagents" id="refining-reagents" %}
             </div>
         </div>
         <div class="column is-one-third is-flex mx-0 p-1">
             <div class="container box my-auto full-height">
-                {% include "nwmarketapp/snippets/endgame_data_block2.html" with name="Trophy Mats" items=popular_items.trophy_data %}
+                {% include "nwmarketapp/snippets/popular-end-game-empty.html" with name="Trophy Materials" id="trophy-materials" %}
             </div>
         </div>
     </div>
@@ -69,5 +69,6 @@ How to <a href="#" data-toggle="modal" data-target="#exportModal" style="text-de
 </div>
 <script>
 const servers = {{ servers|safe }};
+let top10data = null;
 </script>
 {% endblock %}

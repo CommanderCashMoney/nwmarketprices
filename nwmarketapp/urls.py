@@ -10,5 +10,6 @@ urlpatterns = [
     path('<int:item_id>/<int:server_id>', views.index, name='index'),
     path('popular_items/<int:server_id>', views.get_popular_items, name='index'),
     path('popular_items_old/<int:server_id>', views.get_popular_items_old, name='index'),
-    path('price-data/<int:server_id>/<int:item_id>/', views.price_data, name="price-data")
+    path('price-data/<int:server_id>/<int:item_id>/', views.price_data, name="price-data"),
+    path('server-price-data/<int:server_id>/', views.intial_page_load_data, name="intial-page-load-data"),
 ]

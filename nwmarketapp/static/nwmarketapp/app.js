@@ -3,71 +3,71 @@ let itemId = null;
 
 const initTypeahead = () => {
     $.typeahead({
-            input: '.item-search',
-            order: "asc",
-            display: "name",
+        input: '.item-search',
+        order: "asc",
+        display: "name",
 
 
-            source: {
-                 data: ["aaaa"]
+        source: {
+             data: ["aaaa"]
+
+        },
+        callback: {
+            onInit: function (node) {
+                console.log('Typeahead Initiated on ' + node.selector);
+            },
+            onClickAfter: function(node, a, item, event){
+
+                var cn_id = item.id
+                var form_data = {cn_id}
+
+                 $.ajax({
+                    type: 'GET',
+                    url: "",
+                    data: form_data,
+                    success: function (response) {
+                        update_prices(response);
+                        create_linegraph(response)
+                        let name = $(".js-typeahead-names").eq(0).val();
+                         let win_title = 'New World Market Prices' + cn_id
+                        let new_url = '';
+                        window.history.pushState('data', win_title, new_url);
+                        gtag('event', 'search-input', {'term': name});
+                        $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
+                    },
+
+                    error: function (response) {
+                        console.log(response)
+                    }
+                })
 
             },
-            callback: {
-                onInit: function (node) {
-                    console.log('Typeahead Initiated on ' + node.selector);
-                },
-                onClickAfter: function(node, a, item, event){
+            onSubmit: function (node, form, item, event) {
+                event.preventDefault();
+                var cn_id = item.id
+                var form_data = {cn_id}
 
-                    var cn_id = item.id
-                    var form_data = {cn_id}
+                $.ajax({
+                    type: 'GET',
+                    url: "",
+                    data: form_data,
+                    success: function (response) {
+                        update_prices(response);
+                        create_linegraph(response)
+                        let name = $(".js-typeahead-names").eq(0).val();
 
-                     $.ajax({
-                        type: 'GET',
-                        url: "",
-                        data: form_data,
-                        success: function (response) {
-                            update_prices(response);
-                            create_linegraph(response)
-                            let name = $(".js-typeahead-names").eq(0).val();
-                             let win_title = 'New World Market Prices' + cn_id
-                            let new_url = '';
-                            window.history.pushState('data', win_title, new_url);
-                            gtag('event', 'search-input', {'term': name});
-                            $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
-                        },
+                        gtag('event', 'search-input', {'term': name});
+                        $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
+                    },
 
-                        error: function (response) {
-                            console.log(response)
-                        }
-                    })
-
-                },
-                onSubmit: function (node, form, item, event) {
-                    event.preventDefault();
-                    var cn_id = item.id
-                    var form_data = {cn_id}
-
-                    $.ajax({
-                        type: 'GET',
-                        url: "",
-                        data: form_data,
-                        success: function (response) {
-                            update_prices(response);
-                            create_linegraph(response)
-                            let name = $(".js-typeahead-names").eq(0).val();
-
-                            gtag('event', 'search-input', {'term': name});
-                            $.getScript("https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0",function(){});
-                        },
-
-                        error: function (response) {
-                            console.log(response)
-                        }
-                    })
-                }
-
+                    error: function (response) {
+                        console.log(response)
+                    }
+                })
             }
-        })
+
+        }
+    })
 }
 
 const getParamsFromUrl = () => {
@@ -90,15 +90,28 @@ const getParamsFromUrl = () => {
     }
 }
 
-function changeServer(server_id){
+function changeServer(server_id, initialLoad=false){
     document.getElementById("server-name").innerText = servers[server_id];
-    let pathname = window.location.pathname;
     serverId = server_id;
-    if ((pathname.match(/\//g)||[]).length == 2) {
-        window.location.assign(`/${itemId}/${server_id}`)
-    } else {
-        window.location.assign(`/1223/${server_id}`)
-    }
+    fetch(`/server-price-data/${serverId}/`)
+    .then(res => {
+        return res.json();
+    })
+    .then(data => {
+        if(!initialLoad) {
+            window.history.pushState({
+                serverId: serverId,
+                itemId: itemId
+            }, "New World Market Prices", `/${itemId}/${serverId}`)
+            loadItem(itemId, false)
+        }
+        const { most_listed, ...popularItemData } = data;
+        top10data = most_listed;
+        drawBar();
+        for (const [key, value] of Object.entries(popularItemData)) {
+            document.getElementById(key).innerHTML = value;
+        }
+    })
 }
 
 const loadItem = (item_id, initialLoad = false) => {
@@ -123,10 +136,14 @@ const loadItem = (item_id, initialLoad = false) => {
 };
 
 const init = () => {
+    document.getElementById("price-data").classList.add("hidden");
+    document.getElementById("welcome-banner").classList.add("hidden");
+
     initTypeahead();
 
     const params = getParamsFromUrl();
     serverId = params && params.server_id || 1;
+    changeServer(serverId, true);
     if(params && params.item_id) {
         loadItem(params.item_id, true);
     } else {
@@ -140,7 +157,5 @@ window.addEventListener('load', function() {
 });
 
 window.onpopstate = function(e){
-    document.getElementById("price-data").classList.add("hidden");
-    document.getElementById("welcome-banner").classList.add("hidden");
     init();
 };

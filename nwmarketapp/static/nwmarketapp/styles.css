@@ -165,3 +165,8 @@ html {
 .hidden {
     display: none!important;
 }
+
+.ph-item {
+    background-color: rgb(40, 47, 47)!important;
+    border-color: rgb(40, 47, 47)!important;
+}

@@ -5,13 +5,12 @@ function create_linegraph(data) {
     const max_price = []
     const num_listings = []
     const avg_prices = []
-    for(let i=0; i<10; i++) {
+    for(let i=0; i<data.price_graph_data.length; i++) {
         const pgd = data.price_graph_data[i];
         let dateObj = new Date(pgd[0]);
         let date = dateObj.getDate();
         let month = dateObj.getMonth() + 1;
         let dt = month + '-' + date;
-        console.log(dateObj / 1000);
         prices.push([dateObj / 1, pgd[1]]);
         max_price.push([dateObj, pgd[1]]);
         avg_prices.push([dateObj / 1, data.avg_graph_data[i][1]]);
