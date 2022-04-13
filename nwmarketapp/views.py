@@ -13,6 +13,7 @@ from django.template.loader import render_to_string
 from nwmarket import settings
 from nwmarketapp.api.utils import check_version_compatibility, get_popular_items_dict, get_list_by_nameid, \
     get_price_graph_data
+from nwmarketapp.api.views.prices import get_item_data_v1
 from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup, NWDBLookup
 from nwmarketapp.models import Price
 from django.http import JsonResponse, FileResponse
@@ -223,10 +224,9 @@ class ConfirmedNamesAPI(CreateAPIView):
 
 
 def index(request, *args, **kwargs):
-    is_api_request = request.GET.get("cn_id")
-    if is_api_request:
-        error_msg = "Using cn_id is deprecated. Switch to using /api/price-data-v1/<int:server_id>/<int:item_id>/"
-        return JsonResponse({"error": error_msg}, status=status.HTTP_400_BAD_REQUEST)
+    cn_id = request.GET.get("cn_id")
+    if cn_id:
+        return get_item_data_v1(request, kwargs.get("server_id", "1"), cn_id)
     return render(request, 'index.html', {
         'servers': {server.id: server.name for server in Servers.objects.all()}
     })

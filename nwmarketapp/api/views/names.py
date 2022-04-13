@@ -94,15 +94,6 @@ def confirmed_names_v1(request):
     return JsonResponse({'cn': cn}, status=200)
 
 
-@ratelimit(key='ip', rate='5/s', block=True)
-@cache_page(60 * 10)
-def name_cleanup_v1(request):
-    ncs = NameCleanup.objects.all()
-    ncs = list(ncs.values_list('bad_word', 'good_word'))
-    nc = json.dumps(ncs)
-    return JsonResponse({'nc': nc}, status=200)
-
-
 @ratelimit(key='ip', rate='3/s', block=True)
 def servers_v1(request):
     server_list = Servers.objects.all().values_list('name', 'id'). order_by('id')

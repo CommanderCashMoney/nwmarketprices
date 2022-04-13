@@ -16,21 +16,28 @@ from nwmarketapp.models import Run, NWDBLookup, ConfirmedNames, Price
 
 def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> JsonResponse:
     p = perf_counter()
+    empty_response = JsonResponse({
+        "recent_lowest_price": 'N/A',
+        "price_change": 'Not Found',
+        "last_checked": 'Not Found'
+    }, status=200)
     if not item_id.isnumeric():
         # nwdb id was passed instead. COnvert this to my ids
         confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
         confirmed_names = confirmed_names.values_list('name', 'id', 'nwdb_id')
-        item_id = confirmed_names.get(nwdb_id=item_id.lower())[1]
+        try:
+            item_id = confirmed_names.get(nwdb_id=item_id.lower())[1]
+        except ConfirmedNames.DoesNotExist:
+            return empty_response
 
     item_data = get_list_by_nameid(item_id, server_id)
     if item_data is None:
-        return JsonResponse(status=404)
+        return empty_response
     grouped_hist = item_data["grouped_hist"]
     item_name = item_data["item_name"]
     if not grouped_hist:
         # we didnt find any prices with that name id
-        return JsonResponse({"recent_lowest_price": 'N/A', "price_change": 'Not Found', "last_checked": 'Not Found'},
-                            status=200)
+        return empty_response
 
     price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
 

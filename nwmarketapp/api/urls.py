@@ -17,9 +17,4 @@ urlpatterns = [
     path('price-data/<int:server_id>/<str:item_id>/', prices.get_item_data, name='item-data'),
     path('server-price-data/<int:server_id>/', prices.intial_page_load_data, name="intial-page-load-data"),
     path('servers/', names.servers, name="servers"),
-
-    # to deprecate
-    path('price-data-v1/<int:server_id>/<str:item_id>/', prices.get_item_data_v1, name="price-data"),
-    path('popular-items-v1/<int:server_id>/', prices.get_popular_items_v1, name='index'),
-    path('servers-v1/', names.servers, name='servers-v1'),  # not real json
 ]
