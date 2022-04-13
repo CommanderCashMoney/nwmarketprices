@@ -83,8 +83,11 @@ function create_linegraph(data) {
             name: 'Price',
             data: prices,
             yAxis: 0,
+            lineWidth: 3,
             marker: {
-                radius: 3
+                radius: 3,
+                fillColor: "white",
+                symbol: "circle"
             }
         },
         {
@@ -92,8 +95,11 @@ function create_linegraph(data) {
             name: '15 Day Rolling Average',
             data: avg_prices,
             yAxis: 0,
+            lineWidth: 3,
             marker: {
                 radius: 3,
+                fillColor: "white",
+                symbol: "circle"
             }
         },
         {
