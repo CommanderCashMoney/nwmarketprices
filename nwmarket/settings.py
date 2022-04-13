@@ -29,7 +29,8 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG") == "True"
 
-ALLOWED_HOSTS = ['Nwmarket-env.eba-rxcymaas.us-west-1.elasticbeanstalk.com', '127.0.0.1', 'localhost', 'nwmarketprices.com']
+HOST = os.getenv("HOST", "127.0.0.1")
+ALLOWED_HOSTS = ['Nwmarket-env.eba-rxcymaas.us-west-1.elasticbeanstalk.com', HOST, 'localhost', 'nwmarketprices.com']
 
 
 # Application definition
