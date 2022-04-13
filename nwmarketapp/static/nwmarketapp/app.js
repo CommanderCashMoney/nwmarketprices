@@ -14,8 +14,10 @@ const fetchAutocompleteData = () => {
 function changeServer(server_id, initialLoad=false){
     localStorage.setItem('lastServerId', server_id);
     document.getElementById("server-name").innerText = servers[server_id];
+    document.getElementById("export-data-modal-url").href = `/api/latest-prices/${server_id}/`;
+
     serverId = server_id;
-    fetch(`/server-price-data/${serverId}/`)
+    fetch(`/api/server-price-data/${serverId}/`)
     .then(res => {
         return res.json();
     })
@@ -45,7 +47,7 @@ const loadItem = (item_id, initialLoad = false) => {
         }, "New World Market Prices", `/${serverId}`)
         return;
     }
-    nwmpRequest(`/price-data/${serverId}/${itemId}/`)
+    nwmpRequest(`/api/price-data/${serverId}/${itemId}/`)
     .then(data => {
         if(!initialLoad) {
             window.history.pushState({

@@ -1,0 +1,181 @@
+import json
+from time import perf_counter
+
+from django.core.handlers.wsgi import WSGIRequest
+from django.db import connection
+from django.db.models import Count
+from django.http import FileResponse, JsonResponse
+from django.template.loader import render_to_string
+from django.views.decorators.cache import cache_page
+from ratelimit.decorators import ratelimit
+from rest_framework import status
+
+from nwmarketapp.api.utils import get_popular_items_dict, get_price_graph_data, get_list_by_nameid
+from nwmarketapp.models import Run, NWDBLookup, ConfirmedNames, Price
+
+
+def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> JsonResponse:
+    p = perf_counter()
+    if not item_id.isnumeric():
+        # nwdb id was passed instead. COnvert this to my ids
+        confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
+        confirmed_names = confirmed_names.values_list('name', 'id', 'nwdb_id')
+        item_id = confirmed_names.get(nwdb_id=item_id.lower())[1]
+
+    item_data = get_list_by_nameid(item_id, server_id)
+    if item_data is None:
+        return JsonResponse(status=404)
+    grouped_hist = item_data["grouped_hist"]
+    item_name = item_data["item_name"]
+    if not grouped_hist:
+        # we didnt find any prices with that name id
+        return JsonResponse({"recent_lowest_price": 'N/A', "price_change": 'Not Found', "last_checked": 'Not Found'},
+                            status=200)
+
+    price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
+
+    try:
+        nwdb_id = NWDBLookup.objects.get(name=item_data["item_name"])
+        nwdb_id = nwdb_id.item_id
+    except NWDBLookup.DoesNotExist:
+        nwdb_id = ''
+
+    return JsonResponse({
+        "recent_lowest_price": item_data["recent_lowest_price"],
+        "last_checked": item_data["recent_price_time"],
+        "price_graph_data": price_graph_data,
+        "price_change": item_data["price_change_text"],
+        "avg_graph_data": avg_price_graph,
+        "detail_view": item_data["lowest_10_raw"],
+        'item_name': item_name,
+        'num_listings': num_listings,
+        'nwdb_id': nwdb_id,
+        'calculation_time': perf_counter() - p
+    }, status=200)
+
+
+@cache_page(60 * 10)
+def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
+    p = perf_counter()
+    item_data = get_list_by_nameid(item_id, server_id)
+    if item_data is None:
+        return JsonResponse({"errors": ["No price data for item."]}, status=status.HTTP_404_NOT_FOUND)
+    grouped_hist = item_data["grouped_hist"]
+    item_name = item_data["item_name"]
+    if not grouped_hist:
+        # we didnt find any prices with that name id
+        return JsonResponse(status=404)
+
+    price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
+
+    try:
+        nwdb_id = NWDBLookup.objects.get(name=item_data["item_name"])
+        nwdb_id = nwdb_id.item_id
+    except NWDBLookup.DoesNotExist:
+        nwdb_id = ''
+
+    return JsonResponse(
+        {
+            "item_name": item_name,
+            "graph_data": {
+                "price_graph_data": price_graph_data,
+                "avg_graph_data": avg_price_graph,
+                "num_listings": num_listings,
+            },
+            "lowest_price": render_to_string("snippets/lowest-price.html", {
+                "recent_lowest_price": item_data["recent_lowest_price"],
+                "last_checked": item_data["recent_price_time"],
+                "price_change": item_data["price_change_text"],
+                "detail_view": item_data["lowest_10_raw"],
+                'item_name': item_name,
+                'nwdb_id': nwdb_id,
+                'calculation_time': perf_counter() - p
+            })
+        }, safe=False)
+
+
+@cache_page(60 * 10)
+def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
+    try:
+        last_run = Run.objects.filter(server_id=server_id, approved=True).latest("id")
+        most_listed_item_top10 = Price.objects.filter(
+            run=last_run,
+            server_id=server_id
+        ).values_list(
+            'name',
+        ).annotate(
+            count=Count('price', distinct=True)
+        ).values_list("name", "count").order_by("-count")[:9]
+    except Run.DoesNotExist:
+        most_listed_item_top10 = []
+    popular_items = get_popular_items_dict(server_id)
+    popular_item_name_map = {
+        "popular_endgame_data": "Popular End Game Items",
+        "popular_base_data": "Popular Base Materials",
+        "mote_data": "Motes",
+        "refining_data": "Refining Reagents",
+        "trophy_data": "Trophy Materials"
+    }
+
+    popular_rendered = {
+        popular_item_name_map[k].replace(" ", "-").lower(): render_to_string(
+            "snippets/endgame_data_block2.html", context={
+            "name": popular_item_name_map[k],
+            "items": v
+        })
+        for k, v in popular_items.items()
+        if k not in ["calculation_time", "sorting_time"]
+    }
+    return JsonResponse({
+        "most_listed": list(most_listed_item_top10),
+        **popular_rendered
+    })
+
+
+@ratelimit(key='ip', rate='1/s', block=True)
+def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
+    last_run = Run.objects.filter(server_id=server_id, approved=True).exclude(username="january").latest('id').start_date
+    with connection.cursor() as cursor:
+        query = f"""
+        SELECT  max(rs.nwdb_id),rs.name, trunc(avg(rs.price)::numeric,2), max(rs.avail), max(rs.timestamp)
+        FROM (
+            SELECT p.price,p.name,p.timestamp,cn.nwdb_id,p.avail, Rank()
+              over (Partition BY p.name_id ORDER BY price asc ) AS Rank
+            FROM prices p
+            join confirmed_names cn on p.name = cn.name
+            where p.timestamp >= '{last_run}'
+            and server_id = {server_id}
+            and p.approved = true
+        ) rs WHERE Rank <= 5
+        group by rs.name
+        order by rs.name;
+        """
+        cursor.execute(query)
+        data = cursor.fetchall()
+
+    items = [
+        {
+            "ItemId": row[0],
+            "ItemName": row[1],
+            "Price": row[2],
+            "Availability": row[3],
+            "LastUpdated": row[4],
+        } for row in data
+    ]
+
+    return FileResponse(
+        json.dumps(items, default=str),
+        as_attachment=True,
+        content_type='application/json',
+        filename='nwmarketprices.json'
+    )
+
+
+def get_popular_items_v1(request: WSGIRequest, server_id: int) -> JsonResponse:
+    return JsonResponse(get_popular_items_dict(server_id), status=status.HTTP_200_OK, safe=False)
+
+
+@ratelimit(key='ip', rate='1/s', block=True)
+def latest_prices_v1(request: WSGIRequest) -> JsonResponse:
+    server_id = request.GET.get("server_id", "1")
+    return latest_prices(request, int(server_id))
