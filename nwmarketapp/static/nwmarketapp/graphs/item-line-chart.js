@@ -35,8 +35,15 @@ function create_linegraph(data) {
         }
     }, {
         title: {
-            text: 'Num listings'
-        },opposite: true
+            text: 'Num listings',
+
+        },opposite: true,
+        height: "100%",
+        top: "0%",
+        lineWidth: 0,
+        gridLineWidth: 0,
+        minorTickLength: 0,
+        tickLength: 0,
     }],
     plotOptions: {
         area: {
@@ -53,7 +60,7 @@ function create_linegraph(data) {
                 ]
             },
             marker: {
-                radius: 2
+                radius: 1
             },
             lineWidth: 1,
             states: {
@@ -76,12 +83,18 @@ function create_linegraph(data) {
             name: 'Price',
             data: prices,
             yAxis: 0,
+            marker: {
+                radius: 3
+            }
         },
         {
             type: 'line',
             name: '15 Day Rolling Average',
             data: avg_prices,
             yAxis: 0,
+            marker: {
+                radius: 3,
+            }
         },
         {
             type: 'column',
@@ -90,7 +103,7 @@ function create_linegraph(data) {
             yAxis: 1,
             color: "darkgray",
             zIndex: -1,
-            opacity: 0.5
+            opacity: 0.5,
         },
 
         ]

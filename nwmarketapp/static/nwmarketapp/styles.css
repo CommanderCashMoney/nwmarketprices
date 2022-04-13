@@ -227,3 +227,7 @@ html {
 .password-input::placeholder {
     color: #6c6b6bc4;
 }
+
+/*.highcharts-tick {*/
+/*    display: none;*/
+/*}*/
