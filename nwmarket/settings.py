@@ -29,8 +29,8 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG") == "True"
 
-HOST = os.getenv("HOST", "127.0.0.1")
-ALLOWED_HOSTS = ['Nwmarket-env.eba-rxcymaas.us-west-1.elasticbeanstalk.com', HOST, 'localhost', 'nwmarketprices.com']
+HOST = os.getenv("HOST", "nwmp.eba-ubwpcedf.ap-southeast-2.elasticbeanstalk.com")
+ALLOWED_HOSTS = [HOST, "127.0.0.1", 'localhost', 'nwmarketprices.com']
 
 
 # Application definition
@@ -157,8 +157,9 @@ AUTHENTICATION_BACKENDS = [
 SOCIALACCOUNT_PROVIDERS = {
     "discord": {
         "APP": {
-            "client_id": "962639763721060363",
-            "secret": "diJ-f8T7nJMQZ2hB56mwNoXHMM6nq66n",
+            # default application is set up to redirect to 127.0.0.1:8080/...
+            "client_id": os.getenv("DISCORD_CLIENT_ID", "962639763721060363"),
+            "secret": os.getenv("DISCORD_CLIENT_SECRET", "diJ-f8T7nJMQZ2hB56mwNoXHMM6nq66n"),
 
         }
     }
