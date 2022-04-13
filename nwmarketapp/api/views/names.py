@@ -6,20 +6,11 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.db.models.functions import Length
 from django.http import JsonResponse
 from django.views.decorators.cache import cache_page
+from ratelimit.decorators import ratelimit
 from rest_framework import status
 from rest_framework.decorators import api_view
 
-from nwmarketapp.api.utils import check_version_compatibility
-from nwmarketapp.models import ConfirmedNames, NameCleanup, NameMap
-
-
-def current_scanner_version(request: WSGIRequest) -> JsonResponse:
-    version = request.GET.get("version", "0.0.0")
-    return JsonResponse({
-        "version": config.LATEST_SCANNER_VERSION,
-        "download_link": config.DOWNLOAD_LINK,
-        "compatible_version": check_version_compatibility(version)
-    })
+from nwmarketapp.models import ConfirmedNames, NameCleanup, NameMap, Servers
 
 
 @api_view(['POST'])
@@ -92,3 +83,30 @@ def typeahead(request: WSGIRequest) -> JsonResponse:
         }
         for cn in ConfirmedNames.objects.all().order_by(Length("name"))
     ], safe=False)
+
+
+@ratelimit(key='ip', rate='5/s', block=True)
+@cache_page(60 * 10)
+def confirmed_names_v1(request):
+    cns = ConfirmedNames.objects.all().exclude(name__contains='"')
+    cns = list(cns.values_list('name', 'id'))
+    cn = json.dumps(cns)
+    return JsonResponse({'cn': cn}, status=200)
+
+
+@ratelimit(key='ip', rate='3/s', block=True)
+def servers_v1(request):
+    server_list = Servers.objects.all().values_list('name', 'id'). order_by('id')
+    server_list = list(server_list)
+    server_list = json.dumps(server_list)
+
+    return JsonResponse({'servers': server_list}, status=200)
+
+
+@ratelimit(key='ip', rate='3/s', block=True)
+def servers(request) -> JsonResponse:
+    return JsonResponse({
+        server.id: {
+            "name": server.name
+        } for server in Servers.objects.all()
+    }, status=200)
