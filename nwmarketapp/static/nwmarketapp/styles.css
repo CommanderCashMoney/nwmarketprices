@@ -228,6 +228,6 @@ html {
     color: #6c6b6bc4;
 }
 
-/*.highcharts-tick {*/
-/*    display: none;*/
-/*}*/
+.black-background {
+    background-color: black!important;
+}

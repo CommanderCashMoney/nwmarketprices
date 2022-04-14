@@ -2,7 +2,7 @@
     <a class="navbar-link" id="server-name">
       Server Select
     </a>
-    <div class="navbar-dropdown is-dark hidden">
+    <div class="navbar-dropdown is-dark hidden black-background">
     {% for server_id, server_name in servers.items %}
       <a class="navbar-item server" onclick="changeServer({{ server_id }})">
           {{ server_name }}
