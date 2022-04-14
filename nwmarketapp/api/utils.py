@@ -3,7 +3,10 @@ from collections import defaultdict
 from time import perf_counter
 from typing import Dict, List, Any
 
+import cloudscraper
+import concurrent
 import numpy as np
+import requests
 from constance import config
 from django.db.models import Min, Max
 from django.db.models.functions import TruncDate
@@ -274,3 +277,42 @@ def get_popular_items_dict(server_id) -> Dict[str, Dict[str, Any]]:
 
     return_values["calculation_time"] = perf_counter() - p
     return convert_popular_items_dict_to_old_style(return_values)
+
+
+def load_url(url, reqs=requests):
+    return reqs.get(url)
+
+
+def get_all_nwdb_items() -> List[Dict]:
+    base_url = "https://nwdb.info/db/items/page"
+    first_page = f"{base_url}/1.json"
+    scraper = cloudscraper.create_scraper()
+    page = scraper.get(first_page).json()
+    all_nwdb_ids = []
+    all_nwdb_items = []
+    total_pages = page["pageCount"]
+    urls = [f"{base_url}/{i+1}.json" for i in range(total_pages)]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=total_pages) as executor:
+        futures = (executor.submit(load_url, url, scraper) for url in urls)
+        for future in concurrent.futures.as_completed(futures):
+            for res in future.result().json()["data"]:
+                all_nwdb_ids.append(res["id"])
+
+    # now the even bigger part... get all the items
+    base_item_url = "https://nwdb.info/db/item"
+    item_urls = [f"{base_item_url}/{item}.json" for item in all_nwdb_ids]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=250) as executor:
+        futures = (executor.submit(load_url, url, scraper) for url in item_urls)
+        for future in concurrent.futures.as_completed(futures):
+            res = future.result().json()["data"]
+            is_boe = res.get("bindOnEquip") is True
+            is_bop = res.get("bindOnPickup", False) is not True
+            all_nwdb_items.append({
+                "id": res["id"],
+                "type_name": res["typeName"],
+                "name": res["name"],
+                "max_stack": res["maxStack"],
+                "can_trade": is_boe or not is_bop,
+                "item_class": res["itemClass"]
+            })
+    return all_nwdb_items

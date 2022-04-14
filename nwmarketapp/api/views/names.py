@@ -1,7 +1,10 @@
 import json
 import logging
+from time import perf_counter
 
-from constance import config  # noqa
+from asgiref.sync import async_to_sync
+from constance import config
+from django.contrib.admin.views.decorators import staff_member_required
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models.functions import Length
 from django.http import JsonResponse
@@ -10,6 +13,7 @@ from ratelimit.decorators import ratelimit
 from rest_framework import status
 from rest_framework.decorators import api_view
 
+from nwmarketapp.api.utils import get_all_nwdb_items
 from nwmarketapp.models import ConfirmedNames, NameCleanup, NameMap, Servers
 
 
@@ -110,3 +114,11 @@ def servers(request) -> JsonResponse:
             "name": server.name
         } for server in Servers.objects.all()
     }, status=200)
+
+
+@staff_member_required
+@async_to_sync
+async def update_from_nwdb(request: WSGIRequest) -> JsonResponse:
+    p = perf_counter()
+    all_nwdb_items = get_all_nwdb_items()
+    return JsonResponse({"status": "completed", "scrape_time": perf_counter() - p, "items": all_nwdb_items})
