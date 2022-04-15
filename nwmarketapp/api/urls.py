@@ -17,5 +17,4 @@ urlpatterns = [
     path('price-data/<int:server_id>/<str:item_id>/', prices.get_item_data, name='item-data'),
     path('server-price-data/<int:server_id>/', prices.intial_page_load_data, name="intial-page-load-data"),
     path('servers/', names.servers, name="servers"),
-    path('full-update-nwdb/', names.full_update_nwdb, name="full-update-from-nwdb"),
 ]

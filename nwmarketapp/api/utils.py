@@ -288,12 +288,14 @@ def get_all_nwdb_items() -> List[Dict]:
     base_url = "https://nwdb.info/db/items/page"
     first_page = f"{base_url}/1.json"
     scraper = cloudscraper.create_scraper()
+    adapter = requests.adapters.HTTPAdapter(pool_connections=500, pool_maxsize=500)
+    scraper.mount("https://", adapter)
     page = scraper.get(first_page).json()
     all_nwdb_ids = []
     all_nwdb_items = []
     total_pages = page["pageCount"]
     urls = [f"{base_url}/{i+1}.json" for i in range(total_pages)]
-    with concurrent.futures.ThreadPoolExecutor(max_workers=total_pages) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=500) as executor:
         futures = (executor.submit(load_url, url, scraper) for url in urls)
         for future in concurrent.futures.as_completed(futures):
             for res in future.result().json()["data"]:
@@ -302,7 +304,7 @@ def get_all_nwdb_items() -> List[Dict]:
     # now the even bigger part... get all the items
     base_item_url = "https://nwdb.info/db/item"
     item_urls = [f"{base_item_url}/{item}.json" for item in all_nwdb_ids]
-    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=500) as executor:
         futures = (executor.submit(load_url, url, scraper) for url in item_urls)
         for future in concurrent.futures.as_completed(futures):
             res = future.result().json()["data"]
