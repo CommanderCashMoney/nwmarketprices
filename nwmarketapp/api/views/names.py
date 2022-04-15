@@ -2,8 +2,7 @@ import json
 import logging
 from time import perf_counter
 
-from asgiref.sync import async_to_sync
-from constance import config
+import django
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models.functions import Length
@@ -14,7 +13,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 
 from nwmarketapp.api.utils import get_all_nwdb_items
-from nwmarketapp.models import ConfirmedNames, NameCleanup, NameMap, Servers
+from nwmarketapp.models import ConfirmedNames, NameCleanup, NameMap, Price, Servers
 
 
 @api_view(['POST'])
@@ -117,8 +116,23 @@ def servers(request) -> JsonResponse:
 
 
 @staff_member_required
-@async_to_sync
-async def update_from_nwdb(request: WSGIRequest) -> JsonResponse:
-    p = perf_counter()
+def full_update_nwdb(request: WSGIRequest) -> JsonResponse:
     all_nwdb_items = get_all_nwdb_items()
-    return JsonResponse({"status": "completed", "scrape_time": perf_counter() - p, "items": all_nwdb_items})
+    for item in all_nwdb_items:
+        try:
+            cn = ConfirmedNames.objects.get(nwdb_id=item["id"])
+        except ConfirmedNames.DoesNotExist:
+            cn = ConfirmedNames(nwdb_id=item["id"])
+
+        cn.name = item["name"]
+        cn.item_type = item["item_type"]
+        cn.item_classes = item["item_class"]
+        cn.max_stack = item["max_stack"]
+        cn.type_name = item["type_name"]
+        duplicated = []
+        try:
+            cn.save()
+        except django.db.utils.IntegrityError:
+            logging.warning(f"Failed duplication constraint on {cn.name}")
+            duplicated.append(cn.name)
+    return JsonResponse({"status": "completed", "duplicated_items": duplicated})
