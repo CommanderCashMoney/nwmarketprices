@@ -21,7 +21,7 @@ function create_linegraph(data) {
     Highcharts.chart('line-graph-container', {
     chart: {
         zoomType: 'x',
-        height: 300
+        height: 250
     },
     title: {
         text: null
@@ -72,7 +72,7 @@ function create_linegraph(data) {
         }
     },
     tooltip: {
-        xDateFormat: '%d/%m/%Y',
+        xDateFormat: '%Y/%m/%d',
         shared: true,
         split: false,
         enabled: true
@@ -91,11 +91,12 @@ function create_linegraph(data) {
             }
         },
         {
-            type: 'line',
+            type: 'spline',
             name: '15 Day Rolling Average',
             data: avg_prices,
             yAxis: 0,
             lineWidth: 3,
+            dashStyle: 'ShortDash',
             marker: {
                 radius: 3,
                 fillColor: "white",
@@ -107,9 +108,11 @@ function create_linegraph(data) {
             name: 'Available',
             data: num_listings,
             yAxis: 1,
-            color: "darkgray",
+            color: 'rgb(49, 49, 55)',
             zIndex: -1,
-            opacity: 0.5,
+            opacity: 0.85,
+            borderWidth: 1,
+            borderColor: '#ACACAC'
         },
 
         ]
@@ -129,7 +132,7 @@ window.addEventListener("load",function(event) {
             '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'
         ],
         chart: {
-            backgroundColor: 'rgb(40, 47, 47)',
+            backgroundColor: '#3A3F47',
         },
         xAxis: {
             gridLineColor: '#707073',
@@ -193,7 +196,7 @@ window.addEventListener("load",function(event) {
             }
         },
         legend: {
-            backgroundColor: 'rgb(40, 47, 47)',
+            backgroundColor: '#3A3F47',
             itemStyle: {
                 color: '#E0E0E3'
             },

@@ -8,19 +8,19 @@
 <div class="container py-0 px-2">
     <div class="columns mt-1 mb-0 hidden" id="price-data">
         <div class="column is-two-fifths is-flex mx-0 p-1">
-            <div class="container box has-text-centered my-auto full-height" id="lowest-price-data">
+            <div class="container box has-text-centered my-auto full-height white-border" id="lowest-price-data">
                 {% include 'snippets/lowest-price.html' %}
             </div>
         </div>
         <div class="column is-three-fifths has-text-centered p-1">
-            <div class="box">
+            <div class="box white-border">
             {% include 'snippets/item-graph.html' %}
             </div>
         </div>
     </div>
     <div class="columns mt-1 mb-0 hidden" id="welcome-banner">
         <div class="column is-flex mx-0 p-1">
-            <div class="container box has-text-centered my-auto full-height" id="lowest-price-data">
+            <div class="container box has-text-centered my-auto full-height white-border" id="lowest-price-data">
                 <div class="is-size-3">Welcome to New World Market Prices!</div>
                 <br>
                 <div class="is-size-5">Choose a server and select from the popular item lists, or search for an item from the search bar above.</div>
@@ -32,42 +32,42 @@
 </div>
 <div class="container py-0 px-2">
     <div class="columns mt-0 mb-0">
-        <div class="column is-one-third is-flex mx-0 p-1">
-            <div class="container box my-auto full-height" >
+        <div class="column is-one-third is-flex mx-0 p-3">
+            <div class="container my-auto full-height" >
             {% include "snippets/popular-end-game-empty.html" with name="Popular End Game Items" id="popular-end-game-items" %}
             </div>
         </div>
-        <div class="column is-one-third is-flex mx-0 p-1">
-            <div class="container box my-auto full-height">
+        <div class="column is-one-third is-flex mx-0 p-3">
+            <div class="container my-auto full-height">
             {% include "snippets/popular-end-game-empty.html" with name="Popular Base Materials" id="popular-base-materials"  %}
             </div>
         </div>
-        <div class="column is-one-third is-flex mx-0 p-1">
-            <div class="container box my-auto full-height">
+        <div class="column is-one-third is-flex mx-0 p-3">
+            <div class="container my-auto full-height">
                 {% include 'snippets/competitive-items.html' %}
             </div>
         </div>
     </div>
     <div class="columns mt-1">
-        <div class="column is-one-third is-flex mx-0 p-1">
-            <div class="container box my-auto full-height">
+        <div class="column is-one-third is-flex mx-0 p-3">
+            <div class="container my-auto full-height">
                 {% include "snippets/popular-end-game-empty.html" with name="Motes" id="motes" %}
             </div>
         </div>
-        <div class="column is-one-third is-flex mx-0 p-1">
-            <div class="container box my-auto full-height">
+        <div class="column is-one-third is-flex mx-0 p-3">
+            <div class="container my-auto full-height">
                 {% include "snippets/popular-end-game-empty.html" with name="Refining Reagents" id="refining-reagents" %}
             </div>
         </div>
-        <div class="column is-one-third is-flex mx-0 p-1">
-            <div class="container box my-auto full-height">
+        <div class="column is-one-third is-flex mx-0 p-3">
+            <div class="container my-auto full-height">
                 {% include "snippets/popular-end-game-empty.html" with name="Trophy Materials" id="trophy-materials" %}
             </div>
         </div>
     </div>
 </div>
 <div class="container py-0">
-    <div class="container box my-4 mx-0 is-size-5 has-text-centered">
+    <div class="container my-4 mx-0 is-size-5 has-text-centered p-3">
         Data from additional servers coming soon. We are looking for more Market Watchers, head over to the <a href="https://discord.gg/9xfcG6jTVj" style="text-decoration: underline">discord channel</a> to find out more.
 How to <a id="export-data-modal-trigger" style="text-decoration: underline">export prices</a> for use with gaming.tools crafting calculator
     </div>

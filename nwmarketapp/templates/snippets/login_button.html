@@ -1,7 +1,7 @@
 {% load static %}
 {% load account %}
 <div class="navbar-end is-dark">
-    <div class="navbar-item p-0">
+    <div class="navbar-item p-2">
         {% if not request.user.is_authenticated %}
             <div>
                 <form method="post" action="/account/discord/login/">
@@ -15,7 +15,7 @@
         {% else %}
             <div class="navbar-item has-dropdown server-select" id="settings">
                 <a class="navbar-link no-pad-mobile pl-3">{{ request.user.first_name|default:request.user.username }}</a>
-                <div class="navbar-dropdown is-dark black-background pb-0 hidden " style="min-width: 250px;">
+                <div class="navbar-dropdown is-dark pb-0 hidden white-border" style="min-width: 250px;">
                     <a class="navbar-item server settings-item" href="/account/profile/">
                         Settings
                     </a>

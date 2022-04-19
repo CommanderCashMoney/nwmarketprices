@@ -12,7 +12,10 @@ const drawBar = () => {
     Highcharts.chart('competitive-bar-container', {
         chart: {
             type: 'bar',
-            height: "300px"
+            height: "360px",
+            backgroundColor: '#454A51',
+            plotBorderColor: null,
+
         },
         title: {
             text: null
@@ -55,17 +58,4 @@ window.onload = () => {
         type: 'text/css'
     }, null, document.getElementsByTagName('head')[0]);
 
-    Highcharts.theme = {
-        chart: {
-            backgroundColor: 'rgb(40, 47, 47)',
-            plotBorderColor: null,
-        },
-        tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
-            style: {
-                color: '#F0F0F0'
-            }
-        },
-    };
-    Highcharts.setOptions(Highcharts.theme);
 }
