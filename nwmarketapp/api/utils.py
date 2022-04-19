@@ -1,5 +1,6 @@
 import itertools
 from collections import defaultdict
+from json import JSONDecodeError
 from time import perf_counter
 from typing import Dict, List, Any
 
@@ -287,12 +288,14 @@ def get_all_nwdb_items() -> List[Dict]:
     base_url = "https://nwdb.info/db/items/page"
     first_page = f"{base_url}/1.json"
     scraper = cloudscraper.create_scraper()
+    adapter = requests.adapters.HTTPAdapter(pool_connections=500, pool_maxsize=500)
+    scraper.mount("https://", adapter)
     page = scraper.get(first_page).json()
     all_nwdb_ids = []
     all_nwdb_items = []
     total_pages = page["pageCount"]
     urls = [f"{base_url}/{i+1}.json" for i in range(total_pages)]
-    with concurrent.futures.ThreadPoolExecutor(max_workers=total_pages) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=500) as executor:
         futures = (executor.submit(load_url, url, scraper) for url in urls)
         for future in concurrent.futures.as_completed(futures):
             for res in future.result().json()["data"]:
@@ -301,18 +304,37 @@ def get_all_nwdb_items() -> List[Dict]:
     # now the even bigger part... get all the items
     base_item_url = "https://nwdb.info/db/item"
     item_urls = [f"{base_item_url}/{item}.json" for item in all_nwdb_ids]
-    with concurrent.futures.ThreadPoolExecutor(max_workers=250) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=500) as executor:
         futures = (executor.submit(load_url, url, scraper) for url in item_urls)
         for future in concurrent.futures.as_completed(futures):
             res = future.result().json()["data"]
-            is_boe = res.get("bindOnEquip") is True
-            is_bop = res.get("bindOnPickup", False) is not True
+            nwdb_id = res["id"]
+            item_classes = res["itemClass"]
+            not_obtainable = res.get("notObtainable") is True
+            not_interested = res["typeName"] in ["Outpost Rush Resource", "Quest Item", "Event Key"]
+            non_tradable_item_classes = ["OutpostRushOnly", "LootContainer", "SiegeWarOnly", "Blueprint", "Source_store"]  # noqa: E501
+            for item_class in non_tradable_item_classes:
+                if item_class in item_classes:
+                    not_interested = True
+                    break
+            not_interested = not_interested or res["itemType"] in ["weapon", "armor"]
+            faction_item_id_prefixes = ["faction_armaments", "faction_provisions", "faction_armorset", "workorder_"]
+            for prefix in faction_item_id_prefixes:
+                if prefix in nwdb_id:
+                    is_faction = True
+                    break
+            else:
+                is_faction = False
+            is_bop = res.get("bindOnPickup") is True
+            if not_interested or is_bop or not_obtainable or is_faction:
+                continue
+
             all_nwdb_items.append({
-                "id": res["id"],
+                "id": nwdb_id,
                 "type_name": res["typeName"],
                 "name": res["name"],
                 "max_stack": res["maxStack"],
-                "can_trade": is_boe or not is_bop,
-                "item_class": res["itemClass"]
+                "item_class": item_classes,
+                "item_type": res["itemType"]
             })
     return all_nwdb_items
