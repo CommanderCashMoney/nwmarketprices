@@ -6,19 +6,19 @@
 {% endblock %}
 {% block content %}
 <div class="container py-0 px-2">
-    <div class="columns mt-1 mb-0 hidden" id="price-data">
-        <div class="column is-two-fifths is-flex mx-0 p-1">
+    <div class="columns mt-1-desktop mb-0 hidden" id="price-data">
+        <div class="column is-two-fifths mx-0 p-1">
             <div class="container box has-text-centered my-auto full-height white-border" id="lowest-price-data">
                 {% include 'snippets/lowest-price.html' %}
             </div>
         </div>
         <div class="column is-three-fifths has-text-centered p-1 is-flex full-width">
-            <div class="box white-border full-width">
+            <div class="box white-border full-width" id="line-graph-column">
             {% include 'snippets/item-graph.html' %}
             </div>
         </div>
     </div>
-    <div class="columns mt-1 mb-0 hidden" id="welcome-banner">
+    <div class="columns mt-1-desktop mb-0 hidden" id="welcome-banner">
         <div class="column is-flex mx-0 p-1">
             <div class="container box has-text-centered my-auto full-height white-border" id="lowest-price-data">
                 <div class="is-size-3">Welcome to New World Market Prices!</div>
@@ -31,21 +31,15 @@
     </div>
 </div>
 <div class="container py-0 px-2">
-    <div class="columns mt-0 mb-0">
-        <div class="column is-one-third is-flex mx-0 p-3">
-            <div class="container my-auto full-height" >
+    <div class="columns flex-container mt-0 mb-0">
+        <div class="mx-0 p-3 column">
             {% include "snippets/popular-end-game-empty.html" with name="Popular End Game Items" id="popular-end-game-items" %}
-            </div>
         </div>
-        <div class="column is-one-third is-flex mx-0 p-3">
-            <div class="container my-auto full-height">
+        <div class="mx-0 p-3 column">
             {% include "snippets/popular-end-game-empty.html" with name="Popular Base Materials" id="popular-base-materials"  %}
-            </div>
         </div>
-        <div class="column is-one-third is-flex mx-0 p-3" id="competitive-bar-column">
-            <div class="container my-auto full-height">
-                {% include 'snippets/competitive-items.html' %}
-            </div>
+        <div class="mx-0 p-3 column" id="competitive-bar-column">
+            {% include 'snippets/competitive-items.html' %}
         </div>
     </div>
     <div class="columns mt-1">

@@ -1,8 +1,8 @@
 html {
-  box-sizing: border-box;
-  background-color: #454A51;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  color: #f3f3f3;
+    box-sizing: border-box;
+    background-color: #454A51;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    color: #f3f3f3;
     font-size: 1.2em;
 }
 
@@ -10,26 +10,30 @@ html {
     background-color: rgb(40, 47, 47)!important;
 }
 
-.nav-title {
-
+.container>.navbar .navbar-brand, .navbar>.container .navbar-brand{
+    margin-left: 20px;
 }
 
 .is-dark {
     background-color:  #3A3F47!important;
 }
 
+.typeahead__container {
+    width: 100%;
+}
+
 .item-search-container {
-    margin: 0!important;
+    margin: 0 !important;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .discord-text {
     margin-left: 10px;
 }
 
-.navbar-brand {
-    padding-left: 20px;
-    padding-right: 10px;
-    font-size: 1.7em;
+.nav-title {
+    padding-left: 0;
 }
 
 .login {
@@ -56,12 +60,16 @@ html {
 .popular-item {
     color: inherit;
     text-decoration: none;
-    padding-top: 0.3em;
-    padding-bottom: 0.2em;
+    padding: 0.3em 0.2em 0.2em;
 }
 
 .popular-item:hover > a {
     color: #9fc8df;
+}
+
+.popular-item-row {
+    padding-left: 1em;
+    padding-right: 1em;
 }
 
 .navbar-link:hover {
@@ -239,14 +247,68 @@ html {
 
 }
 
-.white-border {
-    border: 1px solid #ACACAC;
-
-}
 .column.p-3 {
     padding-bottom: 0em!important;
 }
 
 .full-width {
     width: 100%;
+}
+
+.flex-container {
+    display: flex;
+    flex-direction: row;
+    flex: 1 1 0px
+}
+
+@media all and (max-width: 1215px) {
+    .flex-container {
+        flex-wrap: wrap;
+    }
+
+    #competitive-bar-column {
+        width: 100%;
+        flex-basis: 100%;
+    }
+
+    .lowest-price-text {
+        font-size: 4em;
+    }
+}
+
+@media all and (min-width: 1216px) {
+    #competitive-bar-column {
+        max-width: 33%;
+    }
+
+    .item-search-container {
+        max-width: 509px;
+        width: 100%;
+    }
+}
+
+@media only screen and (max-width: 1024px) {
+    .lowest-price-text {
+        font-size: 3em;
+    }
+}
+
+
+@media only screen and (min-width: 1024px) {
+    .item-search-container {
+        max-width: 320px;
+        width: 100%;
+    }
+
+    .white-border {
+        border: 1px solid #ACACAC;
+    }
+
+    .mt-4-desktop {
+        margin-top: 1rem;
+    }
+
+    .mt-1-desktop {
+        margin-top: 0.25rem;
+    }
 }

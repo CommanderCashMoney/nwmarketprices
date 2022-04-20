@@ -1,9 +1,10 @@
 {% load static %}
 <nav class="navbar white-border" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
-        <span class="navbar-item nav-title">
+        <span class="navbar-item nav-title is-size-5">
             <a href="/" style="color: white">New World Market Prices</a>
         </span>
+        <div class="navbar-item"></div>
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
            data-target="burger">
             <span aria-hidden="true"></span>
@@ -13,17 +14,22 @@
     </div>
     {% if not is_login_nav %}
     {% include 'snippets/typeahead-search.html' %}
-    <div id="burger" class="navbar-menu is-dark burger-menu">
-        {% include 'snippets/server-select.html' %}
-        {% include 'snippets/login_button.html' %}
+    <div class="navbar-end is-dark">
+        <div id="burger" class="navbar-menu is-dark burger-menu">
+            {% include 'snippets/server-select.html' %}
+            {% include 'snippets/login_button.html' %}
+        </div>
     </div>
     {% else %}
     <div class="navbar-end is-dark">
-        <div class="navbar-item">
-        <a class="button is-primary login" href="/">
-            <strong class="discord-text m-0">Back To Home</strong>
-        </a>
+        <div class="is-dark">
+            <div class="navbar-item">
+            <a class="button is-primary login" href="/">
+                <strong class="discord-text m-0">Back To Home</strong>
+            </a>
+            </div>
         </div>
     </div>
     {% endif %}
+
 </nav>

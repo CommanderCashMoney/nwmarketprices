@@ -1,21 +1,21 @@
 {% load static %}
 {% load account %}
-<div class="navbar-end is-dark">
-    <div class="navbar-item p-2">
+
+    <div class="navbar-item p-0">
         {% if not request.user.is_authenticated %}
             <div>
                 <form method="post" action="/account/discord/login/">
                     {% csrf_token %}
                     <button class="button is-primary login">
-                        <img src="{% static 'images/discord-button.png' %}">
-                        <strong class="discord-text">Sign In With Discord</strong>
+                        <img src="{% static 'images/discord-button.png' %}" style="height: 20px;">
+                        <strong class="discord-text">Sign In</strong>
                     </button>
                 </form>
             </div>
         {% else %}
             <div class="navbar-item has-dropdown server-select" id="settings">
                 <a class="navbar-link no-pad-mobile pl-3">{{ request.user.first_name|default:request.user.username }}</a>
-                <div class="navbar-dropdown is-dark pb-0 hidden white-border" style="min-width: 250px;">
+                <div class="navbar-dropdown is-dark pb-0 hidden white-border is-right" style="min-width: 250px;">
                     <a class="navbar-item server settings-item" href="/account/profile/">
                         Settings
                     </a>
@@ -30,4 +30,3 @@
 
         {% endif %}
     </div>
-</div>

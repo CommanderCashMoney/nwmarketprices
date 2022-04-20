@@ -1,3 +1,5 @@
+let lineChart = null;
+
 function create_linegraph(data) {
     console.log("creating linegraphg...")
     const dates = []
@@ -18,7 +20,7 @@ function create_linegraph(data) {
     }
 
     //	  LINE CHART
-    Highcharts.chart('line-graph-container', {
+    lineChart = Highcharts.chart('line-graph-container', {
     chart: {
         zoomType: 'x',
         height: 250
@@ -307,3 +309,27 @@ window.addEventListener("load",function(event) {
 // Apply the theme
     Highcharts.setOptions(Highcharts.theme);
 });
+
+// const handleLineResize = () => {
+//     const lgc = document.getElementById("line-graph-column");
+//     if(!lineChart || !lgc) {
+//         return;
+//     }
+//
+//     const computedStyle = window.getComputedStyle(lgc);
+//     const fullWidth = Number(computedStyle.width.replace("px", ""));
+//     const pl = Number(computedStyle.paddingLeft.replace("px", ""));
+//     const pr = Number(computedStyle.paddingRight.replace("px", ""));
+//     lineChart.update({
+//         chart: {
+//             width: fullWidth - pl - pr
+//         }
+//     }, true, false, false);  // redraw=true, onetoone=false, animation=false
+// }
+//
+//
+// let lineResizeFinished = null;
+// window.addEventListener('resize', function(event) {
+//     clearTimeout(lineResizeFinished);
+//     lineResizeFinished = setTimeout(handleLineResize, 50);
+// });
