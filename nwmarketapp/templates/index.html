@@ -12,8 +12,8 @@
                 {% include 'snippets/lowest-price.html' %}
             </div>
         </div>
-        <div class="column is-three-fifths has-text-centered p-1">
-            <div class="box white-border">
+        <div class="column is-three-fifths has-text-centered p-1 is-flex full-width">
+            <div class="box white-border full-width">
             {% include 'snippets/item-graph.html' %}
             </div>
         </div>
@@ -42,7 +42,7 @@
             {% include "snippets/popular-end-game-empty.html" with name="Popular Base Materials" id="popular-base-materials"  %}
             </div>
         </div>
-        <div class="column is-one-third is-flex mx-0 p-3">
+        <div class="column is-one-third is-flex mx-0 p-3" id="competitive-bar-column">
             <div class="container my-auto full-height">
                 {% include 'snippets/competitive-items.html' %}
             </div>

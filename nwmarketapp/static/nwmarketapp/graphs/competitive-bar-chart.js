@@ -1,3 +1,5 @@
+let chart = null;
+
 const drawBar = () => {
     let names = [];
     let colors = ["pink", "orange", "yellow", "lightblue", "blue", "purple", "darkgreen", "violet", "brown", "red"];
@@ -9,13 +11,11 @@ const drawBar = () => {
             y: top10data[i][1]
         });
     }
-    Highcharts.chart('competitive-bar-container', {
+    chart = Highcharts.chart('competitive-bar-container', {
         chart: {
             type: 'bar',
-            height: "360px",
             backgroundColor: '#454A51',
             plotBorderColor: null,
-
         },
         title: {
             text: null
@@ -51,11 +51,34 @@ const drawBar = () => {
     document.getElementById("competitive-items-ph").classList.add("hidden");
 }
 
-window.onload = () => {
+window.addEventListener('load', () => {
         Highcharts.createElement('link', {
         href: 'https://fonts.googleapis.com/css?family=Unica+One',
         rel: 'stylesheet',
         type: 'text/css'
     }, null, document.getElementsByTagName('head')[0]);
+});
 
+const handleResizeFinished = () => {
+    if(!chart) {
+        return;
+    }
+    const cbc = document.getElementById("competitive-bar-column");
+    const computedStyle = window.getComputedStyle(cbc);
+    const fullWidth = Number(computedStyle.width.replace("px", ""));
+    const pl = Number(computedStyle.paddingLeft.replace("px", ""));
+    const pr = Number(computedStyle.paddingRight.replace("px", ""));
+    console.log(fullWidth)
+    chart.update({
+        chart: {
+            width: fullWidth - pl - pr
+        }
+    }, true, false, false);  // redraw=true, onetoone=false, animation=false
 }
+
+
+let resizeFinished = null;
+window.addEventListener('resize', function(event) {
+    clearTimeout(resizeFinished);
+    resizeFinished = setTimeout(handleResizeFinished, 100);
+});

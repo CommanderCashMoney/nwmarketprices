@@ -245,7 +245,8 @@ html {
 }
 .column.p-3 {
     padding-bottom: 0em!important;
-
 }
 
-
+.full-width {
+    width: 100%;
+}
