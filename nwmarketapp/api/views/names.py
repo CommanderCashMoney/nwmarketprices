@@ -1,9 +1,6 @@
 import json
 import logging
-from time import perf_counter
 
-import django
-from django.contrib.admin.views.decorators import staff_member_required
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models.functions import Length
 from django.http import JsonResponse
@@ -12,8 +9,7 @@ from ratelimit.decorators import ratelimit
 from rest_framework import status
 from rest_framework.decorators import api_view
 
-from nwmarketapp.api.utils import get_all_nwdb_items
-from nwmarketapp.models import ConfirmedNames, NameCleanup, NameMap, Price, Servers
+from nwmarketapp.models import ConfirmedNames, NameCleanup, NameMap, Servers
 
 
 @api_view(['POST'])
@@ -98,6 +94,7 @@ def confirmed_names_v1(request):
 
 
 @ratelimit(key='ip', rate='3/s', block=True)
+@cache_page(60 * 10)
 def servers_v1(request):
     server_list = Servers.objects.all().values_list('name', 'id'). order_by('id')
     server_list = list(server_list)
@@ -107,6 +104,7 @@ def servers_v1(request):
 
 
 @ratelimit(key='ip', rate='3/s', block=True)
+@cache_page(60 * 10)
 def servers(request) -> JsonResponse:
     return JsonResponse({
         server.id: {

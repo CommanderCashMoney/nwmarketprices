@@ -1,25 +1,18 @@
-import json
 import logging
-from time import perf_counter
 from typing import List, Tuple
 
 import requests
 from constance import config  # noqa
 
-from django.core.handlers.wsgi import WSGIRequest
 from django.shortcuts import render
-from django.template.loader import render_to_string
 
 from nwmarket import settings
-from nwmarketapp.api.utils import check_version_compatibility, get_popular_items_dict, get_list_by_nameid, \
-    get_price_graph_data
+from nwmarketapp.api.utils import check_version_compatibility
 from nwmarketapp.api.views.prices import get_item_data_v1
-from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup, NWDBLookup
+from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup
 from nwmarketapp.models import Price
-from django.http import JsonResponse, FileResponse
-from django.db.models import Count
+from django.http import JsonResponse
 from django.views.decorators.cache import cache_page
-from ratelimit.decorators import ratelimit
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import status
@@ -27,8 +20,7 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.db import connection
+from django.core.exceptions import ValidationError
 
 
 class TokenPairSerializer(TokenObtainPairSerializer):
@@ -190,12 +182,17 @@ class NameCleanupAPI(CreateAPIView):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
 
-            return Response({"status": True,
-                             "message": "Name Cleanup Added"},
-                            status=status.HTTP_201_CREATED, headers=headers)
-        else:
-            print(f'errors: {serializer.errors}')
-            return Response({"status": False})
+            return Response({
+                "status": True,
+                "message": "Name Cleanup Added"
+            }, status=status.HTTP_201_CREATED, headers=headers)
+
+
+        return Response({
+            "status": False,
+            "errors": serializer.errors,
+            "message": "Submitted data could not be serialized"
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ConfirmedNamesSerializer(serializers.ModelSerializer):
@@ -215,14 +212,19 @@ class ConfirmedNamesAPI(CreateAPIView):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
 
-            return Response({"status": True,
-                             "message": "Confirmed Names Added"},
-                            status=status.HTTP_201_CREATED, headers=headers)
-        else:
-            print(f'errors: {serializer.errors}')
-            return Response({"status": False})
+            return Response({
+                "status": True,
+                "message": "Confirmed Names Added"
+            }, status=status.HTTP_201_CREATED, headers=headers)
+
+        return Response({
+            "status": False,
+            "errors": serializer.errors,
+            "message": "Submitted data could not be serialized"
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
+@cache_page(60 * 10)
 def index(request, *args, **kwargs):
     cn_id = request.GET.get("cn_id")
     if cn_id:
