@@ -68,7 +68,6 @@ const handleResizeFinished = () => {
     const fullWidth = Number(computedStyle.width.replace("px", ""));
     const pl = Number(computedStyle.paddingLeft.replace("px", ""));
     const pr = Number(computedStyle.paddingRight.replace("px", ""));
-    console.log(fullWidth)
     chart.update({
         chart: {
             width: fullWidth - pl - pr
