@@ -274,16 +274,9 @@ html {
     .lowest-price-text {
         font-size: 4em;
     }
-}
 
-@media all and (min-width: 1216px) {
-    #competitive-bar-column {
-        max-width: 33%;
-    }
-
-    .item-search-container {
-        max-width: 509px;
-        width: 100%;
+    .items-column {
+        flex-basis: 400px;
     }
 }
 
@@ -310,5 +303,16 @@ html {
 
     .mt-1-desktop {
         margin-top: 0.25rem;
+    }
+}
+
+@media all and (min-width: 1216px) {
+    #competitive-bar-column {
+        max-width: 33%;
+    }
+
+    .item-search-container {
+        max-width: 509px;
+        width: 100%;
     }
 }

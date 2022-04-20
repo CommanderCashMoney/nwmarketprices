@@ -59,7 +59,7 @@ window.addEventListener('load', () => {
     }, null, document.getElementsByTagName('head')[0]);
 });
 
-const handleResizeFinished = () => {
+window.addEventListener('resize', function(event) {
     if(!chart) {
         return;
     }
@@ -73,11 +73,4 @@ const handleResizeFinished = () => {
             width: fullWidth - pl - pr
         }
     }, true, false, false);  // redraw=true, onetoone=false, animation=false
-}
-
-
-let resizeFinished = null;
-window.addEventListener('resize', function(event) {
-    clearTimeout(resizeFinished);
-    resizeFinished = setTimeout(handleResizeFinished, 100);
 });

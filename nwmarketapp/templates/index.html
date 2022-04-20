@@ -32,31 +32,25 @@
 </div>
 <div class="container py-0 px-2">
     <div class="columns flex-container mt-0 mb-0">
-        <div class="mx-0 p-3 column">
+        <div class="mx-0 p-3 column items-column">
             {% include "snippets/popular-end-game-empty.html" with name="Popular End Game Items" id="popular-end-game-items" %}
         </div>
-        <div class="mx-0 p-3 column">
+        <div class="mx-0 p-3 column items-column">
             {% include "snippets/popular-end-game-empty.html" with name="Popular Base Materials" id="popular-base-materials"  %}
         </div>
         <div class="mx-0 p-3 column" id="competitive-bar-column">
             {% include 'snippets/competitive-items.html' %}
         </div>
     </div>
-    <div class="columns mt-1">
-        <div class="column is-one-third is-flex mx-0 p-3">
-            <div class="container my-auto full-height">
+    <div class="columns flex-container mt-1 mb-0">
+        <div class="mx-0 p-3 column items-column">
                 {% include "snippets/popular-end-game-empty.html" with name="Motes" id="motes" %}
-            </div>
         </div>
-        <div class="column is-one-third is-flex mx-0 p-3">
-            <div class="container my-auto full-height">
+        <div class="mx-0 p-3 column items-column">
                 {% include "snippets/popular-end-game-empty.html" with name="Refining Reagents" id="refining-reagents" %}
-            </div>
         </div>
-        <div class="column is-one-third is-flex mx-0 p-3">
-            <div class="container my-auto full-height">
+        <div class="mx-0 p-3 column items-column">
                 {% include "snippets/popular-end-game-empty.html" with name="Trophy Materials" id="trophy-materials" %}
-            </div>
         </div>
     </div>
 </div>
