@@ -222,7 +222,7 @@ html {
     background-color: #1a1a1a;
     color: #ffffff;
     height: 2em;
-    min-width: 15em;
+    width: 15em;
 }
 
 .password-submit {
@@ -315,4 +315,12 @@ html {
         max-width: 509px;
         width: 100%;
     }
+}
+
+.card {
+    background-color: #3A3F47;
+}
+
+.media-content {
+    overflow-y: hidden;
 }

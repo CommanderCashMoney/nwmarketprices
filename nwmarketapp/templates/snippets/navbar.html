@@ -5,12 +5,14 @@
             <a href="/" style="color: white">New World Market Prices</a>
         </span>
         <div class="navbar-item"></div>
+        {% if not is_login_nav %}
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
            data-target="burger">
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
         </a>
+        {% endif %}
     </div>
     {% if not is_login_nav %}
     {% include 'snippets/typeahead-search.html' %}
@@ -22,12 +24,10 @@
     </div>
     {% else %}
     <div class="navbar-end is-dark">
-        <div class="is-dark">
-            <div class="navbar-item">
+        <div class="navbar-item">
             <a class="button is-primary login" href="/">
                 <strong class="discord-text m-0">Back To Home</strong>
             </a>
-            </div>
         </div>
     </div>
     {% endif %}
