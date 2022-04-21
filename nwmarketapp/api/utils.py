@@ -39,35 +39,38 @@ def check_version_compatibility(version: str) -> bool:
 def get_price_graph_data(grouped_hist):
     # get last 10 lowest prices
     price_graph_data = []
-    for x in grouped_hist[-15:]:
-        price_graph_data.append((x[0][0], x[0][1]))
+    for grouped_listings in grouped_hist[-15:]:
+        listing_datetime = grouped_listings[0][0]
+        price = grouped_listings[0][1]
+        price_graph_data.append({"datetime": listing_datetime, "price": price})
 
     # get 15 day rolling average
     smooth = 0.3
-    i = 1
-    avg = []
     avg_price_graph = []
-    avg.append(price_graph_data[0][1])
-    avg_price_graph.append(price_graph_data[0][1])
-    while i < len(price_graph_data):
-        window_average = round((smooth * price_graph_data[i][1]) + (1 - smooth) * avg[-1], 2)
-
-        avg.append(window_average)
-        avg_price_graph.append((price_graph_data[i][0], window_average))
-        i += 1
+    for price_data in price_graph_data:
+        price = price_data["price"]
+        price_datetime = price_data["datetime"]
+        if len(avg_price_graph) == 0:
+            previous_average = price
+        else:
+            previous_average = avg_price_graph[-1][1]
+        window_average = round((smooth * price) + (1 - smooth) * previous_average, 2)
+        avg_price_graph.append((price_datetime, window_average))
 
     num_listings = []
-    for x in grouped_hist[-10:]:
+    for grouped_listings in grouped_hist[-10:]:
         unique_prices = []
-        temp = set()
+        already_added_prices = set()
 
-        for y in x:
-            if y[1] not in temp:
-                if not y[2]:
+        for listing in grouped_listings:
+            price = listing[1]
+            quantity = listing[2]
+            if price not in already_added_prices:
+                if not quantity:
                     unique_prices.append(1)
                 else:
-                    unique_prices.append(y[2])
-                temp.add(y[1])
+                    unique_prices.append(quantity)
+                already_added_prices.add(price)
         num_listings.append(sum(unique_prices))
 
     return price_graph_data[-10:], avg_price_graph[-10:], num_listings
@@ -97,10 +100,12 @@ def get_list_by_nameid(name_id: int, server_id: str) -> dict:
         lowest_since_last_run = lowest_10_raw
         recent_lowest_price = lowest_since_last_run[0][1]
         recent_price_time = lowest_since_last_run[0][0].strftime('%x %I:%M %p')
+        recent_price_time_raw = lowest_since_last_run[0][0]
     else:
         recent_lowest = grouped_hist[-1]
         recent_lowest_price = recent_lowest[0][1]
         recent_price_time = recent_lowest[0][0].strftime('%x %I:%M %p')
+        recent_price_time_raw = recent_lowest[0][0]
 
     price_change = None
     prev_date = None
@@ -132,7 +137,8 @@ def get_list_by_nameid(name_id: int, server_id: str) -> dict:
         "price_change_text": price_change_text,  # fixme: deprecrate
         "recent_price_time": recent_price_time,
         "lowest_10_raw": lowest_10_raw,
-        "item_name": item_name
+        "item_name": item_name,
+        "recent_price_time_raw": recent_price_time_raw,
     }
 
 
