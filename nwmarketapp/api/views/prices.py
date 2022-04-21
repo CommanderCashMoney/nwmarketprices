@@ -71,7 +71,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
     item_name = item_data["item_name"]
     if not grouped_hist:
         # we didnt find any prices with that name id
-        return JsonResponse(status=404)
+        return JsonResponse({"errors": ["No price data for item."]}, status=status.HTTP_404_NOT_FOUND)
 
     price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
 
@@ -92,7 +92,8 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
             "lowest_price": render_to_string("snippets/lowest-price.html", {
                 "recent_lowest_price": item_data["recent_lowest_price"],
                 "last_checked": item_data["recent_price_time"],
-                "price_change": item_data["price_change_text"],
+                "price_change": item_data["price_change"],
+                "price_change_date": item_data["price_change_date"],
                 "detail_view": item_data["lowest_10_raw"],
                 'item_name': item_name,
                 'nwdb_id': nwdb_id,

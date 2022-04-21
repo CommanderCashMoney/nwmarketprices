@@ -82,33 +82,19 @@ def get_list_by_nameid(name_id: int, server_id: str) -> dict:
 
     hist_price = qs_current_price.values_list('timestamp', 'price', 'avail').order_by('timestamp')
     last_run = Run.objects.filter(server_id=server_id, approved=True).exclude(username="january").latest('id')
-    #get all prices since last run
+    # get all prices since last run
     latest_prices = list(hist_price.filter(run=last_run).values_list('timestamp', 'price', 'avail').order_by('price'))
     # group by days
-    grouped_hist = [list(g) for _, g in itertools.groupby(hist_price, key=lambda x: x[0].date())]
-    for count, val in enumerate(grouped_hist):
-        grouped_hist[count].sort(key = lambda x: x[1])
+    grouped_hist = [list(g) for _, g in itertools.groupby(hist_price, key=lambda price_list: price_list[0].date())]
+    # order by price?
+    for count, _ in enumerate(grouped_hist):
+        grouped_hist[count].sort(key=lambda price_list: price_list[1])
 
     lowest_10_raw = latest_prices[:10]
 
-    # split out dates from prices
-    # for idx, day_hist in enumerate(grouped_hist):
-    #     hist_dates2, hist_price_list2, hist_price_avail = zip(*day_hist)
-    #     # filter outliers for each day
-    #     filtered_prices, bad_indices = remove_outliers(np.array(hist_price_list2))
-    #     for x in bad_indices[0][::-1]:
-    #         zz = grouped_hist[idx][x]
-    #         # clean otuliers group group_hist
-    #         del grouped_hist[idx][x]
-
-
+    # fixme: everything below here can be template tags
     if lowest_10_raw:
         lowest_since_last_run = lowest_10_raw
-        # l_dates, lprices, lavail = zip(*lowest_since_last_run)
-        # filtered_prices, bad_indices = remove_outliers(np.array(lprices))
-        # for x in bad_indices[0][::-1]:
-        #     # clean outliers for list
-        #     del lowest_since_last_run[x]
         recent_lowest_price = lowest_since_last_run[0][1]
         recent_price_time = lowest_since_last_run[0][0].strftime('%x %I:%M %p')
     else:
@@ -116,7 +102,8 @@ def get_list_by_nameid(name_id: int, server_id: str) -> dict:
         recent_lowest_price = recent_lowest[0][1]
         recent_price_time = recent_lowest[0][0].strftime('%x %I:%M %p')
 
-    price_change = 0
+    price_change = None
+    prev_date = None
     if len(grouped_hist) > 1:
         prev_lowest = grouped_hist[-2]
         prev_date = prev_lowest[0][0]
@@ -124,7 +111,7 @@ def get_list_by_nameid(name_id: int, server_id: str) -> dict:
 
         price_change = get_change(recent_lowest_price, prev_lowest_price)
         try:
-            price_change =round(price_change)
+            price_change = round(price_change)
         except ValueError:
             price_change = 0
 
@@ -137,14 +124,12 @@ def get_list_by_nameid(name_id: int, server_id: str) -> dict:
     else:
         price_change_text = 'Not enough data'
 
-    #format numbers
-    recent_lowest_price = "{:,.2f}".format(recent_lowest_price)
-
     return {
         "grouped_hist": grouped_hist,
         "recent_lowest_price": recent_lowest_price,
         "price_change": price_change,
-        "price_change_text": price_change_text,
+        "price_change_date": prev_date,
+        "price_change_text": price_change_text,  # fixme: deprecrate
         "recent_price_time": recent_price_time,
         "lowest_10_raw": lowest_10_raw,
         "item_name": item_name
