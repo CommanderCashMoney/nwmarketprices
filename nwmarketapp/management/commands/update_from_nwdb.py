@@ -31,4 +31,4 @@ class Command(BaseCommand):
             except django.db.utils.IntegrityError:
                 print(f"Failed duplication constraint on {cn.name}")
                 duplicated.append(cn.name)
-            print({"status": "completed", "duplicated_items": duplicated})
+            print(json.dumps({"status": "completed", "duplicated_items": duplicated}, indent=2))

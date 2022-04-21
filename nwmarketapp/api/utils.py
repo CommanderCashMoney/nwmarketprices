@@ -165,24 +165,6 @@ def get_price_change_span(price_change) -> str:
     return '<span class="grey_text">0%</span>'
 
 
-def get_item_data_list(server_id: int, item_id_list: List[int]) -> List[dict]:
-    items_data = []
-    for item_id in item_id_list:
-        item_data = get_list_by_nameid(item_id, server_id)
-        price_change = item_data["price_change"]
-        if price_change and price_change >= 0:
-            price_change = '<span class="blue_text">&#8593;{}%</span>'.format(price_change)
-        else:
-            price_change = '<span class="yellow_text">&#8595;{}%</span>'.format(price_change)
-        items_data.append([
-            item_data["item_name"],
-            item_data["recent_lowest_price"],
-            price_change,
-            item_id
-        ])
-    return items_data
-
-
 def convert_popular_items_dict_to_old_style(popular_items_dict: dict) -> Dict[str, List]:
     p = perf_counter()
     return_value = {}
