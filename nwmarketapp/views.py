@@ -5,6 +5,7 @@ import requests
 from constance import config  # noqa
 
 from django.shortcuts import render
+from django.views.decorators.vary import vary_on_cookie
 
 from nwmarket import settings
 from nwmarketapp.api.utils import check_version_compatibility
@@ -225,6 +226,7 @@ class ConfirmedNamesAPI(CreateAPIView):
 
 
 @cache_page(60 * 10)
+@vary_on_cookie
 def index(request, *args, **kwargs):
     cn_id = request.GET.get("cn_id")
     if cn_id:
