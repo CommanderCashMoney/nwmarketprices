@@ -86,6 +86,7 @@ function create_linegraph(data) {
             data: prices,
             yAxis: 0,
             lineWidth: 3,
+            color: 'rgb(55,115,204)',
             marker: {
                 radius: 3,
                 fillColor: "white",
@@ -98,6 +99,8 @@ function create_linegraph(data) {
             data: avg_prices,
             yAxis: 0,
             lineWidth: 3,
+            opacity: 0.70,
+            color: 'rgb(55,115,204)',
             dashStyle: 'ShortDash',
             marker: {
                 radius: 3,
