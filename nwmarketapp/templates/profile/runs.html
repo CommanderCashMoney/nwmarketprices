@@ -1,0 +1,24 @@
+{% load profile_extras %}
+{% load humanize %}
+{% if request.user|user_runs %}
+<div class="box full-height p-3">
+    <div class="card full-height p-3">
+        <div class="is-size-4">Your Runs (Last 7 Days)</div>
+        <hr class="divider mb-3">
+        <div>
+            <div class="columns mb-0">
+                <strong class="column is-size-5">Run Date</strong>
+                <strong class="column is-size-5">Run Time</strong>
+                <strong class="column is-size-5">Number Listings</strong>
+            </div>
+            {% for run in request.user|user_runs %}
+            <div class="columns mb-0">
+                <div class="column">{{ run.start_date|date }}</div>
+                <div class="column">{{ run.start_date|time }}</div>
+                <div class="column">{{ run.price_set.count|intcomma }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}

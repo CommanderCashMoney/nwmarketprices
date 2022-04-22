@@ -24,10 +24,14 @@ class RunAdmin(admin.ModelAdmin):
 
 
 class ConfirmedNamesAdmin(admin.ModelAdmin):
-    search_fields = ("name", )
+    search_fields = ("name", "nwdb_id")
+    list_display = ["nwdb_id", "name"]
 
-    def get_model_perms(self, request):
-        return {}  # don't display this in the list of available admins
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 class CleanupFilter(SimpleListFilter):

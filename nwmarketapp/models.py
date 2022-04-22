@@ -7,6 +7,8 @@ class ConfirmedNames(models.Model):
     nwdb_id = models.TextField(unique=True)
     item_type = models.TextField()
     item_classes = models.JSONField()
+    max_stack = models.IntegerField(default=1)
+    type_name = models.TextField(null=True, default=None)
 
     class Meta:
         db_table = 'confirmed_names'

@@ -38,4 +38,6 @@ urlpatterns = [
     path('api/name_cleanup_upload/', NameCleanupAPI.as_view(), name='name_cleanup_upload'),
     path('api/confirmed_names_upload/', ConfirmedNamesAPI.as_view(), name='confirmed_names_upload'),
     path('api/', include('nwmarketapp.api.urls')),
+    path('account/', include('allauth.urls')),
+    path('account/', include('nwmarketapp.profile.urls')),
 ]

@@ -1,0 +1,12 @@
+<div class="navbar-item has-dropdown server-select" id="server-select">
+    <a class="navbar-link" id="server-name">
+      Server Select
+    </a>
+    <div class="navbar-dropdown is-dark hidden white-border">
+    {% for server_id, server_name in servers.items %}
+      <a class="navbar-item server" onclick="changeServer({{ server_id }})">
+          {{ server_name }}
+      </a>
+    {% endfor %}
+    </div>
+</div>

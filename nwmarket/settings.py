@@ -29,7 +29,8 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG") == "True"
 
-ALLOWED_HOSTS = ['Nwmarket-env.eba-rxcymaas.us-west-1.elasticbeanstalk.com', '127.0.0.1', 'localhost', 'nwmarketprices.com']
+HOST = os.getenv("HOST", "nwmp.eba-ubwpcedf.ap-southeast-2.elasticbeanstalk.com")
+ALLOWED_HOSTS = [HOST, "127.0.0.1", 'localhost', 'nwmarketprices.com']
 
 
 # Application definition
@@ -38,12 +39,18 @@ INSTALLED_APPS = [
     'clearcache',
     'constance',
     'constance.backends.database',
+    'django.contrib.humanize',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.discord',
     'nwmarketapp.apps.NwmarketappConfig',
 ]
 
@@ -62,7 +69,9 @@ ROOT_URLCONF = 'nwmarket.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [
+            BASE_DIR / 'nwmarketapp' / 'templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -137,6 +146,27 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+SOCIALACCOUNT_PROVIDERS = {
+    "discord": {
+        "APP": {
+            # default application is set up to redirect to 127.0.0.1:8080/...
+            "client_id": os.getenv("DISCORD_CLIENT_ID", "962639763721060363"),
+            "secret": os.getenv("DISCORD_CLIENT_SECRET", "diJ-f8T7nJMQZ2hB56mwNoXHMM6nq66n"),
+
+        }
+    }
+}
+
+SITE_ID = 1
+LOGIN_REDIRECT_URL = "/"
 
 
 # Internationalization

@@ -1,0 +1,28 @@
+<div class="modal" id="lowest-10-modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title"><strong class="is-size-7">Lowest 10 Unfiltered Prices for {{ item_name }}</strong></p>
+      <button class="delete close-modal" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+        <div class="container">
+            <div class="columns is-mobile">
+                <div class="column is-half column-title">Time Seen</div>
+                <div class="column is-one-quarter column-title">Price</div>
+                <div class="column is-one-quarter column-title">Avail</div>
+            </div>
+            {% for price in detail_view %}
+            <div class="columns mb-0  is-mobile">
+                <div class="column is-half">{{ price.0 }}</div>
+                <div class="column is-one-quarter">{{ price.1 }}</div>
+                <div class="column is-one-quarter">{{ price.2 }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button close-modal">Cancel</button>
+    </footer>
+  </div>
+</div>

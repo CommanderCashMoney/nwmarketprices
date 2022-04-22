@@ -1,0 +1,326 @@
+html {
+    box-sizing: border-box;
+    background-color: #454A51;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    color: #f3f3f3;
+    font-size: 1.2em;
+}
+
+.navbar {
+    background-color: rgb(40, 47, 47)!important;
+}
+
+.container>.navbar .navbar-brand, .navbar>.container .navbar-brand{
+    margin-left: 20px;
+}
+
+.is-dark {
+    background-color:  #3A3F47!important;
+}
+
+.typeahead__container {
+    width: 100%;
+}
+
+.item-search-container {
+    margin: 0 !important;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.discord-text {
+    margin-left: 10px;
+}
+
+.nav-title {
+    padding-left: 0;
+}
+
+.login {
+    margin: auto;
+    width: 100%;
+}
+
+.burger-menu {
+    margin-right: 0!important;
+}
+
+
+.divider {
+    background-color: #ACACAC;
+    height: 1px;
+    margin-top: 0.5em;
+    margin-bottom: 2em;
+}
+
+.no-pad-bottom {
+    margin-bottom: 0;
+}
+
+.popular-item {
+    color: inherit;
+    text-decoration: none;
+    padding: 0.3em 0.2em 0.2em;
+}
+
+.popular-item:hover > a {
+    color: #9fc8df;
+}
+
+.popular-item-row {
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+.navbar-link:hover {
+    color: #9fc8df;
+}
+
+.server:hover {
+    color: #9fc8df!important;
+}
+
+.link-soft {
+    color: inherit;
+    text-decoration: none;
+}
+.link-soft:hover {
+    color: #9fc8df!important;
+}
+
+.popular-item-title {
+    color: #f3f3f3;
+    font-size: 1.5em;
+}
+
+.server-select {
+    font-size: 20px;
+}
+
+.server {
+    font-size: 18px;
+}
+
+.item-search {
+    background-color: #ffffff;
+    color: #000000;
+}
+.typeahead__list {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+.typeahead__item > a {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+.typeahead__item.active {
+    background-color: #ff7575;
+    color: #ffffcc;
+}
+
+.item-search::placeholder {
+    color: #6c6b6bc4;
+}
+
+.lowest-price-text {
+    font-size: 5em;
+}
+
+.item {
+    display:flex;
+    flex-direction:column;
+}
+
+.lowest-price-div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-size: 1.1em;
+}
+
+.lowest-price-item {
+    align-self: center;
+}
+
+.lowest-price-item.top {
+    margin-bottom: auto;
+}
+
+.lowest-price-item.middle {
+    margin: auto;
+}
+
+.lowest-price-item.bottom {
+    margin-top: auto;
+}
+
+.blue_text{
+  color: lightsteelblue;
+}
+.yellow_text{
+  color: darkkhaki;
+}
+.grey_text {
+  color: #b9b9b9;
+}
+
+.full-height {
+    height:100%;
+}
+
+.hidden {
+    display: none!important;
+}
+
+.ph-item {
+    background-color: rgb(40, 47, 47)!important;
+    border-color: rgb(40, 47, 47)!important;
+}
+
+@media only screen and (max-width: 600px) {
+  .no-pad-mobile {
+    padding: 0;
+  }
+}
+
+.typeahead__list {
+    background-color: rgb(40, 47, 47);
+    border-color: #f3f3f3;
+    border-bottom-color: #f3f3f3;
+}
+
+.typeahead__item > a {
+    color: #f3f3f3!important;
+    background-color: rgb(40, 47, 47);
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.clickable:hover {
+    color: #9fc8df;
+}
+
+.column-title {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.discord-img {
+    border-radius: 50%;
+    border: 2px solid white;
+    height: 100px;
+    width: 100px;
+}
+
+.highlight {
+    color: #f9ffbf;
+}
+
+.password-input {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    height: 2em;
+    width: 15em;
+}
+
+.password-submit {
+    height: 2em;
+    padding-top: 2px;
+}
+
+.password-input::placeholder {
+    color: #6c6b6bc4;
+}
+
+.black-background {
+    background-color: black!important;
+}
+
+.box {
+    background-color:  #3A3F47!important;
+}
+
+.navbar, .navbar-item {
+    background-color:  #3A3F47!important;
+
+}
+
+.column.p-3 {
+    padding-bottom: 0em!important;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.flex-container {
+    display: flex;
+    flex-direction: row;
+    flex: 1 1 0px
+}
+
+@media all and (max-width: 1215px) {
+    .flex-container {
+        flex-wrap: wrap;
+    }
+
+    #competitive-bar-column {
+        width: 100%;
+        flex-basis: 100%;
+    }
+
+    .lowest-price-text {
+        font-size: 4em;
+    }
+
+    .items-column {
+        flex-basis: 400px;
+    }
+}
+
+@media only screen and (max-width: 1024px) {
+    .lowest-price-text {
+        font-size: 3em;
+    }
+}
+
+
+@media only screen and (min-width: 1024px) {
+    .item-search-container {
+        max-width: 320px;
+        width: 100%;
+    }
+
+    .white-border {
+        border: 1px solid #ACACAC;
+    }
+
+    .mt-4-desktop {
+        margin-top: 1rem;
+    }
+
+    .mt-1-desktop {
+        margin-top: 0.25rem;
+    }
+}
+
+@media all and (min-width: 1216px) {
+    #competitive-bar-column {
+        max-width: 33%;
+    }
+
+    .item-search-container {
+        max-width: 509px;
+        width: 100%;
+    }
+}
+
+.card {
+    background-color: #3A3F47;
+}
+
+.media-content {
+    overflow-y: hidden;
+}
