@@ -1,9 +1,9 @@
 {% load static %}
 {% load account %}
 
-    <div class="navbar-item p-2">
+    <div class="navbar-item p-0">
         {% if not request.user.is_authenticated %}
-            <div>
+            <div class="pr-1-desktop">
                 <form method="post" action="/account/discord/login/">
                     {% csrf_token %}
                     <button class="button is-primary login">
