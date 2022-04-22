@@ -91,37 +91,31 @@ window.onpopstate = function(e){
     init();
 };
 
-// dropdown click event listener
-window.addEventListener('load', function() {
-    init();
-    const serverSelect = document.getElementById("server-select");
-    const dropdownElems = serverSelect.getElementsByClassName("navbar-dropdown")[0];
-    serverSelect.onclick = () => {
-        dropdownElems.classList.toggle("hidden");
-        serverSelect.classList.toggle("is-active");
+const setupDropdown = (triggerId) => {
+    const select = document.getElementById(triggerId);
+    if(!select) {
+        return;
     }
-
-    const settings = document.getElementById("settings");
-    const settingsElems = settings.getElementsByClassName("navbar-dropdown")[0];
-    settings.onclick = () => {
-        settings.classList.toggle("is-active");
-        settingsElems.classList.toggle("hidden");
+    const dropdownElems = select.getElementsByClassName("navbar-dropdown")[0];
+    select.onclick = () => {
+        dropdownElems.classList.toggle("hidden");
+        select.classList.toggle("is-active");
     }
 
     window.addEventListener("click", (event) => {
         const elem = event.target;
-        const isChildOfSettings = elem === settings || settings.contains(elem);
-        if(!isChildOfSettings) {
-            settings.classList.remove("is-active");
-            settingsElems.classList.add("hidden");
-        }
-
-        const isChildOfServerSelect = elem === serverSelect || serverSelect.contains(elem);
-        if(!isChildOfServerSelect) {
-            serverSelect.classList.remove("is-active");
+        const isChildOfSelect = elem === select || select.contains(elem);
+        if(!isChildOfSelect) {
+            select.classList.remove("is-active");
             dropdownElems.classList.add("hidden");
         }
     });
+}
 
+// dropdown click event listener
+window.addEventListener('load', function() {
+    init();
+    setupDropdown("server-select")
+    setupDropdown("settings")
     setupModal("export-data-modal-trigger", "export-data-modal");
 });
