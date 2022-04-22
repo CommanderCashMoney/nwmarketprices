@@ -1,7 +1,7 @@
 {% load static %}
 {% load account %}
 
-    <div class="navbar-item p-0">
+    <div class="navbar-item p-2">
         {% if not request.user.is_authenticated %}
             <div>
                 <form method="post" action="/account/discord/login/">
