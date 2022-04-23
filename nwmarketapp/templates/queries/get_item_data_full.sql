@@ -105,7 +105,7 @@ graph_data AS (
 )
 INSERT INTO price_summaries (server_id, confirmed_name_id, lowest_prices, graph_data)
 SELECT
-    2 AS server_id,
+    {{ server_id }} AS server_id,
     name_id AS confirmed_name,
     lowest_10_prices.lowest_10,
     graph_data.graph_data
