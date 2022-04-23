@@ -175,6 +175,7 @@ def latest_prices_v1(request: WSGIRequest) -> JsonResponse:
 
 
 def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
+    p = perf_counter()
     scanner_group = request.user.groups.filter(name="scanner_user")
     if not scanner_group.exists():
         return JsonResponse({"status": "forbidden"}, status=status.HTTP_403_FORBIDDEN)
@@ -183,4 +184,4 @@ def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
         print(query)
         cursor.execute(query)
 
-    return JsonResponse({"status": "ok"}, status=status.HTTP_201_CREATED)
+    return JsonResponse({"status": "ok", "calc_time": perf_counter() - p}, status=status.HTTP_201_CREATED)
