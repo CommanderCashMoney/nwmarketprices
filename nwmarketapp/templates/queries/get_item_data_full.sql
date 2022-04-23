@@ -3,13 +3,13 @@ WITH max_run_dates_per_date AS (
         timestamp::date as price_date,
         MAX(run_id) as max_run_id
     FROM prices
-    WHERE server_id = 1
+    WHERE server_id = {{ server_id }}
     GROUP BY 1
 ),
 most_recent_run AS (
     SELECT MAX(run_id) AS max_server_run_id
     FROM prices
-    WHERE server_id = 1
+    WHERE server_id = {{ server_id }}
 ),
 lowest_10_prices AS (
     SELECT
@@ -33,7 +33,7 @@ lowest_price_dates AS (
        timestamp::DATE AS price_date,
        MIN(price) AS lowest_price
     FROM prices
-    WHERE server_id = 1
+    WHERE server_id = {{ server_id }}
     GROUP BY 1, 2
 ),
 price_datetimes AS (
@@ -43,7 +43,7 @@ price_datetimes AS (
         MAX(timestamp) as price_datetime
     FROM lowest_price_dates
     JOIN prices on prices.name_id = lowest_price_dates.name_id AND timestamp::date = price_date AND lowest_price = price
-    WHERE server_id = 1
+    WHERE server_id = {{ server_id }}
     GROUP BY 1, 2
 ),
 price_quantities AS (
@@ -57,7 +57,7 @@ price_quantities AS (
         JOIN prices ON
             prices.name_id = lowest_price_dates.name_id AND
             timestamp::date = price_date
-        WHERE server_id = 1
+        WHERE server_id = {{ server_id }}
         GROUP BY 1, 2, 3
     ) calc GROUP BY 1, 2
 ),
@@ -80,7 +80,7 @@ final_prices as (
 )
 INSERT INTO price_summaries (server_id, confirmed_name_id, lowest_prices, graph_data)
 SELECT
-    1 AS server_id,
+    {{ server_id }} AS server_id,
     name_id AS confirmed_name,
     (
         SELECT JSON_AGG(
