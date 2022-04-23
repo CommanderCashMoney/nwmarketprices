@@ -74,7 +74,7 @@ function create_linegraph(data) {
         }
     },
     tooltip: {
-        xDateFormat: '%Y/%m/%d',
+        xDateFormat: '%A, %b %e, %H:%M',
         shared: true,
         split: false,
         enabled: true
@@ -86,6 +86,7 @@ function create_linegraph(data) {
             data: prices,
             yAxis: 0,
             lineWidth: 3,
+            color: 'rgb(55,115,204)',
             marker: {
                 radius: 3,
                 fillColor: "white",
@@ -98,7 +99,10 @@ function create_linegraph(data) {
             data: avg_prices,
             yAxis: 0,
             lineWidth: 3,
+            opacity: 0.70,
+            color: 'rgb(55,115,204)',
             dashStyle: 'ShortDash',
+
             marker: {
                 radius: 3,
                 fillColor: "white",
@@ -111,6 +115,8 @@ function create_linegraph(data) {
             data: num_listings,
             yAxis: 1,
             color: 'rgb(49, 49, 55)',
+            // pointWidth: 15,
+            // groupPadding: 0,
             zIndex: -1,
             opacity: 0.85,
             borderWidth: 1,
@@ -133,6 +139,9 @@ window.addEventListener("load",function(event) {
         colors: ['#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066',
             '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'
         ],
+        time: {
+            useUTC: false
+        },
         chart: {
             backgroundColor: '#3A3F47',
         },

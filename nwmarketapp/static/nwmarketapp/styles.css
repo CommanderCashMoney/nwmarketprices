@@ -123,7 +123,7 @@ html {
 }
 
 .lowest-price-text {
-    font-size: 5em;
+    font-size: 4.3em;
 }
 
 .item {
@@ -173,8 +173,8 @@ html {
 }
 
 .ph-item {
-    background-color: rgb(40, 47, 47)!important;
-    border-color: rgb(40, 47, 47)!important;
+    background-color: #454A51!important;
+    border-color: #454A51!important;
 }
 
 @media only screen and (max-width: 600px) {
@@ -272,7 +272,7 @@ html {
     }
 
     .lowest-price-text {
-        font-size: 4em;
+        font-size: 3.3em;
     }
 
     .items-column {
@@ -282,7 +282,7 @@ html {
 
 @media only screen and (max-width: 1024px) {
     .lowest-price-text {
-        font-size: 3em;
+        font-size: 2.8em;
     }
 }
 
@@ -303,6 +303,10 @@ html {
 
     .mt-1-desktop {
         margin-top: 0.25rem;
+    }
+
+    .pr-1-desktop {
+        padding-right: 20px;
     }
 }
 

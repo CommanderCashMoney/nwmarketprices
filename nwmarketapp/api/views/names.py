@@ -9,6 +9,7 @@ from ratelimit.decorators import ratelimit
 from rest_framework import status
 from rest_framework.decorators import api_view
 
+from nwmarket.settings import CACHE_ENABLED
 from nwmarketapp.models import ConfirmedNames, NameCleanup, NameMap, Servers
 
 
@@ -43,7 +44,7 @@ def submit_bad_names(request: WSGIRequest) -> JsonResponse:
     return JsonResponse({"status": "ok"}, status=status.HTTP_201_CREATED)
 
 
-@cache_page(60 * 60 * 24)
+@cache_page(CACHE_ENABLED * 60 * 60 * 24)
 def confirmed_names(request: WSGIRequest) -> JsonResponse:
     return JsonResponse({
         cn.name: {
@@ -74,7 +75,7 @@ def word_cleanup(request: WSGIRequest) -> JsonResponse:
     return JsonResponse(mapped_items)
 
 
-@cache_page(60 * 60 * 24)
+@cache_page(CACHE_ENABLED * 60 * 60 * 24)
 def typeahead(request: WSGIRequest) -> JsonResponse:
     return JsonResponse([{
             "name": cn.name,
@@ -85,7 +86,7 @@ def typeahead(request: WSGIRequest) -> JsonResponse:
 
 
 @ratelimit(key='ip', rate='5/s', block=True)
-@cache_page(60 * 10)
+@cache_page(CACHE_ENABLED * 60 * 10)
 def confirmed_names_v1(request):
     cns = ConfirmedNames.objects.all().exclude(name__contains='"')
     cns = list(cns.values_list('name', 'id'))
@@ -94,7 +95,7 @@ def confirmed_names_v1(request):
 
 
 @ratelimit(key='ip', rate='3/s', block=True)
-@cache_page(60 * 10)
+@cache_page(CACHE_ENABLED * 60 * 10)
 def servers_v1(request):
     server_list = Servers.objects.all().values_list('name', 'id'). order_by('id')
     server_list = list(server_list)
@@ -104,7 +105,7 @@ def servers_v1(request):
 
 
 @ratelimit(key='ip', rate='3/s', block=True)
-@cache_page(60 * 10)
+@cache_page(CACHE_ENABLED * 60 * 10)
 def servers(request) -> JsonResponse:
     return JsonResponse({
         server.id: {
