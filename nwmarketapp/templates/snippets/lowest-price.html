@@ -2,7 +2,7 @@
 {% load prices %}
 <div class="lowest-price-div full-height">
     <div class="lowest-price-item top">Lowest price as of {{ last_checked }}</div>
-    <div class="lowest-price-text lowest-price-item middle">{{ recent_lowest_price|intcomma }}</div>
+    <div class="lowest-price-text lowest-price-item middle">{{ recent_lowest_price|floatformat:2|intcomma }}</div>
     <div class="lowest-price-item bottom">
         <div>
             <span id="lowest-10-modal-trigger" class="clickable">Raw Data</span>

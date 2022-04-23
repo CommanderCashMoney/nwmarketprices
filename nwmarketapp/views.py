@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django.views.decorators.vary import vary_on_cookie
 
 from nwmarket import settings
+from nwmarket.settings import CACHE_ENABLED
 from nwmarketapp.api.utils import check_version_compatibility
 from nwmarketapp.api.views.prices import get_item_data_v1
 from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup
@@ -225,7 +226,7 @@ class ConfirmedNamesAPI(CreateAPIView):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
-@cache_page(60 * 10)
+@cache_page(CACHE_ENABLED * 60 * 10)
 @vary_on_cookie
 def index(request, *args, **kwargs):
     cn_id = request.GET.get("cn_id")

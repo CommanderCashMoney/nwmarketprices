@@ -10,6 +10,7 @@ from django.views.decorators.cache import cache_page
 from ratelimit.decorators import ratelimit
 from rest_framework import status
 
+from nwmarket.settings import CACHE_ENABLED
 from nwmarketapp.api.utils import get_popular_items_dict, get_price_graph_data, get_list_by_nameid
 from nwmarketapp.models import Run, NWDBLookup, ConfirmedNames, Price
 
@@ -61,7 +62,7 @@ def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> Json
     }, status=200)
 
 
-@cache_page(60 * 10)
+@cache_page(CACHE_ENABLED * 60 * 10)
 def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
     p = perf_counter()
     item_data = get_list_by_nameid(item_id, server_id)
@@ -102,7 +103,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
         }, safe=False)
 
 
-@cache_page(60 * 10)
+@cache_page(CACHE_ENABLED * 60 * 10)
 def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
     try:
         last_run = Run.objects.filter(server_id=server_id, approved=True).latest("id")
@@ -141,7 +142,7 @@ def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
 
 
 @ratelimit(key='ip', rate='1/s', block=True)
-@cache_page(60 * 10)
+@cache_page(CACHE_ENABLED * 60 * 10)
 def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
     last_run = Run.objects.filter(server_id=server_id, approved=True).exclude(username="january").latest('id').start_date
     with connection.cursor() as cursor:
