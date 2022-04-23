@@ -173,8 +173,8 @@ html {
 }
 
 .ph-item {
-    background-color: rgb(40, 47, 47)!important;
-    border-color: rgb(40, 47, 47)!important;
+    background-color: #454A51!important;
+    border-color: #454A51!important;
 }
 
 @media only screen and (max-width: 600px) {
