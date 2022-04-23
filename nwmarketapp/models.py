@@ -119,6 +119,8 @@ class PriceSummary(models.Model):
 
     @property
     def recent_lowest_price(self) -> float:
+        if not self.lowest_prices:
+            return None
         return self.lowest_prices[-1]["price"]
 
     @property

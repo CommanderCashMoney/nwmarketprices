@@ -1,29 +1,24 @@
-WITH max_run_dates_per_date AS (
+WITH most_recent_run AS (
     SELECT
-        timestamp::date as price_date,
-        MAX(run_id) as max_run_id
+       name_id,
+       MAX(run_id) AS max_server_run_id
     FROM prices
     WHERE server_id = {{ server_id }}
     GROUP BY 1
 ),
-most_recent_run AS (
-    SELECT MAX(run_id) AS max_server_run_id
-    FROM prices
-    WHERE server_id = {{ server_id }}
-),
 lowest_10_prices AS (
     SELECT
-        name_id,
+        prices.name_id,
         price,
         avail,
         timestamp,
         timestamp::DATE AS price_date,
         ROW_NUMBER() OVER (
-           PARTITION BY name_id
+           PARTITION BY prices.name_id
            ORDER BY price
        ) as price_rank
     FROM prices
-    JOIN most_recent_run ON run_id = max_server_run_id
+    JOIN most_recent_run ON run_id = max_server_run_id AND prices.name_id = most_recent_run.name_id
     WHERE run_id = max_server_run_id
     ORDER BY price
 ),
