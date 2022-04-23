@@ -15,7 +15,6 @@ function create_linegraph(data) {
         avg_prices.push([dateObj / 1, averageGraphData[i]["price"]]);
         num_listings.push([dateObj / 1, numListings[i]]);
     }
-    console.log(num_listings);
 
     //	  LINE CHART
     lineChart = Highcharts.chart('line-graph-container', {

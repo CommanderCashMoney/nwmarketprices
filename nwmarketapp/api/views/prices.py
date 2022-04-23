@@ -191,3 +191,12 @@ def get_popular_items_v1(request: WSGIRequest, server_id: int) -> JsonResponse:
 def latest_prices_v1(request: WSGIRequest) -> JsonResponse:
     server_id = request.GET.get("server_id", "1")
     return latest_prices(request, int(server_id))
+
+
+def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
+    query = render_to_string("queries/get_item_data_full.sql", context={"server_id": server_id})
+    with connection.cursor() as cursor:
+        cursor.execute(f"DELETE FROM price_summaries WHERE server_id = {server_id}")
+        cursor.execute(query)
+
+    return JsonResponse({"status": "ok"}, status=status.HTTP_201_CREATED)

@@ -99,6 +99,16 @@ class Price(models.Model):
         return f"<Price: id={self.pk} name='{self.name}' price={self.price} timestamp={self.timestamp}>"
 
 
+class PriceSummary(models.Model):
+    server_id = models.IntegerField(db_index=True)
+    confirmed_name = models.ForeignKey(ConfirmedNames, on_delete=models.CASCADE)
+    lowest_prices = models.JSONField(null=True)
+    graph_data = models.JSONField(null=True)
+
+    class Meta:
+        db_table = 'price_summaries'
+
+
 class NWDBLookup(models.Model):
     id = models.AutoField(db_column='id', primary_key=True)
     name = models.CharField(max_length=150, blank=True, null=True)
