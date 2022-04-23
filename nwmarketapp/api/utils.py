@@ -53,9 +53,9 @@ def get_price_graph_data(grouped_hist):
         if len(avg_price_graph) == 0:
             previous_average = price
         else:
-            previous_average = avg_price_graph[-1][1]
+            previous_average = avg_price_graph[-1]["price"]
         window_average = round((smooth * price) + (1 - smooth) * previous_average, 2)
-        avg_price_graph.append((price_datetime, window_average))
+        avg_price_graph.append({"datetime": price_datetime, "price": window_average})
 
     num_listings = []
     for grouped_listings in grouped_hist[-10:]:

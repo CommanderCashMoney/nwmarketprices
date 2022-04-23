@@ -63,6 +63,7 @@ const loadItem = (item_id, initialLoad = false) => {
         create_linegraph(data["graph_data"]);
         setupModal("lowest-10-modal-trigger", "lowest-10-modal");
     }).catch((data) => {
+        console.log(data);
         const errorMsg = data["errors"].join("<br><br>")
         createNotifiation(errorMsg, "danger");
     })

@@ -4,20 +4,18 @@ function create_linegraph(data) {
     console.log("creating linegraphg...")
     const dates = []
     const prices = []
-    const max_price = []
     const num_listings = []
     const avg_prices = []
-    for(let i=0; i<data.price_graph_data.length; i++) {
-        const pgd = data.price_graph_data[i];
-        let dateObj = new Date(pgd[0]);
-        let date = dateObj.getDate();
-        let month = dateObj.getMonth() + 1;
-        let dt = month + '-' + date;
-        prices.push([dateObj / 1, pgd[1]]);
-        max_price.push([dateObj, pgd[1]]);
-        avg_prices.push([dateObj / 1, data.avg_graph_data[i][1]]);
-        num_listings.push([dateObj / 1, data.num_listings[i]]);
+    const priceGraphData = data["price_graph_data"];
+    const averageGraphData = data["avg_graph_data"];
+    const numListings = data["num_listings"];
+    for(let i=0; i < priceGraphData.length; i++) {
+        let dateObj = new Date(priceGraphData[i]["datetime"]);
+        prices.push([dateObj / 1, priceGraphData[i]["price"]]);
+        avg_prices.push([dateObj / 1, averageGraphData[i]["price"]]);
+        num_listings.push([dateObj / 1, numListings[i]]);
     }
+    console.log(num_listings);
 
     //	  LINE CHART
     lineChart = Highcharts.chart('line-graph-container', {
