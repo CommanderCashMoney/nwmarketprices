@@ -129,6 +129,7 @@ class PriceSummary(models.Model):
 
     class Meta:
         db_table = 'price_summaries'
+        unique_together = (("server_id", "confirmed_name"),)
 
 
 class NWDBLookup(models.Model):

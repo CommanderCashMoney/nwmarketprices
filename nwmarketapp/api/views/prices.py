@@ -180,7 +180,6 @@ def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
         return JsonResponse({"status": "forbidden"}, status=status.HTTP_403_FORBIDDEN)
     query = render_to_string("queries/get_item_data_full.sql", context={"server_id": server_id})
     with connection.cursor() as cursor:
-        cursor.execute(f"DELETE FROM price_summaries WHERE server_id = {server_id}")
         print(query)
         cursor.execute(query)
 

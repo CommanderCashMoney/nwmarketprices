@@ -100,3 +100,7 @@ FROM final_prices fp
 JOIN confirmed_names ON name_id = confirmed_names.id
 WHERE name_id is not null
 GROUP BY 1, 2
+ON CONFLICT (server_id, confirmed_name_id)
+DO UPDATE SET
+    lowest_prices = excluded.lowest_prices,
+    graph_data = excluded.graph_data
