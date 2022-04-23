@@ -12,7 +12,7 @@ from rest_framework import status
 
 from nwmarket.settings import CACHE_ENABLED
 from nwmarketapp.api.utils import get_popular_items_dict, get_price_graph_data, get_list_by_nameid
-from nwmarketapp.models import Run, NWDBLookup, ConfirmedNames, Price
+from nwmarketapp.models import PriceSummary, Run, NWDBLookup, ConfirmedNames, Price
 
 
 def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> JsonResponse:
@@ -62,50 +62,31 @@ def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> Json
     }, status=200)
 
 
-@cache_page(CACHE_ENABLED * 60 * 10)
+@cache_page(60 * 10)
 def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
-    p = perf_counter()
-    item_data = get_list_by_nameid(item_id, server_id)
-    if item_data is None:
-        return JsonResponse({"errors": ["No price data for item."]}, status=status.HTTP_404_NOT_FOUND)
-    grouped_hist = item_data["grouped_hist"]
-    item_name = item_data["item_name"]
-    if not grouped_hist:
-        # we didnt find any prices with that name id
-        return JsonResponse({"errors": ["No price data for item."]}, status=status.HTTP_404_NOT_FOUND)
-
-    price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
-
     try:
-        nwdb_id = NWDBLookup.objects.get(name=item_data["item_name"])
-        nwdb_id = nwdb_id.item_id
-    except NWDBLookup.DoesNotExist:
-        nwdb_id = ''
-
+        ps = PriceSummary.objects.get(server_id=server_id, confirmed_name_id=item_id)
+    except PriceSummary.DoesNotExist:
+        return JsonResponse({"status": "not found"}, status=404)
     return JsonResponse(
         {
-            "item_name": item_name,
-            "item_id": item_id,
-            "price_datetime": item_data["recent_price_time_raw"],
-            "graph_data": {
-                "price_graph_data": price_graph_data,
-                "avg_graph_data": avg_price_graph,
-                "num_listings": num_listings,
-            },
+            "item_name": ps.confirmed_name.name,
+            "item_id": ps.confirmed_name.id,
+            "price_datetime": ps.recent_price_time,
+            "graph_data": ps.ordered_graph_data[-15:],
             "lowest_price": render_to_string("snippets/lowest-price.html", {
-                "recent_lowest_price": item_data["recent_lowest_price"],
-                "last_checked": item_data["recent_price_time"],
-                "price_change": item_data["price_change"],
-                "price_change_date": item_data["price_change_date"],
-                "detail_view": item_data["lowest_10_raw"],
-                'item_name': item_name,
-                'nwdb_id': nwdb_id,
-                'calculation_time': perf_counter() - p
+                "recent_lowest_price": ps.recent_lowest_price,
+                "last_checked": ps.recent_price_time,
+                "price_change": ps.price_change,
+                # "price_change_date": ps.price_change_date,
+                "detail_view": ps.lowest_prices,
+                'item_name': ps.confirmed_name.name,
+                'nwdb_id': ps.confirmed_name.nwdb_id
             })
         }, safe=False)
 
 
-@cache_page(CACHE_ENABLED * 60 * 10)
+@cache_page(60 * 10)
 def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
     try:
         last_run = Run.objects.filter(server_id=server_id, approved=True).latest("id")
@@ -144,7 +125,7 @@ def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
 
 
 @ratelimit(key='ip', rate='1/s', block=True)
-@cache_page(CACHE_ENABLED * 60 * 10)
+@cache_page(60 * 10)
 def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
     last_run = Run.objects.filter(server_id=server_id, approved=True).exclude(username="january").latest('id').start_date
     with connection.cursor() as cursor:
@@ -194,9 +175,13 @@ def latest_prices_v1(request: WSGIRequest) -> JsonResponse:
 
 
 def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
+    scanner_group = request.user.groups.filter(name="scanner_user")
+    if not scanner_group.exists():
+        return JsonResponse({"status": "forbidden"}, status=status.HTTP_403_FORBIDDEN)
     query = render_to_string("queries/get_item_data_full.sql", context={"server_id": server_id})
     with connection.cursor() as cursor:
         cursor.execute(f"DELETE FROM price_summaries WHERE server_id = {server_id}")
+        print(query)
         cursor.execute(query)
 
     return JsonResponse({"status": "ok"}, status=status.HTTP_201_CREATED)

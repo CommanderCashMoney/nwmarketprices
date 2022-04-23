@@ -3,13 +3,13 @@ WITH max_run_dates_per_date AS (
         timestamp::date as price_date,
         MAX(run_id) as max_run_id
     FROM prices
-    WHERE server_id = {{ server_id }}
+    WHERE server_id = 1
     GROUP BY 1
 ),
 most_recent_run AS (
     SELECT MAX(run_id) AS max_server_run_id
     FROM prices
-    WHERE server_id = {{ server_id }}
+    WHERE server_id = 1
 ),
 lowest_10_prices AS (
     SELECT
@@ -31,42 +31,56 @@ lowest_price_dates AS (
     select
        name_id,
        timestamp::DATE AS price_date,
-       timestamp,
-       MIN(price) AS lowest_price,
-       SUM(CASE WHEN max_run_id = run_id THEN avail ELSE 0 END) AS avail,
-       RANK() OVER (
-           PARTITION BY name_id
-           ORDER BY timestamp::date DESC
-       ) as newest
+       MIN(price) AS lowest_price
     FROM prices
-    LEFT JOIN max_run_dates_per_date ON run_id = max_run_id
-    WHERE server_id = {{ server_id }}
-    GROUP BY 1, 2,3
+    WHERE server_id = 1
+    GROUP BY 1, 2
 ),
-lowest_prices_recent AS (
-    select *,
-    AVG(lowest_price) OVER (
-        PARTITION BY name_id
-        ORDER BY price_date
-        ROWS BETWEEN 5 PRECEDING AND CURRENT ROW
-    )  AS rolling_average
-    from lowest_price_dates
+price_datetimes AS (
+    SELECT
+        lowest_price_dates.name_id,
+        lowest_price_dates.price_date,
+        MAX(timestamp) as price_datetime
+    FROM lowest_price_dates
+    JOIN prices on prices.name_id = lowest_price_dates.name_id AND timestamp::date = price_date AND lowest_price = price
+    WHERE server_id = 1
+    GROUP BY 1, 2
+),
+price_quantities AS (
+    SELECT name_id, price_date, MAX(avail) as avail FROM (
+        SELECT
+            run_id,
+            lowest_price_dates.name_id,
+            lowest_price_dates.price_date,
+            SUM(avail) AS avail
+        FROM lowest_price_dates
+        JOIN prices ON
+            prices.name_id = lowest_price_dates.name_id AND
+            timestamp::date = price_date
+        WHERE server_id = 1
+        GROUP BY 1, 2, 3
+    ) calc GROUP BY 1, 2
 ),
 final_prices as (
-    SELECT
+    select
         name_id,
-        price_date,
-        timestamp,
-        avail,
         lowest_price,
-        TO_CHAR(rolling_average, 'FM999999.00') AS rolling_average
-    FROM lowest_prices_recent
-    WHERE newest <= 10
-    ORDER BY name_id, price_date
+        price_date,
+        price_datetime,
+        avail,
+        AVG(lowest_price) OVER (
+            PARTITION BY name_id
+            ORDER BY price_date
+            ROWS BETWEEN 5 PRECEDING AND CURRENT ROW
+        ) AS rolling_average
+    from lowest_price_dates
+    JOIN price_datetimes USING(name_id, price_date)
+    JOIN price_quantities USING(name_id, price_date)
+    ORDER BY price_date DESC
 )
 INSERT INTO price_summaries (server_id, confirmed_name_id, lowest_prices, graph_data)
 SELECT
-    {{ server_id }} AS server_id,
+    1 AS server_id,
     name_id AS confirmed_name,
     (
         SELECT JSON_AGG(
@@ -81,10 +95,10 @@ SELECT
     ) as lowest_prices,
     JSON_AGG(
         JSON_BUILD_OBJECT(
-            'price_date', timestamp,
+            'price_date', price_datetime,
             'avail', avail,
             'lowest_price', lowest_price,
-            'rolling_average', rolling_average
+            'rolling_average', CAST(TO_CHAR(rolling_average, 'FM999999.00') AS NUMERIC)
         )
     ) AS graph_data
 FROM final_prices fp

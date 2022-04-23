@@ -1,3 +1,7 @@
+from datetime import datetime
+from typing import List
+
+from dateutil.parser import isoparse
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -104,6 +108,22 @@ class PriceSummary(models.Model):
     confirmed_name = models.ForeignKey(ConfirmedNames, on_delete=models.CASCADE)
     lowest_prices = models.JSONField(null=True)
     graph_data = models.JSONField(null=True)
+
+    @property
+    def ordered_graph_data(self) -> List:
+        return sorted(self.graph_data, key=lambda obj: obj["price_date"])
+
+    @property
+    def recent_price_time(self) -> datetime:
+        return isoparse(self.ordered_graph_data[-1]["price_date"])
+
+    @property
+    def recent_lowest_price(self) -> float:
+        return self.lowest_prices[-1]["price"]
+
+    @property
+    def price_change(self) -> float:
+        return 1.0
 
     class Meta:
         db_table = 'price_summaries'

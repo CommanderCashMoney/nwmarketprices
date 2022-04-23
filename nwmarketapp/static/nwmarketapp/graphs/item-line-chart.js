@@ -1,19 +1,16 @@
 let lineChart = null;
 
-function create_linegraph(data) {
+function create_linegraph(graphData) {
     console.log("creating linegraphg...")
     const dates = []
     const prices = []
     const num_listings = []
     const avg_prices = []
-    const priceGraphData = data["price_graph_data"];
-    const averageGraphData = data["avg_graph_data"];
-    const numListings = data["num_listings"];
-    for(let i=0; i < priceGraphData.length; i++) {
-        let dateObj = new Date(priceGraphData[i]["datetime"]);
-        prices.push([dateObj / 1, priceGraphData[i]["price"]]);
-        avg_prices.push([dateObj / 1, averageGraphData[i]["price"]]);
-        num_listings.push([dateObj / 1, numListings[i]]);
+    for(let i=0; i < graphData.length; i++) {
+        let dateObj = new Date(graphData[i]["price_date"]);
+        prices.push([dateObj / 1, graphData[i]["lowest_price"]]);
+        avg_prices.push([dateObj / 1, graphData[i]["rolling_average"]]);
+        num_listings.push([dateObj / 1, graphData[i]["avail"]]);
     }
 
     //	  LINE CHART

@@ -1,3 +1,4 @@
+{% load prices %}
 <div class="modal" id="lowest-10-modal">
   <div class="modal-background"></div>
   <div class="modal-card is-size-7 is-size-6-mobile">
@@ -14,9 +15,9 @@
             </div>
             {% for price in detail_view %}
             <div class="columns mb-0  is-mobile">
-                <div class="column is-half">{{ price.0 }}</div>
-                <div class="column is-one-quarter">{{ price.1 }}</div>
-                <div class="column is-one-quarter">{{ price.2 }}</div>
+                <div class="column is-half">{% fromisoformat price.datetime %}</div>
+                <div class="column is-one-quarter">{{ price.price }}</div>
+                <div class="column is-one-quarter">{{ price.avail }}</div>
             </div>
             {% endfor %}
         </div>
