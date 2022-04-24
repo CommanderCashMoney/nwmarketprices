@@ -1,14 +1,16 @@
+{% load humanize %}
+{% load prices %}
 {% if items %}
     {% for item in items %}
         <div class="columns is-mobile popular-item-row">
             <div class="column is-three-fifths-fifths popular-item">
-                <a href="javascript:{}" onclick="loadItem({{ item.3 }})" class="popular-item">{{ item.0 }}</a>
+                <a href="javascript:{}" onclick="loadItem({{ item.confirmed_name_id }})" class="popular-item">{{ item.confirmed_name.name }}</a>
             </div>
             <div class="column is-one-fifths has-text-right popular-item">
-                {{ item.1 }}
+                {{ item.recent_lowest_price|floatformat:2|intcomma }}
             </div>
             <div class="column is-one-fifth has-text-right popular-item">
-                {{ item.2|safe }}
+                {% price_change_html_short item.price_change %}
             </div>
         </div>
     {% endfor %}

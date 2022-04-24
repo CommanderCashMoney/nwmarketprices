@@ -1,6 +1,5 @@
 import itertools
 from collections import defaultdict
-from json import JSONDecodeError
 from time import perf_counter
 from typing import Dict, List, Any
 
@@ -12,7 +11,7 @@ from constance import config
 from django.db.models import Min, Max
 from django.db.models.functions import TruncDate
 
-from nwmarketapp.models import Run, Price
+from nwmarketapp.models import PriceSummary, Run, Price
 
 
 def check_version_compatibility(version: str) -> bool:
@@ -196,6 +195,7 @@ def convert_popular_items_dict_to_old_style(popular_items_dict: dict) -> Dict[st
 
 
 def get_popular_items_dict(server_id) -> Dict[str, Dict[str, Any]]:
+    # todo: remove me entirely, v2 is much faster
     popular_items_dict = {
         "popular_endgame_data": [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458],
         "popular_base_data": [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538],
@@ -251,6 +251,27 @@ def get_popular_items_dict(server_id) -> Dict[str, Dict[str, Any]]:
 
     return_values["calculation_time"] = perf_counter() - p
     return convert_popular_items_dict_to_old_style(return_values)
+
+
+def get_popular_items_dict_v2(server_id) -> Any:
+    popular_items_dict = {
+        "popular_endgame_data": [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458],
+        "popular_base_data": [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538],
+        "mote_data": [862, 459, 649, 910, 158, 869, 497],
+        "refining_data": [326, 847, 1033, 977, 1334],
+        "trophy_data": [1542, 1444, 1529, 1541, 1502]
+    }
+    popular_items = []
+    for popular_list in popular_items_dict.values():
+        popular_items.extend(popular_list)
+    objs = PriceSummary.objects.filter(server_id=server_id, confirmed_name_id__in=popular_items)
+    return_values = defaultdict(list)
+    for obj in objs:
+        for k, v in popular_items_dict.items():
+            if obj.confirmed_name_id in v:
+                return_values[k].append(obj)
+                break
+    return return_values
 
 
 def load_url(url, reqs=requests):

@@ -121,11 +121,33 @@ class PriceSummary(models.Model):
     def recent_lowest_price(self) -> float:
         if not self.lowest_prices:
             return None
-        return self.lowest_prices[-1]["price"]
+        return self.lowest_prices[0]["price"]
+
+    @property
+    def price_change_dict(self) -> dict:
+        from nwmarketapp.api.utils import get_change
+        graph_data = self.ordered_graph_data
+        graph_data.reverse()
+        initial_price = graph_data[0]["lowest_price"]
+        for row in graph_data:
+            change = get_change(initial_price, row["lowest_price"])
+            if change != 0:
+                return {
+                    "price_change_date": isoparse(row["price_date"]),
+                    "price_change": round(change)
+                }
+        return {
+            "price_change_date": isoparse(row["price_date"]),
+            "price_change": 0
+        }
 
     @property
     def price_change(self) -> float:
-        return 1.0
+        return self.price_change_dict["price_change"]
+
+    @property
+    def price_change_date(self) -> datetime:
+        return self.price_change_dict["price_change_date"]
 
     class Meta:
         db_table = 'price_summaries'

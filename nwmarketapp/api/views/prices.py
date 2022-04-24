@@ -11,7 +11,8 @@ from ratelimit.decorators import ratelimit
 from rest_framework import status
 
 from nwmarket.settings import CACHE_ENABLED
-from nwmarketapp.api.utils import get_popular_items_dict, get_price_graph_data, get_list_by_nameid
+from nwmarketapp.api.utils import get_popular_items_dict, get_popular_items_dict_v2, get_price_graph_data, \
+    get_list_by_nameid
 from nwmarketapp.models import PriceSummary, Run, NWDBLookup, ConfirmedNames, Price
 
 
@@ -78,7 +79,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
                 "recent_lowest_price": ps.recent_lowest_price,
                 "last_checked": ps.recent_price_time,
                 "price_change": ps.price_change,
-                # "price_change_date": ps.price_change_date,
+                "price_change_date": ps.price_change_date,
                 "detail_view": ps.lowest_prices,
                 'item_name': ps.confirmed_name.name,
                 'nwdb_id': ps.confirmed_name.nwdb_id
@@ -100,7 +101,9 @@ def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
         ).values_list("name", "count").order_by("-count")[:9]
     except Run.DoesNotExist:
         most_listed_item_top10 = []
-    popular_items = get_popular_items_dict(server_id)
+
+
+    popular_items = get_popular_items_dict_v2(server_id)
     popular_item_name_map = {
         "popular_endgame_data": "Popular End Game Items",
         "popular_base_data": "Popular Base Materials",
@@ -116,7 +119,6 @@ def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
             "items": v
         })
         for k, v in popular_items.items()
-        if k not in ["calculation_time", "sorting_time"]
     }
     return JsonResponse({
         "most_listed": list(most_listed_item_top10),
