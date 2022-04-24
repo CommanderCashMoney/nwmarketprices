@@ -89,6 +89,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
 
 @cache_page(60 * 10)
 def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
+    p = perf_counter()
     try:
         last_run = Run.objects.filter(server_id=server_id, approved=True).latest("id")
         most_listed_item_top10 = Price.objects.filter(
@@ -122,6 +123,7 @@ def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
     }
     return JsonResponse({
         "most_listed": list(most_listed_item_top10),
+        "fetch_time": perf_counter() - p,
         **popular_rendered
     })
 
