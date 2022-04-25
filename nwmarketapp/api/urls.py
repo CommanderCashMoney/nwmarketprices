@@ -1,22 +1,23 @@
 from django.urls import path
 
-from .views import names, prices, scanner
+from .views import names, prices, scanner, schema_view
 
-
-urlpatterns = [
-    path('version/', scanner.current_scanner_version, name='version'),
-
-    path('submit_bad_names/', names.submit_bad_names, name='submit_bad_names'),
-    path('confirmed_names/', names.confirmed_names, name='confirmed_names'),
-    path('get_mapping_corrections/', names.get_mapping_corrections, name='get_mapping_corrections'),
-    path('word-cleanup/', names.word_cleanup, name='name-cleanup'),
-
-    path('typeahead/', names.typeahead, name='typeahead'),
-
+swagger_visible_urls = [
     path('latest-prices/<int:server_id>/', prices.latest_prices, name='latest-prices'),
     path('price-data/<int:server_id>/<str:item_id>/', prices.get_item_data, name='item-data'),
     path('server-price-data/<int:server_id>/', prices.intial_page_load_data, name="initial-page-load-data"),
     path('servers/', names.servers, name="servers"),
+]
 
+urlpatterns = swagger_visible_urls + [
+    path('', schema_view, name="docs"),
     path('update-server-prices/<int:server_id>/', prices.update_server_prices, name="update-server-prices"),
+    path('version/', scanner.current_scanner_version, name='version'),
+
+    path('submit_bad_names/', names.submit_bad_names, name='submit_bad_names'),
+    path('confirmed_names/', names.confirmed_names, name='confirmed-names'),
+    path('get_mapping_corrections/', names.get_mapping_corrections, name='get_mapping_corrections'),
+    path('word-cleanup/', names.word_cleanup, name='name-cleanup'),
+
+    path('typeahead/', names.typeahead, name='typeahead'),
 ]

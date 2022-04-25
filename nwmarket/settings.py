@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.discord',
     'nwmarketapp.apps.NwmarketappConfig',
+    'rest_framework_swagger',
 ]
 
 MIDDLEWARE = [
@@ -80,6 +81,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'staticfiles': 'django.templatetags.static',  # swagger
+            }
         },
     },
 ]
@@ -211,3 +215,6 @@ if CACHE_ENABLED is False:
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         }
     }
+
+
+REST_FRAMEWORK = { 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema' }

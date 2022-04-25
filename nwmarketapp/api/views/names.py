@@ -7,13 +7,13 @@ from django.http import JsonResponse
 from django.views.decorators.cache import cache_page
 from ratelimit.decorators import ratelimit
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, schema
 
-from nwmarket.settings import CACHE_ENABLED
 from nwmarketapp.models import ConfirmedNames, NameCleanup, NameMap, Servers
 
 
 @api_view(['POST'])
+@schema(None)
 def submit_bad_names(request: WSGIRequest) -> JsonResponse:
     decoded = False
     try:
@@ -45,6 +45,7 @@ def submit_bad_names(request: WSGIRequest) -> JsonResponse:
 
 
 @cache_page(60 * 60 * 24)
+@api_view(['GET'])
 def confirmed_names(request: WSGIRequest) -> JsonResponse:
     return JsonResponse({
         cn.name: {
@@ -106,6 +107,7 @@ def servers_v1(request):
 
 @ratelimit(key='ip', rate='3/s', block=True)
 @cache_page(60 * 10)
+@api_view(['GET'])
 def servers(request) -> JsonResponse:
     return JsonResponse({
         server.id: {

@@ -8,18 +8,16 @@ from django.shortcuts import render
 from django.views.decorators.vary import vary_on_cookie
 
 from nwmarket import settings
-from nwmarket.settings import CACHE_ENABLED
 from nwmarketapp.api.utils import check_version_compatibility
 from nwmarketapp.api.views.prices import get_item_data_v1
-from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup
+from nwmarketapp.models import Run, Servers
 from nwmarketapp.models import Price
 from django.http import JsonResponse
 from django.views.decorators.cache import cache_page
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
@@ -27,7 +25,7 @@ from django.core.exceptions import ValidationError
 
 class TokenPairSerializer(TokenObtainPairSerializer):
     def __init__(self, *args, **kwargs):
-        self.user_version = kwargs["data"].get("version", "0.0.0")
+        self.user_version = kwargs.get("data", {}).get("version", "0.0.0")
         super().__init__(*args, **kwargs)
 
     def validate(self, attrs):
@@ -47,6 +45,15 @@ class TokenPairSerializer(TokenObtainPairSerializer):
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = TokenPairSerializer
+    schema = None
+
+
+class NWMPTokenRefreshView(TokenRefreshView):
+    schema = None
+
+
+class NWMPTokenVerifyView(TokenVerifyView):
+    schema = None
 
 
 class PriceSerializer(serializers.ModelSerializer):
@@ -69,6 +76,7 @@ class PricesUploadAPI(CreateAPIView):
     queryset = Price.objects.all()
     serializer_class = PriceSerializer
     permission_classes = (IsAuthenticated,)
+    schema = None
 
     @staticmethod
     def get_request_data(request_data) -> Tuple[str, List[dict]]:
@@ -165,65 +173,6 @@ def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> 
     )
     run.save()
     return run
-
-
-class NameCleanupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NameCleanup
-        fields = ['bad_word', 'good_word', 'approved', 'timestamp', 'username']
-
-
-class NameCleanupAPI(CreateAPIView):
-    queryset = NameCleanup.objects.all()
-    serializer_class = NameCleanupSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-
-            return Response({
-                "status": True,
-                "message": "Name Cleanup Added"
-            }, status=status.HTTP_201_CREATED, headers=headers)
-
-
-        return Response({
-            "status": False,
-            "errors": serializer.errors,
-            "message": "Submitted data could not be serialized"
-        }, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ConfirmedNamesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConfirmedNames
-        fields = ['name', 'timestamp', 'approved', 'username']
-
-
-class ConfirmedNamesAPI(CreateAPIView):
-    queryset = ConfirmedNames.objects.all()
-    serializer_class = ConfirmedNamesSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-
-            return Response({
-                "status": True,
-                "message": "Confirmed Names Added"
-            }, status=status.HTTP_201_CREATED, headers=headers)
-
-        return Response({
-            "status": False,
-            "errors": serializer.errors,
-            "message": "Submitted data could not be serialized"
-        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @cache_page(60 * 10)

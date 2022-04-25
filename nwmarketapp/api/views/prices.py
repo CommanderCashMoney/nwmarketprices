@@ -9,8 +9,8 @@ from django.template.loader import render_to_string
 from django.views.decorators.cache import cache_page
 from ratelimit.decorators import ratelimit
 from rest_framework import status
+from rest_framework.decorators import api_view, schema
 
-from nwmarket.settings import CACHE_ENABLED
 from nwmarketapp.api.utils import get_popular_items_dict, get_popular_items_dict_v2, get_price_graph_data, \
     get_list_by_nameid
 from nwmarketapp.models import PriceSummary, Run, NWDBLookup, ConfirmedNames, Price
@@ -64,6 +64,7 @@ def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> Json
 
 
 @cache_page(60 * 10)
+@api_view(['GET'])
 def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
     try:
         ps = PriceSummary.objects.get(server_id=server_id, confirmed_name_id=item_id)
@@ -88,6 +89,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
 
 
 @cache_page(60 * 10)
+@api_view(['GET'])
 def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
     p = perf_counter()
     try:
@@ -130,6 +132,7 @@ def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
 
 @ratelimit(key='ip', rate='1/s', block=True)
 @cache_page(60 * 10)
+@api_view(['GET'])
 def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
     last_run = Run.objects.filter(server_id=server_id, approved=True).exclude(username="january").latest('id').start_date
     with connection.cursor() as cursor:
@@ -178,8 +181,11 @@ def latest_prices_v1(request: WSGIRequest) -> JsonResponse:
     return latest_prices(request, int(server_id))
 
 
+@api_view(['GET'])
+@schema(None)
 def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
     p = perf_counter()
+    print(request.user)
     scanner_group = request.user.groups.filter(name="scanner_user")
     if not scanner_group.exists():
         return JsonResponse({"status": "forbidden"}, status=status.HTTP_403_FORBIDDEN)

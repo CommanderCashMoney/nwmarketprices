@@ -15,28 +15,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from django.urls import re_path
 from django.conf.urls import include
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-    TokenVerifyView
-)
 
-from nwmarketapp.views import MyTokenObtainPairView
-from nwmarketapp.views import PricesUploadAPI, NameCleanupAPI, ConfirmedNamesAPI
+from nwmarketapp.views import MyTokenObtainPairView, NWMPTokenRefreshView, NWMPTokenVerifyView
+from nwmarketapp.views import PricesUploadAPI
 
 urlpatterns = [
     path('', include('nwmarketapp.urls')),
     path('admin/clearcache/', include('clearcache.urls')),
     path('admin/', admin.site.urls),
     path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('api/token/refresh/', NWMPTokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', NWMPTokenVerifyView.as_view(), name='token_verify'),
 
     path('api/scanner_upload/', PricesUploadAPI.as_view(), name='scanner_upload'),
-    path('api/name_cleanup_upload/', NameCleanupAPI.as_view(), name='name_cleanup_upload'),
-    path('api/confirmed_names_upload/', ConfirmedNamesAPI.as_view(), name='confirmed_names_upload'),
     path('api/', include('nwmarketapp.api.urls')),
     path('account/', include('allauth.urls')),
     path('account/', include('nwmarketapp.profile.urls')),
