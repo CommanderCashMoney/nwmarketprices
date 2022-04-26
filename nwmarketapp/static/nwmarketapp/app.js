@@ -66,6 +66,7 @@ const loadItem = (item_id, initialLoad = false) => {
         const errorMsg = data["errors"].join("<br><br>")
         createNotifiation(errorMsg, "danger");
     })
+    $('html, body').animate({ scrollTop: 0 }, 'fast');
 };
 
 const init = () => {
