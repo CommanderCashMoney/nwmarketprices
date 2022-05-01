@@ -42,6 +42,8 @@ def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> Json
         return empty_response
 
     price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
+    # convert to old style
+    price_graph_data = [[price_dict["datetime"], price_dict["price"]] for price_dict in price_graph_data]
 
     try:
         nwdb_id = NWDBLookup.objects.get(name=item_data["item_name"])
@@ -76,12 +78,13 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
             "item_id": ps.confirmed_name.id,
             "price_datetime": ps.recent_price_time,
             "graph_data": ps.ordered_graph_data[-15:],
+            "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
             "lowest_price": render_to_string("snippets/lowest-price.html", {
                 "recent_lowest_price": ps.recent_lowest_price,
                 "last_checked": ps.recent_price_time,
                 "price_change": ps.price_change,
                 "price_change_date": ps.price_change_date,
-                "detail_view": ps.lowest_prices,
+                "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
                 'item_name': ps.confirmed_name.name,
                 'nwdb_id': ps.confirmed_name.nwdb_id
             })
