@@ -77,6 +77,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
             "item_id": ps.confirmed_name.id,
             "price_datetime": ps.recent_price_time,
             "graph_data": ps.ordered_graph_data[-15:],
+            "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
             "lowest_price": render_to_string("snippets/lowest-price.html", {
                 "recent_lowest_price": ps.recent_lowest_price,
                 "last_checked": ps.recent_price_time,
