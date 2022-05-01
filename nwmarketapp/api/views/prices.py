@@ -42,6 +42,8 @@ def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> Json
         return empty_response
 
     price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
+    # convert to old style
+    price_graph_data = [[price_dict["datetime"], price_dict["price"]] for price_dict in price_graph_data]
 
     try:
         nwdb_id = NWDBLookup.objects.get(name=item_data["item_name"])
