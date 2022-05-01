@@ -63,7 +63,7 @@ def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> Json
     }, status=200)
 
 
-@cache_page(60 * 10)
+# @cache_page(60 * 10)
 def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
     try:
         ps = PriceSummary.objects.get(server_id=server_id, confirmed_name_id=item_id)
@@ -80,7 +80,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
                 "last_checked": ps.recent_price_time,
                 "price_change": ps.price_change,
                 "price_change_date": ps.price_change_date,
-                "detail_view": ps.lowest_prices,
+                "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
                 'item_name': ps.confirmed_name.name,
                 'nwdb_id': ps.confirmed_name.nwdb_id
             })
