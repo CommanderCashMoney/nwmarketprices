@@ -114,6 +114,10 @@ class PriceSummary(models.Model):
         return sorted(self.graph_data, key=lambda obj: obj["price_date"])
 
     @property
+    def ordered_price_data(self) -> List:
+        return sorted(self.lowest_prices, key=lambda obj: obj["price"])
+
+    @property
     def recent_price_time(self) -> datetime:
         return isoparse(self.ordered_graph_data[-1]["price_date"])
 
@@ -121,7 +125,7 @@ class PriceSummary(models.Model):
     def recent_lowest_price(self) -> float:
         if not self.lowest_prices:
             return None
-        return self.lowest_prices[0]["price"]
+        return self.ordered_price_data[0]["price"]
 
     @property
     def price_change_dict(self) -> dict:
