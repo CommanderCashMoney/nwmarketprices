@@ -9,6 +9,7 @@ from django.template.loader import render_to_string
 from django.views.decorators.cache import cache_page
 from ratelimit.decorators import ratelimit
 from rest_framework import status
+from rest_framework.decorators import api_view
 
 from nwmarket.settings import CACHE_ENABLED
 from nwmarketapp.api.utils import get_popular_items_dict, get_popular_items_dict_v2, get_price_graph_data, \
@@ -180,8 +181,9 @@ def latest_prices_v1(request: WSGIRequest) -> JsonResponse:
     server_id = request.GET.get("server_id", "1")
     return latest_prices(request, int(server_id))
 
-
+@api_view(['GET'])
 def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
+
     p = perf_counter()
     scanner_group = request.user.groups.filter(name="scanner_user")
     if not scanner_group.exists():
