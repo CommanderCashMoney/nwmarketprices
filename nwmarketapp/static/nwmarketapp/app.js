@@ -29,7 +29,7 @@ function changeServer(server_id, initialLoad=false){
             }, "New World Market Prices", `/${itemId}/${serverId}`)
             loadItem(itemId, false)
         }
-        const { most_listed, ...popularItemData } = data;
+        const { most_listed, fetch_time, ...popularItemData } = data;
         top10data = most_listed;
         drawBar();
         for (const [key, value] of Object.entries(popularItemData)) {
@@ -63,6 +63,7 @@ const loadItem = (item_id, initialLoad = false) => {
         create_linegraph(data["graph_data"]);
         setupModal("lowest-10-modal-trigger", "lowest-10-modal");
     }).catch((data) => {
+        console.log(data);
         const errorMsg = data["errors"].join("<br><br>")
         createNotifiation(errorMsg, "danger");
     })

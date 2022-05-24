@@ -9,10 +9,12 @@ from django.template.loader import render_to_string
 from django.views.decorators.cache import cache_page
 from ratelimit.decorators import ratelimit
 from rest_framework import status
+from rest_framework.decorators import api_view
 
 from nwmarket.settings import CACHE_ENABLED
-from nwmarketapp.api.utils import get_popular_items_dict, get_price_graph_data, get_list_by_nameid
-from nwmarketapp.models import Run, NWDBLookup, ConfirmedNames, Price
+from nwmarketapp.api.utils import get_popular_items_dict, get_popular_items_dict_v2, get_price_graph_data, \
+    get_list_by_nameid
+from nwmarketapp.models import PriceSummary, Run, NWDBLookup, ConfirmedNames, Price
 
 
 def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> JsonResponse:
@@ -41,6 +43,8 @@ def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> Json
         return empty_response
 
     price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
+    # convert to old style
+    price_graph_data = [[price_dict["datetime"], price_dict["price"]] for price_dict in price_graph_data]
 
     try:
         nwdb_id = NWDBLookup.objects.get(name=item_data["item_name"])
@@ -62,49 +66,34 @@ def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> Json
     }, status=200)
 
 
-@cache_page(CACHE_ENABLED * 60 * 10)
+# @cache_page(60 * 10)
 def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
-    p = perf_counter()
-    item_data = get_list_by_nameid(item_id, server_id)
-    if item_data is None:
-        return JsonResponse({"errors": ["No price data for item."]}, status=status.HTTP_404_NOT_FOUND)
-    grouped_hist = item_data["grouped_hist"]
-    item_name = item_data["item_name"]
-    if not grouped_hist:
-        # we didnt find any prices with that name id
-        return JsonResponse({"errors": ["No price data for item."]}, status=status.HTTP_404_NOT_FOUND)
-
-    price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
-
     try:
-        nwdb_id = NWDBLookup.objects.get(name=item_data["item_name"])
-        nwdb_id = nwdb_id.item_id
-    except NWDBLookup.DoesNotExist:
-        nwdb_id = ''
-
+        ps = PriceSummary.objects.get(server_id=server_id, confirmed_name_id=item_id)
+    except PriceSummary.DoesNotExist:
+        return JsonResponse({"status": "not found"}, status=404)
     return JsonResponse(
         {
-            "item_name": item_name,
-            "graph_data": {
-                "price_graph_data": price_graph_data,
-                "avg_graph_data": avg_price_graph,
-                "num_listings": num_listings,
-            },
+            "item_name": ps.confirmed_name.name,
+            "item_id": ps.confirmed_name.id,
+            "price_datetime": ps.recent_price_time,
+            "graph_data": ps.ordered_graph_data[-15:],
+            "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
             "lowest_price": render_to_string("snippets/lowest-price.html", {
-                "recent_lowest_price": item_data["recent_lowest_price"],
-                "last_checked": item_data["recent_price_time"],
-                "price_change": item_data["price_change"],
-                "price_change_date": item_data["price_change_date"],
-                "detail_view": item_data["lowest_10_raw"],
-                'item_name': item_name,
-                'nwdb_id': nwdb_id,
-                'calculation_time': perf_counter() - p
+                "recent_lowest_price": ps.recent_lowest_price,
+                "last_checked": ps.recent_price_time,
+                "price_change": ps.price_change,
+                "price_change_date": ps.price_change_date,
+                "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
+                'item_name': ps.confirmed_name.name,
+                'nwdb_id': ps.confirmed_name.nwdb_id
             })
         }, safe=False)
 
 
-@cache_page(CACHE_ENABLED * 60 * 10)
+@cache_page(60 * 10)
 def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
+    p = perf_counter()
     try:
         last_run = Run.objects.filter(server_id=server_id, approved=True).latest("id")
         most_listed_item_top10 = Price.objects.filter(
@@ -117,7 +106,9 @@ def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
         ).values_list("name", "count").order_by("-count")[:9]
     except Run.DoesNotExist:
         most_listed_item_top10 = []
-    popular_items = get_popular_items_dict(server_id)
+
+
+    popular_items = get_popular_items_dict_v2(server_id)
     popular_item_name_map = {
         "popular_endgame_data": "Popular End Game Items",
         "popular_base_data": "Popular Base Materials",
@@ -133,16 +124,16 @@ def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
             "items": v
         })
         for k, v in popular_items.items()
-        if k not in ["calculation_time", "sorting_time"]
     }
     return JsonResponse({
         "most_listed": list(most_listed_item_top10),
+        "fetch_time": perf_counter() - p,
         **popular_rendered
     })
 
 
 @ratelimit(key='ip', rate='1/s', block=True)
-@cache_page(CACHE_ENABLED * 60 * 10)
+@cache_page(60 * 10)
 def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
     last_run = Run.objects.filter(server_id=server_id, approved=True).exclude(username="january").latest('id').start_date
     with connection.cursor() as cursor:
@@ -189,3 +180,17 @@ def get_popular_items_v1(request: WSGIRequest, server_id: int) -> JsonResponse:
 def latest_prices_v1(request: WSGIRequest) -> JsonResponse:
     server_id = request.GET.get("server_id", "1")
     return latest_prices(request, int(server_id))
+
+@api_view(['GET'])
+def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
+
+    p = perf_counter()
+    scanner_group = request.user.groups.filter(name="scanner_user")
+    if not scanner_group.exists():
+        return JsonResponse({"status": "forbidden"}, status=status.HTTP_403_FORBIDDEN)
+    query = render_to_string("queries/get_item_data_full.sql", context={"server_id": server_id})
+    with connection.cursor() as cursor:
+        print(query)
+        cursor.execute(query)
+
+    return JsonResponse({"status": "ok", "calc_time": perf_counter() - p}, status=status.HTTP_201_CREATED)

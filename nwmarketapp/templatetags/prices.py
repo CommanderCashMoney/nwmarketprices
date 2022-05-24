@@ -1,6 +1,7 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
+from dateutil.parser import isoparse
 from django import template
 from django.utils.safestring import mark_safe
 
@@ -16,4 +17,16 @@ def price_change_html(price_change: Decimal, price_change_date: date) -> str:
     return mark_safe(f'<span class="{text_class}">{price_change}% {increase_text}</span> since {date_str}')
 
 
+def price_change_html_short(price_change: Decimal) -> str:
+    text_class = "yellow_text" if not price_change or price_change <= 0 else "blue_text"
+    arrow = "↓" if price_change < 0 else "↑" if price_change > 0 else ""
+    return mark_safe(f'<span class="{text_class}">{arrow}{price_change}%</span>')
+
+
+def fromisoformat(dt_str: str) -> datetime:
+    return isoparse(dt_str).strftime('%x %I:%M %p')
+
+
 register.simple_tag(price_change_html)
+register.simple_tag(price_change_html_short)
+register.simple_tag(fromisoformat)

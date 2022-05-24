@@ -1,3 +1,7 @@
+from datetime import datetime
+from typing import List
+
+from dateutil.parser import isoparse
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -97,6 +101,61 @@ class Price(models.Model):
 
     def __str__(self):
         return f"<Price: id={self.pk} name='{self.name}' price={self.price} timestamp={self.timestamp}>"
+
+
+class PriceSummary(models.Model):
+    server_id = models.IntegerField(db_index=True)
+    confirmed_name = models.ForeignKey(ConfirmedNames, on_delete=models.CASCADE)
+    lowest_prices = models.JSONField(null=True)
+    graph_data = models.JSONField(null=True)
+
+    @property
+    def ordered_graph_data(self) -> List:
+        return sorted(self.graph_data, key=lambda obj: obj["price_date"])
+
+    @property
+    def ordered_price_data(self) -> List:
+        return sorted(self.lowest_prices, key=lambda obj: obj["price"])
+
+    @property
+    def recent_price_time(self) -> datetime:
+        return isoparse(self.ordered_graph_data[-1]["price_date"])
+
+    @property
+    def recent_lowest_price(self) -> float:
+        if not self.lowest_prices:
+            return None
+        return self.ordered_price_data[0]["price"]
+
+    @property
+    def price_change_dict(self) -> dict:
+        from nwmarketapp.api.utils import get_change
+        graph_data = self.ordered_graph_data
+        graph_data.reverse()
+        initial_price = graph_data[0]["lowest_price"]
+        for row in graph_data:
+            change = get_change(initial_price, row["lowest_price"])
+            if change != 0:
+                return {
+                    "price_change_date": isoparse(row["price_date"]),
+                    "price_change": round(change)
+                }
+        return {
+            "price_change_date": isoparse(row["price_date"]),
+            "price_change": 0
+        }
+
+    @property
+    def price_change(self) -> float:
+        return self.price_change_dict["price_change"]
+
+    @property
+    def price_change_date(self) -> datetime:
+        return self.price_change_dict["price_change_date"]
+
+    class Meta:
+        db_table = 'price_summaries'
+        unique_together = (("server_id", "confirmed_name"),)
 
 
 class NWDBLookup(models.Model):

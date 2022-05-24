@@ -210,4 +210,13 @@ CONSTANCE_CONFIG = {
 }
 
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
-CACHE_ENABLED = int(bool(os.getenv("CACHE_ENABLED", True)))
+
+CACHE_ENABLED = os.getenv("CACHE_ENABLED", True) != "False"
+
+if CACHE_ENABLED is False:
+    print("disabling cache...")
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
+    }
