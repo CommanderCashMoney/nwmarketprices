@@ -182,6 +182,7 @@ def latest_prices_v1(request: WSGIRequest) -> JsonResponse:
     return latest_prices(request, int(server_id))
 
 @api_view(['GET'])
+@ratelimit(key='ip', rate='1/m', block=True)
 def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
 
     p = perf_counter()
