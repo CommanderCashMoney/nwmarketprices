@@ -66,7 +66,7 @@ def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> Json
     }, status=200)
 
 
-# @cache_page(60 * 10)
+@cache_page(60 * 10)
 def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
     try:
         ps = PriceSummary.objects.get(server_id=server_id, confirmed_name_id=item_id)
