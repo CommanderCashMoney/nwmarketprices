@@ -7,8 +7,12 @@
         <div>
             <span id="lowest-10-modal-trigger" class="clickable">Raw Data</span>
             |
-            <a class="link-soft" href="https://nwdb.info/db/item/{{ nwdb_id }}">nwdb</a></div>
+            <a class="link-soft" href="https://nwdb.info/db/item/{{ nwdb_id }}">nwdb</a>
+            |
+            <span id="craft-modal-trigger" class="clickable">Craft Price</span>
+        </div>
         <div>{% price_change_html price_change price_change_date %}</div>
     </div>
 </div>
 {% include 'snippets/lowest-10-price-modal.html' %}
+{% include 'snippets/craft-price-modal.html' %}
