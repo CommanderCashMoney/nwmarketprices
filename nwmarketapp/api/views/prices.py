@@ -67,12 +67,15 @@ def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> Json
         'calculation_time': perf_counter() - p
     }, status=200)
 
-def setToListObject(data):
+def createCraftObject(data):
     res = []
     for dat in data:
         res.append({
             "name": dat.component.name,
-            "quantity": dat.quantity
+            "quantity": dat.quantity,
+            "id": dat.component.id,
+            "price": 0,
+            "total": 0
         })
     return res
 
@@ -80,7 +83,10 @@ def setToListObject(data):
 def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
     try:
         ps = PriceSummary.objects.get(server_id=server_id, confirmed_name_id=item_id)
-        craft = setToListObject(Craft.objects.filter(item_id=item_id))
+        crafts = createCraftObject(Craft.objects.filter(item_id=item_id))
+        for craft in crafts:
+            craft["price"] = sorted(PriceSummary.objects.get(server_id=server_id, confirmed_name_id=craft["id"]).lowest_prices, key=lambda obj: obj["price"])[0]["price"]
+            craft["total"] = craft["price"] * craft["quantity"]
     except Craft.DoesNotExist:
         return JsonResponse({"status": "not found"}, status=404)
     except PriceSummary.DoesNotExist:
@@ -94,7 +100,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
             "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
             "lowest_price": render_to_string("snippets/lowest-price.html", {
                 "recent_lowest_price": ps.recent_lowest_price,
-                "components": craft,
+                "components": crafts,
                 "last_checked": ps.recent_price_time,
                 "price_change": ps.price_change,
                 "price_change_date": ps.price_change_date,
