@@ -1,6 +1,4 @@
-from dataclasses import dataclass
 import json
-import logging
 from time import perf_counter
 
 from django.core.handlers.wsgi import WSGIRequest
