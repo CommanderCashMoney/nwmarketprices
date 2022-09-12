@@ -9,7 +9,18 @@
             |
             <a class="link-soft" href="https://nwdb.info/db/item/{{ nwdb_id }}">nwdb</a>
             |
-            <span id="craft-modal-trigger" class="clickable">Craft Price</span>
+            <span id="craft-modal-trigger" class="clickable craft-info">Craft Price</span>
+            <div class="craft-modal">
+                <section class="modal-card-body">
+                    <div class="container">
+                      {% for component in components %}
+                      <div>{{ component.name }} x {{ component.quantity }} : {{ component.price }}po Total => {{ component.total }}po</div>
+                      {% empty %}
+                      <div>You cannot craft this item</div>
+                      {% endfor %}
+                    </div>
+                </section>
+            </div>
         </div>
         <div>{% price_change_html price_change price_change_date %}</div>
     </div>

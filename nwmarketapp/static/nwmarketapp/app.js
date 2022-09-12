@@ -62,7 +62,6 @@ const loadItem = (item_id, initialLoad = false) => {
         elem.innerHTML = data["lowest_price"];
         create_linegraph(data["graph_data"]);
         setupModal("lowest-10-modal-trigger", "lowest-10-modal");
-        setupModal("craft-modal-trigger", "craft-price-modal");
     }).catch((data) => {
         console.log(data);
         const errorMsg = data["errors"].join("<br><br>")
