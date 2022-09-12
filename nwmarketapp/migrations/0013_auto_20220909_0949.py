@@ -29,46 +29,31 @@ def migrate_crafting_recipes(apps, schema_editor):
             for item in json.load(f)
         }
 
-    cn_matches = ConfirmedNames.objects.filter(name__in=[values["name"] for values in nwdb_data.values()])
-    already_in = Craft.objects.filter(item__in=[values["id"] for values in cn_matches.values()])
-    logger.warning(nwdb_data);
+    cn_matches = ConfirmedNames.objects.filter(name__in=[values["name"] for values in nwdb_data.values()]) # get items that match with a recipe
     for match in cn_matches:
-        correct_nwdb_id = None
-        for values in nwdb_data.values():
-            if values["name"] == match.name and values["nwdb_id"] != match.nwdb_id:
-                correct_nwdb_id = values["nwdb_id"]
-                break
-        if correct_nwdb_id is None:
+        if "ingredients" in nwdb_data[match.name]:
+            for components in nwdb_data[match.name]["ingredients"]:
+                component_name = None
+                already_in = None
+                try:
+                    component_name = ConfirmedNames.objects.get(name=components["name"])
+                except ConfirmedNames.DoesNotExist:
+                    logging.warning("no CN for " + components["name"] + " aborting whole craft")
+                if component_name == None:
+                    break
+                try:
+                    already_in = Craft.objects.get(component_id=component_name.id) # get items that already have a recipe in db
+                except Craft.DoesNotExist:
+                    logging.warning("craft is not set, adding it")
+                    Craft(item_id=match.id, component_id=component_name.id, quantity=components["quantity"]).save()
+                if already_in != None:
+                    logging.warning("craft already exist, updating it")
+                    already_in.item_id = match.id
+                    already_in.component_id = component_name.id
+                    already_in.quantity = components["quantity"]
+                    already_in.save()
+        else:
             continue
-        match.nwdb_id = correct_nwdb_id
-        match.save()
-
-    cn_matches = ConfirmedNames.objects.filter(nwdb_id__in=[nwdb_id for nwdb_id in nwdb_data])
-    to_remove = set()
-    for match in cn_matches:
-        try:
-            real_name = nwdb_data[match.nwdb_id]["name"]
-            item_classes = nwdb_data[match.nwdb_id]["itemClass"].replace("{", "").replace("}", "").split(",")
-            item_type = nwdb_data[match.nwdb_id]["itemType"]
-        except KeyError:
-            raise
-        match.item_type = item_type
-        match.item_classes = item_classes
-        if match.name != real_name:
-            match.name = real_name
-        match.save()
-        to_remove.add(match.nwdb_id)
-
-    for nwdb_id, data in nwdb_data.items():
-        if nwdb_id in to_remove:
-            continue
-        ConfirmedNames(
-            name=data["name"],
-            nwdb_id=nwdb_id,
-            username="nwdb",
-            item_type=data["itemType"],
-            item_classes=data["itemClass"].replace("{", "").replace("}", "").split(",")
-        ).save()
 
 
 def backwards(apps, schema_editor):
