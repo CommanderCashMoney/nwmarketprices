@@ -85,7 +85,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
         for craft in crafts:
             craft["price"] = sorted(PriceSummary.objects.get(server_id=server_id, confirmed_name_id=craft["id"]).lowest_prices, key=lambda obj: obj["price"])[0]["price"]
             craft["total"] = craft["price"] * craft["quantity"]
-    except PriceSummary.DoesNotExist or Craft.DoesNotExist:
+    except (PriceSummary.DoesNotExist, Craft.DoesNotExist):
         return JsonResponse({"status": "not found"}, status=404)
     return JsonResponse(
         {
