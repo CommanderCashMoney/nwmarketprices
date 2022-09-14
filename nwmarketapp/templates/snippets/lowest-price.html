@@ -15,11 +15,11 @@
                     <div class="container">
                       {% for component in components %}
                         <div>
-                            {{ component.name }} x {{ component.quantity }}
+                            {{ component.name }} x {{ component.quantity }}:
                             {% if component.quantity == 1 %}
                                 {{ component.price }}po
                             {% else %}
-                                : {{ component.price }}po/U => {{ component.total }}po
+                                {{ component.price }}po/U => {{ component.total }}po
                             {% endif %}
                         </div>
                       {% empty %}
