@@ -340,6 +340,14 @@ html {
     z-index: 100;
 }
 
+.craft-info {
+    padding-bottom: 5px;
+}
+
 .craft-info:hover + .craft-modal {
+    display: block;
+}
+
+.craft-modal:hover {
     display: block;
 }

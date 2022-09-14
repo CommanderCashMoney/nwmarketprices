@@ -15,7 +15,7 @@
                     <div class="container">
                       {% for component in components %}
                         <div>
-                            {{ component.name }} x {{ component.quantity }}:
+                            <a class="link-soft" href="https://nwdb.info/db/item/{{ component.nwdb_id }}">{{ component.name }}</a> x {{ component.quantity }}:
                             {% if component.quantity == 1 %}
                                 {{ component.price }}po
                             {% else %}

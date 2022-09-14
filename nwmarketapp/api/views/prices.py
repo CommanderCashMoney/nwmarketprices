@@ -73,6 +73,7 @@ def createCraftObject(data):
             "name": dat.component.name,
             "quantity": dat.quantity,
             "id": dat.component.id,
+            "nwdb_id": dat.component.nwdb_id,
             "price": 0,
             "total": 0
         })
