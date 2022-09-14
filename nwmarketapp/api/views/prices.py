@@ -1,4 +1,5 @@
 import json
+import logging
 from time import perf_counter
 
 from django.core.handlers.wsgi import WSGIRequest
@@ -87,6 +88,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
             craft["price"] = sorted(PriceSummary.objects.get(server_id=server_id, confirmed_name_id=craft["id"]).lowest_prices, key=lambda obj: obj["price"])[0]["price"]
             craft["total"] = craft["price"] * craft["quantity"]
             craftCost = craftCost + craft["total"]
+            logging.warning((craftCost, craft["total"]))
     except (PriceSummary.DoesNotExist, Craft.DoesNotExist):
         return JsonResponse({"status": "not found"}, status=404)
     return JsonResponse(
@@ -99,7 +101,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
             "lowest_price": render_to_string("snippets/lowest-price.html", {
                 "recent_lowest_price": ps.recent_lowest_price,
                 "components": crafts,
-                "craftCost": craftCost,
+                "craftCost": str(round(craftCost, 2)),
                 "last_checked": ps.recent_price_time,
                 "price_change": ps.price_change,
                 "price_change_date": ps.price_change_date,
