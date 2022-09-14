@@ -14,10 +14,20 @@
                 <section class="modal-card-body">
                     <div class="container">
                       {% for component in components %}
-                      <div>{{ component.name }} x {{ component.quantity }} : {{ component.price }}po Total => {{ component.total }}po</div>
+                        <div>
+                            {{ component.name }} x {{ component.quantity }}
+                            {% if component.quantity == 1 %}
+                                {{ component.price }}po
+                            {% else %}
+                                : {{ component.price }}po/U => {{ component.total }}po
+                            {% endif %}
+                        </div>
                       {% empty %}
-                      <div>You cannot craft this item</div>
+                        <div>You cannot craft this item</div>
                       {% endfor %}
+                      {% if craftCost != 0.0 %}
+                        <div>Total craft cost: {{ craftCost }}po</div>
+                      {% endif %}
                     </div>
                 </section>
             </div>

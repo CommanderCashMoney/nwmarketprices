@@ -42,16 +42,21 @@ def migrate_crafting_recipes(apps, schema_editor):
                 if component_name == None:
                     break
                 try:
-                    already_in = Craft.objects.get(component_id=component_name.id) # get items that already have a recipe in db
+                    already_in = Craft.objects.filter(item_id=match.id) # get items that already have a recipe in db
                 except Craft.DoesNotExist:
-                    logging.warning("craft is not set, adding it")
+                    logging.warning("no craft for item " + match.name + " adding component " + components["name"])
                     Craft(item_id=match.id, component_id=component_name.id, quantity=components["quantity"]).save()
                 if already_in != None:
-                    logging.warning("craft already exist, updating it")
-                    already_in.item_id = match.id
-                    already_in.component_id = component_name.id
-                    already_in.quantity = components["quantity"]
-                    already_in.save()
+                    found = False
+                    for craft in already_in:
+                        if craft.component_id == component_name.id:
+                            found = True
+                            logging.warning("Craft exist, updating quantity")
+                            craft.quantity = components["quantity"]
+                            craft.save()
+                    if found == False:
+                        logging.warning("missing component, adding " + components["name"])
+                        Craft(item_id=match.id, component_id=component_name.id, quantity=components["quantity"]).save()
         else:
             continue
 
