@@ -1,0 +1,16 @@
+version: '2'
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    volumes:
+      - ./databases/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+    ports:
+      - 5432:5432
+  adminer:
+    image: adminer
+    ports:
+      - 8000:8080

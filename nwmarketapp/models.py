@@ -103,6 +103,15 @@ class Price(models.Model):
         return f"<Price: id={self.pk} name='{self.name}' price={self.price} timestamp={self.timestamp}>"
 
 
+class Craft(models.Model):
+    item = models.ForeignKey(ConfirmedNames, on_delete=models.CASCADE, related_name="item_name")
+    component = models.ForeignKey(ConfirmedNames, on_delete=models.CASCADE, related_name="component_name")
+    quantity = models.IntegerField()
+
+    class Meta:
+        db_table = 'crafts'
+
+
 class PriceSummary(models.Model):
     server_id = models.IntegerField(db_index=True)
     confirmed_name = models.ForeignKey(ConfirmedNames, on_delete=models.CASCADE)

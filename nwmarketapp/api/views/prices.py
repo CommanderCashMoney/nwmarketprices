@@ -1,4 +1,5 @@
 import json
+import logging
 from time import perf_counter
 
 from django.core.handlers.wsgi import WSGIRequest
@@ -14,7 +15,7 @@ from rest_framework.decorators import api_view
 from nwmarket.settings import CACHE_ENABLED
 from nwmarketapp.api.utils import get_popular_items_dict, get_popular_items_dict_v2, get_price_graph_data, \
     get_list_by_nameid
-from nwmarketapp.models import PriceSummary, Run, NWDBLookup, ConfirmedNames, Price
+from nwmarketapp.models import Craft, PriceSummary, Run, NWDBLookup, ConfirmedNames, Price
 
 
 def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> JsonResponse:
@@ -65,12 +66,30 @@ def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> Json
         'calculation_time': perf_counter() - p
     }, status=200)
 
+def createCraftObject(data):
+    res = []
+    for dat in data:
+        res.append({
+            "name": dat.component.name,
+            "quantity": dat.quantity,
+            "id": dat.component.id,
+            "nwdb_id": dat.component.nwdb_id,
+            "price": 0,
+            "total": 0
+        })
+    return res
 
 @cache_page(60 * 10)
 def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
     try:
         ps = PriceSummary.objects.get(server_id=server_id, confirmed_name_id=item_id)
-    except PriceSummary.DoesNotExist:
+        crafts = createCraftObject(Craft.objects.filter(item_id=item_id))
+        craftCost = 0.0
+        for craft in crafts:
+            craft["price"] = sorted(PriceSummary.objects.get(server_id=server_id, confirmed_name_id=craft["id"]).lowest_prices, key=lambda obj: obj["price"])[0]["price"]
+            craft["total"] = craft["price"] * craft["quantity"]
+            craftCost = craftCost + craft["total"]
+    except (PriceSummary.DoesNotExist, Craft.DoesNotExist):
         return JsonResponse({"status": "not found"}, status=404)
     return JsonResponse(
         {
@@ -81,6 +100,8 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
             "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
             "lowest_price": render_to_string("snippets/lowest-price.html", {
                 "recent_lowest_price": ps.recent_lowest_price,
+                "components": crafts,
+                "craftCost": str(round(craftCost, 2)),
                 "last_checked": ps.recent_price_time,
                 "price_change": ps.price_change,
                 "price_change_date": ps.price_change_date,

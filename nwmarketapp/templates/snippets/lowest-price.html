@@ -7,7 +7,31 @@
         <div>
             <span id="lowest-10-modal-trigger" class="clickable">Raw Data</span>
             |
-            <a class="link-soft" href="https://nwdb.info/db/item/{{ nwdb_id }}">nwdb</a></div>
+            <a class="link-soft" href="https://nwdb.info/db/item/{{ nwdb_id }}">nwdb</a>
+            |
+            <span id="craft-modal-trigger" class="clickable craft-info">Craft Price</span>
+            <div class="craft-modal">
+                <section class="modal-card-body">
+                    <div class="container">
+                      {% for component in components %}
+                        <div>
+                            <a class="link-soft" href="https://nwdb.info/db/item/{{ component.nwdb_id }}">{{ component.name }}</a> x {{ component.quantity }}:
+                            {% if component.quantity == 1 %}
+                                {{ component.price }}
+                            {% else %}
+                                {{ component.price }} => {{ component.total }}
+                            {% endif %}
+                        </div>
+                      {% empty %}
+                        <div>You cannot craft this item</div>
+                      {% endfor %}
+                      {% if craftCost != 0.0 %}
+                        <div>Total craft cost: {{ craftCost }}</div>
+                      {% endif %}
+                    </div>
+                </section>
+            </div>
+        </div>
         <div>{% price_change_html price_change price_change_date %}</div>
     </div>
 </div>
