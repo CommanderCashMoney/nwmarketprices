@@ -16,6 +16,18 @@ def get_console_logger():
     logger.info("starting logger")
     return logger
 
+def updateWrongRefiningName(name):
+    if name == "Flux" or name == "Sand Flux" or name == "Shelldust Flux":
+        return "Obsidian Flux"
+    elif name == "Tannin" or name == "Rested Tannin":
+        return "Aged Tannin"
+    elif name == "Sandpaper" or name == "Coarse Sandpaper" or name == "Fine Sandpaper":
+        return "Obsidian Sandpaper"
+    elif name == "Crossweave" or name == "Silkweave":
+        return "Wireweave"
+    elif name == "Solvent" or name == "Weak Solvent" or name == "Potent Solvent":
+        return "Pure Solvent"
+    return name
 
 def migrate_crafting_recipes(apps, schema_editor):
     logger = get_console_logger()
@@ -33,6 +45,7 @@ def migrate_crafting_recipes(apps, schema_editor):
     for match in cn_matches:
         if "ingredients" in nwdb_data[match.name]:
             for components in nwdb_data[match.name]["ingredients"]:
+                components["name"] = updateWrongRefiningName(components["name"])
                 component_name = None
                 already_in = None
                 try:
@@ -44,10 +57,10 @@ def migrate_crafting_recipes(apps, schema_editor):
                 try:
                     already_in = Craft.objects.get(component_id=component_name.id) # get items that already have a recipe in db
                 except Craft.DoesNotExist:
-                    logging.warning("craft is not set, adding it")
+                    # logging.warning("craft is not set, adding it")
                     Craft(item_id=match.id, component_id=component_name.id, quantity=components["quantity"]).save()
                 if already_in != None:
-                    logging.warning("craft already exist, updating it")
+                    # logging.warning("craft already exist, updating it")
                     already_in.item_id = match.id
                     already_in.component_id = component_name.id
                     already_in.quantity = components["quantity"]
