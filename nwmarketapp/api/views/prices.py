@@ -1,4 +1,5 @@
 import json
+import logging
 from time import perf_counter
 
 from django.core.handlers.wsgi import WSGIRequest
@@ -72,6 +73,7 @@ def createCraftObject(data):
             "name": dat.component.name,
             "quantity": dat.quantity,
             "id": dat.component.id,
+            "nwdb_id": dat.component.nwdb_id,
             "price": 0,
             "total": 0
         })
@@ -82,9 +84,11 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
     try:
         ps = PriceSummary.objects.get(server_id=server_id, confirmed_name_id=item_id)
         crafts = createCraftObject(Craft.objects.filter(item_id=item_id))
+        craftCost = 0.0
         for craft in crafts:
             craft["price"] = sorted(PriceSummary.objects.get(server_id=server_id, confirmed_name_id=craft["id"]).lowest_prices, key=lambda obj: obj["price"])[0]["price"]
             craft["total"] = craft["price"] * craft["quantity"]
+            craftCost = craftCost + craft["total"]
     except (PriceSummary.DoesNotExist, Craft.DoesNotExist):
         return JsonResponse({"status": "not found"}, status=404)
     return JsonResponse(
@@ -97,6 +101,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
             "lowest_price": render_to_string("snippets/lowest-price.html", {
                 "recent_lowest_price": ps.recent_lowest_price,
                 "components": crafts,
+                "craftCost": str(round(craftCost, 2)),
                 "last_checked": ps.recent_price_time,
                 "price_change": ps.price_change,
                 "price_change_date": ps.price_change_date,
