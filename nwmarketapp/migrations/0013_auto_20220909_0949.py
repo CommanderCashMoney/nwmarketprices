@@ -51,7 +51,7 @@ def migrate_crafting_recipes(apps, schema_editor):
                 try:
                     component_name = ConfirmedNames.objects.get(name=components["name"])
                 except ConfirmedNames.DoesNotExist:
-                    logging.warning("no CN for " + components["name"] + " aborting whole craft")
+                    logging.warning("no CN for " + components["name"] + " aborting whole craft of " + match.name)
                 if component_name == None:
                     break
                 try:
