@@ -4,7 +4,7 @@ from typing import List, Tuple
 import requests
 from constance import config  # noqa
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.vary import vary_on_cookie
 
 from nwmarket import settings
@@ -235,3 +235,7 @@ def index(request, *args, **kwargs):
     return render(request, 'index.html', {
         'servers': {server.id: server.name for server in Servers.objects.all()}
     })
+
+def ads(request):
+    response = redirect('https://api.nitropay.com/v1/ads-1247.txt', request)
+    return response
