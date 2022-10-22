@@ -1488,6 +1488,15 @@ a.has-text-danger:focus, a.has-text-danger:hover {
     display: block;
     padding: 1.25rem
 }
+.adsbox {
+
+    border-radius: 8px;
+    box-shadow: none;
+    color: #fff;
+    display: block;
+    padding: 1.25rem
+
+}
 
 a.box:focus, a.box:hover {
     box-shadow: 0 .5em 1em -.125em rgba(10, 10, 10, .1), 0 0 0 1px #1abc9c
