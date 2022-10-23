@@ -136,10 +136,12 @@ class PricesUploadAPI(CreateAPIView):
         logging.info(f"Sending discord webhook to url {webhook_url}")
         total_listings = run.price_set.count()
         total_unique_items = run.price_set.values_list("name_id").distinct().count()
+        server_name = Servers.objects.get(pk=run.server_id).name
         try:
             requests.post(webhook_url, data={
                 "content": f"Scan upload from {run.username}. "
-                           f"Server: {run.server_id}, "
+                           f"Server ID: {run.server_id}, "
+                           f"Server Name: {server_name}, "
                            f"Total Prices: {total_listings}, "
                            f"Unique Items: {total_unique_items}"
             })
