@@ -23,6 +23,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
+from django.template.loader import render_to_string
+from django.db import connection
+
+
+
 
 
 class TokenPairSerializer(TokenObtainPairSerializer):
@@ -122,6 +127,10 @@ class PricesUploadAPI(CreateAPIView):
         self.perform_create(serializer)
         headers = self.get_success_headers(data)
         self.send_discord_notification(run)
+        query = render_to_string("queries/get_item_data_full.sql", context={"server_id": run.server_id})
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            print('Prices updated')
         return JsonResponse({
             "status": True,
             "message": "Prices Added"
