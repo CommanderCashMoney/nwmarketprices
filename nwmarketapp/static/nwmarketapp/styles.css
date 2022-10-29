@@ -153,7 +153,19 @@ html {
 .lowest-price-item.bottom {
     margin-top: auto;
 }
+.left-container {
+    display: block;
+    position: fixed;
+    width: 180px;
+    height: calc(100% - 80%)
+}
+.right-container {
+    display: block;
+    position: fixed;
+    inset: 20px 0 auto auto;
+    width: 320px;
 
+}
 .blue_text{
   color: lightsteelblue;
 }
@@ -182,7 +194,16 @@ html {
     padding: 0;
   }
 }
-
+@media screen and (min-width: 1408px) {
+    .container {
+        max-width: 1152px
+    }
+}
+@media screen and (max-width: 1670px) {
+    .right-container {
+        display: none;
+    }
+}
 .typeahead__list {
     background-color: rgb(40, 47, 47);
     border-color: #f3f3f3;
@@ -285,7 +306,11 @@ html {
         font-size: 2.8em;
     }
 }
-
+@media only screen and (max-width: 1024px) {
+    .left-container{
+        display: none;
+    }
+}
 
 @media only screen and (min-width: 1024px) {
     .item-search-container {
@@ -299,6 +324,7 @@ html {
 
     .mt-4-desktop {
         margin-top: 1rem;
+        margin-left: 180px;
     }
 
     .mt-1-desktop {

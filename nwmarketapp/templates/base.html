@@ -47,7 +47,32 @@
 </head>
 <body>
 <div id="notifications"></div>
+<div class="container left-container" id="left-rail1"> </div>
+<script>
+window['nitroAds'].createAd('left-rail1', {
+  "refreshLimit": 10,
+  "refreshTime": 30,
+  "format": "rail",
+  "rail": "left",
+  "railOffsetTop": 0,
+  "railOffsetBottom": 0,
+  "railCollisionWhitelist": ['*'],
+  "sizes": [
+    [
+      "160",
+      "600"
+    ]
+  ],
+  "report": {
+    "enabled": true,
+    "icon": true,
+    "wording": "Report Ad",
+    "position": "bottom-right"
+  }
+});
+</script>
 <div class="container mt-4-desktop">
+
     <div class="container">
         {% block nav %}
         {% include 'snippets/navbar.html' with is_login_nav=is_login_nav %}
@@ -56,7 +81,40 @@
     <div class="container">
         {% block content %}{% endblock %}
     </div>
+
 </div>
+<div class="container right-container" id="right-rail1"> <div id="video1"> </div></div>
+<script>
+window['nitroAds'].createAd('right-rail1', {
+  "refreshLimit": 10,
+  "refreshTime": 30,
+  "format": "rail",
+  "rail": "right",
+  "railOffsetTop": 0,
+  "railOffsetBottom": 0,
+  "railCollisionWhitelist": ['*'],
+  "sizes": [
+    [
+      "300",
+      "600"
+    ]
+  ],
+  "report": {
+    "enabled": true,
+    "icon": true,
+    "wording": "Report Ad",
+    "position": "bottom-right"
+  }
+});
+</script>
+
+
+<script>
+window['nitroAds'].createAd('video1', {
+  "format": "video-nc",
+  "video": {}
+});
+</script>
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', () => {

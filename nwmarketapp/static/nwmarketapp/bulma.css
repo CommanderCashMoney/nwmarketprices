@@ -2804,7 +2804,7 @@ a.box:active {
     flex-grow: 1;
     margin: 0 auto;
     position: relative;
-    width: auto
+    width: auto;
 }
 
 .container.is-fluid {
@@ -2828,7 +2828,7 @@ a.box:active {
 
 @media screen and (max-width: 1407px) {
     .container.is-fullhd {
-        max-width: 1344px
+        max-width: 1152px!important;
     }
 }
 
@@ -2840,7 +2840,7 @@ a.box:active {
 
 @media screen and (min-width: 1408px) {
     .container {
-        max-width: 1344px
+        max-width: 1152px!important;
     }
 }
 
