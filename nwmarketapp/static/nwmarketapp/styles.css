@@ -324,7 +324,7 @@ html {
 
     .mt-4-desktop {
         margin-top: 1rem;
-        margin-left: 180px;
+
     }
 
     .mt-1-desktop {
@@ -333,6 +333,25 @@ html {
 
     .pr-1-desktop {
         padding-right: 20px;
+    }
+}
+@media only screen and (max-width: 1980px) {
+    .mt-4-desktop {
+        margin-left: 180px;
+        margin-right: 340px;
+    }
+}
+@media only screen and (max-width: 1024px) {
+    .mt-4-desktop {
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+}
+
+@media only screen and (max-width: 1024px) {
+    .mt-4-desktop {
+        margin-left: 0px;
+        margin-right: 0px;
     }
 }
 

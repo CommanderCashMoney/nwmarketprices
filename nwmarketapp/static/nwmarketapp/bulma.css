@@ -1488,15 +1488,7 @@ a.has-text-danger:focus, a.has-text-danger:hover {
     display: block;
     padding: 1.25rem
 }
-.adsbox {
 
-    border-radius: 8px;
-    box-shadow: none;
-    color: #fff;
-    display: block;
-    padding: 1.25rem
-
-}
 
 a.box:focus, a.box:hover {
     box-shadow: 0 .5em 1em -.125em rgba(10, 10, 10, .1), 0 0 0 1px #1abc9c
@@ -2804,7 +2796,7 @@ a.box:active {
     flex-grow: 1;
     margin: 0 auto;
     position: relative;
-    width: auto;
+    width: auto
 }
 
 .container.is-fluid {
@@ -2828,7 +2820,7 @@ a.box:active {
 
 @media screen and (max-width: 1407px) {
     .container.is-fullhd {
-        max-width: 1152px!important;
+        max-width: 1344px
     }
 }
 
@@ -2840,7 +2832,7 @@ a.box:active {
 
 @media screen and (min-width: 1408px) {
     .container {
-        max-width: 1152px!important;
+        max-width: 1344px!important;
     }
 }
 
