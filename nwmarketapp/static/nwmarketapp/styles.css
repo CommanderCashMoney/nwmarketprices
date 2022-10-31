@@ -166,6 +166,12 @@ html {
     width: 320px;
 
 }
+#video1 {
+    position: fixed;
+    inset: auto 10px 10px auto;
+    width: 320px;
+    height: 180px;
+}
 .blue_text{
   color: lightsteelblue;
 }
