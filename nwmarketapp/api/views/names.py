@@ -84,26 +84,6 @@ def typeahead(request: WSGIRequest) -> JsonResponse:
         for cn in ConfirmedNames.objects.all().order_by(Length("name"))
     ], safe=False)
 
-
-@ratelimit(key='ip', rate='5/s', block=True)
-@cache_page(60 * 10)
-def confirmed_names_v1(request):
-    cns = ConfirmedNames.objects.all().exclude(name__contains='"')
-    cns = list(cns.values_list('name', 'id'))
-    cn = json.dumps(cns)
-    return JsonResponse({'cn': cn}, status=200)
-
-
-@ratelimit(key='ip', rate='3/s', block=True)
-@cache_page(60 * 10)
-def servers_v1(request):
-    server_list = Servers.objects.all().values_list('name', 'id'). order_by('id')
-    server_list = list(server_list)
-    server_list = json.dumps(server_list)
-
-    return JsonResponse({'servers': server_list}, status=200)
-
-
 @ratelimit(key='ip', rate='3/s', block=True)
 @cache_page(60 * 10)
 def servers(request) -> JsonResponse:

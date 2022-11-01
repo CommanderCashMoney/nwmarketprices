@@ -192,16 +192,6 @@ def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
         filename='nwmarketprices.json'
     )
 
-
-def get_popular_items_v1(request: WSGIRequest, server_id: int) -> JsonResponse:
-    return JsonResponse(get_popular_items_dict(server_id), status=status.HTTP_200_OK, safe=False)
-
-
-@ratelimit(key='ip', rate='1/s', block=True)
-def latest_prices_v1(request: WSGIRequest) -> JsonResponse:
-    server_id = request.GET.get("server_id", "1")
-    return latest_prices(request, int(server_id))
-
 @api_view(['GET'])
 @ratelimit(key='ip', rate='1/m', block=True)
 def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
