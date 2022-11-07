@@ -115,14 +115,24 @@ window['nitroAds'].createAd('left-rail1', {
                 <div class="columns is-mobile">
 
                         <div class="column is-mobile" style="padding: 0px; text-align: left; margin-left: 10px">
-                         Total number of scans: {{ total_scans }}
+                             Total number of scans: {{ total_scans }}
+                             <br>
+                             Current active servers: {{ total_servers }}
+                        </div>
+                        <div class="column is-mobile" style="padding: 0px; text-align: left; margin-left: 10px">
+                         Most scanned servers:
+                            <br>
+                            {% for server in most_scanned_server %}
+                                {{ server.0 }} - {{ server.1 }}
+                                <br>
+                            {% endfor %}
                         </div>
 
                  </div>
                 <div class="columns is-mobile">
 
                         <div class="column is-mobile" style="padding: 0px; text-align: left; margin-left: 10px">
-                         Current active servers: {{ total_servers }}
+
                         </div>
 
                  </div>

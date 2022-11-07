@@ -249,16 +249,18 @@ def index(request, *args, **kwargs):
     })
 
 @cache_page(60 * 20)
-@vary_on_cookie
 def news(request):
     server_names = Servers.objects.filter(id=OuterRef('server_id'))
     recent_scans = Run.objects.annotate(sn=Subquery(server_names.values('name')[:1])).order_by('-id')[:15]
+
     recent_scans = list(recent_scans.values_list('start_date', 'sn'))
     total_scans = Run.objects.count()
     total_servers = Servers.objects.count()
     most_listed_item = list(Price.objects.values_list('name').annotate(name_count=Count('name')).order_by('-name_count')[:10])
+    most_scanned_server = Run.objects.annotate(sn=Subquery(server_names.values('name')[:1]))
+    most_scanned_server = list(most_scanned_server.values_list('sn').annotate(name_count=Count('sn')).order_by('-name_count')[:3])
 
-    return render(request, 'news.html', {'recent_scans': recent_scans, 'total_scans': total_scans, 'total_servers': total_servers, 'most_listed_item': most_listed_item})
+    return render(request, 'news.html', {'recent_scans': recent_scans, 'total_scans': total_scans, 'total_servers': total_servers, 'most_listed_item': most_listed_item, 'most_scanned_server': most_scanned_server})
 
 def ads(request):
     response = redirect('https://api.nitropay.com/v1/ads-1247.txt', request)
