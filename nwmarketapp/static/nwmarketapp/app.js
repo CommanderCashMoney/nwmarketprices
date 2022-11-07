@@ -78,8 +78,8 @@ const init = () => {
     fetchAutocompleteData();
 
     const params = getParamsFromUrl();
-    // first, use the server id in the url. if there's none, use the last server id the person was on. otherwise 1.
-    serverId = params && params.server_id || lastServerId || 1;
+    // first, use the server id in the url. if there's none, use the last server id the person was on. otherwise 2.
+    serverId = params && params.server_id || lastServerId || 2;
     changeServer(serverId, true);
     if(params && params.item_id) {
         loadItem(params.item_id, true);

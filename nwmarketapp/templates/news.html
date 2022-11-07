@@ -1,0 +1,210 @@
+{% load humanize %}
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+     <title>New World Market Prices - News</title>
+    {% load static %}
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'nwmarketapp/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'nwmarketapp/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'nwmarketapp/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'nwmarketapp/site.webmanifest' %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highcharts/9.3.3/highcharts.min.js"
+        integrity="sha512-eLEbReXan83DpgMlsiPxeAt9A57TSiWUhYEBYVoUQnHs2crCedKj3AeKux6zuH9Yr52PhOO+p7y2+7OgVN91EA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="{% static 'nwmarketapp/popper.min.js' %}"></script>
+    <script src="{% static 'nwmarketapp/utils.js' %}"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <link rel="stylesheet" href="{% static 'nwmarketapp/bulma.css' %}">
+    <link rel="stylesheet" href="{% static 'nwmarketapp/styles.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/placeholder-loading/dist/css/placeholder-loading.min.css">
+    {% block additional_includes %}{% endblock %}
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0"></script>
+
+
+<script data-cfasync="false">window.nitroAds=window.nitroAds||{createAd:function(){return new Promise(e=>{window.nitroAds.queue.push(["createAd",arguments,e])})},addUserToken:function(){window.nitroAds.queue.push(["addUserToken",arguments])},queue:[]};</script>
+<script data-cfasync="false" async src="https://s.nitropay.com/ads-1247.js"></script>
+
+
+</head>
+
+<div id="notifications"></div>
+<div class="container left-container" id="left-rail1"></div>
+<script>
+window['nitroAds'].createAd('left-rail1', {
+  "refreshLimit": 10,
+  "refreshTime": 30,
+  "format": "rail",
+  "rail": "left",
+  "railOffsetTop": 0,
+  "railOffsetBottom": 0,
+  "railCollisionWhitelist": ['*'],
+  "sizes": [
+    [
+      "160",
+      "600"
+    ]
+  ],
+  "report": {
+    "enabled": true,
+    "icon": true,
+    "wording": "Report Ad",
+    "position": "bottom-right"
+  }
+});
+</script>
+<div class="container mt-4-desktop">
+
+    <div class="container">
+        {% load static %}
+        <nav class="navbar white-border" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <span class="navbar-item nav-title is-size-5">
+                    <a href="/" style="color: white">New World Market Prices</a>
+
+                </span>
+
+            </div>
+
+        </nav>
+
+    </div>
+
+   <div class="columns mt-1-desktop mb-0">
+        <div class="column is-two-fifths mx-0 p-1">
+            <div class="container box has-text-centered my-auto full-height white-border" id="lowest-price-data">
+                <span class="popular-item-title">Recent scans</span>
+                <hr class="solid divider">
+
+                {% if recent_scans %}
+                    {% for scan in recent_scans %}
+                <div class="columns is-mobile">
+
+                        <div class="column is-mobile" style="padding: 0px; text-align: left; margin-left: 10px">{{ scan.1 }}</div>
+                        <div class="column is-mobile" style="padding: 0px;">{{ scan.0 }}</div>
+                 </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">No recent scans</div>
+                {% endif %}
+
+
+            </div>
+        </div>
+        <div class="column is-three-fifths has-text-centered p-1 is-flex full-width">
+            <div class="box white-border full-width" id="line-graph-column">
+                <span class="popular-item-title">Development News</span>
+                <hr class="solid divider">
+                <div class="columns is-mobile">
+
+                        <div class="column is-mobile" style="padding: 0px; text-align: left; margin-left: 10px">
+                           11-2022 The top dev priority is still performance improvements. I hope to have sectional scanning available soon. After that I'm going to start working on some scanner perks like customizable dashboards.
+
+                        </div>
+
+                 </div>
+                <span class="popular-item-title">Scan stats</span>
+                <hr class="solid divider">
+                <div class="columns is-mobile">
+
+                        <div class="column is-mobile" style="padding: 0px; text-align: left; margin-left: 10px">
+                         Total number of scans: {{ total_scans }}
+                        </div>
+
+                 </div>
+                <div class="columns is-mobile">
+
+                        <div class="column is-mobile" style="padding: 0px; text-align: left; margin-left: 10px">
+                         Current active servers: {{ total_servers }}
+                        </div>
+
+                 </div>
+                <span class="popular-item-title">Top 10 most listed items across all servers</span>
+                <hr class="solid divider">
+                {% for item in most_listed_item %}
+                <div class="columns is-mobile">
+
+                        <div class="column is-mobile" style="padding: 0px; text-align: left; margin-left: 10px">
+                         {{ item.0 }}
+                        </div>
+                        <div class="column is-mobile" style="padding: 0px;">{{ item.1 }}</div>
+
+                 </div>
+                 {% endfor %}
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<div class="container right-container"><div id="right-rail1"></div><div id="video1"></div></div>
+<script>
+window['nitroAds'].createAd('right-rail1', {
+  "refreshLimit": 10,
+  "refreshTime": 30,
+  "format": "rail",
+  "rail": "right",
+  "railOffsetTop": 0,
+  "railOffsetBottom": 0,
+  "railCollisionWhitelist": ['*'],
+  "sizes": [
+    [
+      "300",
+      "600"
+    ]
+  ],
+  "report": {
+    "enabled": true,
+    "icon": true,
+    "wording": "Report Ad",
+    "position": "bottom-right"
+  }
+});
+</script>
+
+
+<script>
+window['nitroAds'].createAd('video1', {
+  "format": "video-nc",
+  "video": {}
+});
+</script>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+  // Get all "navbar-burger" elements
+  const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+
+  // Check if there are any navbar burgers
+  if ($navbarBurgers.length > 0) {
+
+    // Add a click event on each of them
+    $navbarBurgers.forEach( el => {
+      el.addEventListener('click', () => {
+
+        // Get the target from the "data-target" attribute
+        const target = el.dataset.target;
+        const $target = document.getElementById(target);
+
+        // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+        el.classList.toggle('is-active');
+        $target.classList.toggle('is-active');
+
+      });
+    });
+  }
+
+});
+</script>
+
+</html>

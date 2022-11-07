@@ -7,5 +7,6 @@ urlpatterns = [
     path('<int:server_id>/', views.index, name='index'),
     path('<str:item_id>/<int:server_id>/', views.index, name='index'),
     path('ads.txt', views.ads, name='ads'),
+    path('news', views.news, name='news'),
 
 ]
