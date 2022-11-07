@@ -109,6 +109,17 @@ $ cat ./full-prodAWS_Prod-2022_09_04_09_55_22-dump.sql | docker exec -i postgres
 # You can access adminer at <http://localhost:8000>
 ```
 
+## :checkered_flag: .env file example ##
+
+```bash
+DB_NAME=nwmp_prod
+RDS_USERNAME=postgres
+RDS_PASSWORD=postgres
+RDS_HOSTNAME=localhost
+RDS_PORT=5432
+DEBUG=True
+```
+
 ## :memo: License ##
 
 
