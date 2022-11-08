@@ -17,6 +17,7 @@ urlpatterns = [
     path('price-data/<int:server_id>/<str:item_id>/', prices.get_item_data, name='item-data'),
     path('server-price-data/<int:server_id>/', prices.intial_page_load_data, name="initial-page-load-data"),
     path('servers/', names.servers, name="servers"),
+    path('servers_updated/', prices.server_scan_times, name='server_scan_times'),
 
     path('update-server-prices/<int:server_id>/', prices.update_server_prices, name="update-server-prices"),
 ]

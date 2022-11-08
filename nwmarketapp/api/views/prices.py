@@ -1,5 +1,6 @@
 import json
 import logging
+import pytz
 from time import perf_counter
 
 from django.core.handlers.wsgi import WSGIRequest
@@ -11,11 +12,13 @@ from django.views.decorators.cache import cache_page
 from ratelimit.decorators import ratelimit
 from rest_framework import status
 from rest_framework.decorators import api_view
+from django.db.models import Subquery, OuterRef
+
 
 from nwmarket.settings import CACHE_ENABLED
 from nwmarketapp.api.utils import get_popular_items_dict, get_popular_items_dict_v2, get_price_graph_data, \
     get_list_by_nameid
-from nwmarketapp.models import Craft, PriceSummary, Run, NWDBLookup, ConfirmedNames, Price
+from nwmarketapp.models import Craft, PriceSummary, Run, NWDBLookup, ConfirmedNames, Price, Servers
 
 
 def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> JsonResponse:
@@ -206,3 +209,21 @@ def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
         cursor.execute(query)
 
     return JsonResponse({"status": "ok", "calc_time": perf_counter() - p}, status=status.HTTP_201_CREATED)
+
+@ratelimit(key='ip', rate='1/s', block=True)
+@cache_page(60 * 5)
+def server_scan_times(request: WSGIRequest) -> JsonResponse:
+    runs = Run.objects.filter(server_id=OuterRef('id')).order_by('-id')
+    servers = Servers.objects.annotate(rundate=Subquery(runs.values('start_date')[:1]))
+    servers = servers.annotate(runtz=Subquery(runs.values('tz_name')[:1]))
+    server_list = list(servers.values_list('id', 'name', 'rundate', 'runtz'))
+    for idx, item in enumerate(server_list):
+        if item[2] and item[3]:
+            tz = pytz.timezone(item[3])
+            utc_time = tz.normalize(tz.localize(item[2])).astimezone(pytz.utc)
+            server_list[idx] = (item[0], item[1], utc_time)
+        else:
+            server_list[idx] = (item[0], item[1], item[2])
+
+
+    return JsonResponse({"server_last_updated": server_list})
