@@ -127,11 +127,13 @@ class PricesUploadAPI(CreateAPIView):
 
         self.perform_create(serializer)
         headers = self.get_success_headers(data)
-        self.send_discord_notification(run)
+
         query = render_to_string("queries/get_item_data_full.sql", context={"server_id": run.server_id})
         with connection.cursor() as cursor:
             cursor.execute(query)
             print('Prices updated')
+        self.send_discord_notification(run)
+
         return JsonResponse({
             "status": True,
             "message": "Prices Added"
@@ -157,6 +159,10 @@ class PricesUploadAPI(CreateAPIView):
             })
         except Exception:  # noqa
             logging.exception("Discord webhook failed")
+
+        # @staticmethod
+        # def update_servertimestamp() -> None:
+
 
 
 def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> Run:

@@ -4,6 +4,8 @@ from typing import List
 from dateutil.parser import isoparse
 from django.contrib.auth.models import User
 from django.db import models
+import numpy as np
+
 
 
 class ConfirmedNames(models.Model):
@@ -50,6 +52,7 @@ class Run(models.Model):
 class Servers(models.Model):
     id = models.IntegerField(db_column='id', primary_key=True)
     name = models.CharField(max_length=50, blank=True, null=True)
+    # last_updated = models.DateTimeField(editable=False, null=True)
 
     class Meta:
         db_table = 'servers'
@@ -118,8 +121,10 @@ class PriceSummary(models.Model):
     lowest_prices = models.JSONField(null=True)
     graph_data = models.JSONField(null=True)
 
+
     @property
     def ordered_graph_data(self) -> List:
+        test1 = self.graph_data
         return sorted(self.graph_data, key=lambda obj: obj["price_date"])
 
     @property
@@ -134,7 +139,25 @@ class PriceSummary(models.Model):
     def recent_lowest_price(self) -> float:
         if not self.lowest_prices:
             return None
-        return self.ordered_price_data[0]["price"]
+
+        if self.ordered_price_data[0]["price"] < 20:
+            price_array = []
+            qty_array = []
+
+            for item in self.ordered_price_data:
+                price_array.append(item['price'])
+                qty_array.append(item['avail'])
+            avg_qty = sum(qty_array)/len(qty_array)
+            avg_price = sum(price_array)/len(price_array)
+            for idx, qty in reversed(list(enumerate(qty_array))):
+                if qty / avg_qty <= 0.05:
+                    if price_array[idx] / avg_price <= 0.50:
+                        print(f'removed: {self.confirmed_name}, price of: {price_array[idx]}. Avgprice was: {avg_price}')
+                        price_array.pop(idx)
+
+            return price_array[0]
+        else:
+            return self.ordered_price_data[0]["price"]
 
     @property
     def price_change_dict(self) -> dict:
