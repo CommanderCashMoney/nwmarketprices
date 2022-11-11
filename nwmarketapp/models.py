@@ -140,7 +140,7 @@ class PriceSummary(models.Model):
         if not self.lowest_prices:
             return None
 
-        if self.ordered_price_data[0]["price"] < 20:
+        if self.ordered_price_data[0]["price"] < 30:
             price_array = []
             qty_array = []
 
