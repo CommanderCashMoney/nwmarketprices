@@ -2,6 +2,7 @@ import json
 import logging
 import pytz
 from time import perf_counter
+import datetime
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import connection
@@ -82,7 +83,7 @@ def createCraftObject(data):
         })
     return res
 
-@cache_page(60 * 10)
+# @cache_page(60 * 10)
 def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
     try:
         ps = PriceSummary.objects.get(server_id=server_id, confirmed_name_id=item_id)
@@ -102,10 +103,10 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
             "graph_data": ps.ordered_graph_data[-15:],
             "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
             "lowest_price": render_to_string("snippets/lowest-price.html", {
-                "recent_lowest_price": ps.recent_lowest_price,
+                "recent_lowest_price": ps.recent_lowest_price['price'],
                 "components": crafts,
                 "craftCost": str(round(craftCost, 2)),
-                "last_checked": ps.recent_price_time,
+                "last_checked": datetime.datetime.fromisoformat(ps.recent_lowest_price['datetime']),
                 "price_change": ps.price_change,
                 "price_change_date": ps.price_change_date,
                 "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
