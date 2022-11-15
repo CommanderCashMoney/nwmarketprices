@@ -7,7 +7,7 @@
                 <a href="javascript:{}" onclick="loadItem({{ item.confirmed_name_id }})" class="popular-item">{{ item.confirmed_name.name }}</a>
             </div>
             <div class="column is-one-fifths has-text-right popular-item">
-                {{ item.recent_lowest_price|floatformat:2|intcomma }}
+                {{ item.recent_lowest_price.price|floatformat:2|intcomma }}
             </div>
             <div class="column is-one-fifth has-text-right popular-item">
                 {% price_change_html_short item.price_change %}

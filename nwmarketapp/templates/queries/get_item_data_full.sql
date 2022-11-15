@@ -1,5 +1,5 @@
 WITH server_prices AS (
-    SELECT * FROM prices WHERE server_id = {{ server_id }} AND timestamp > NOW() - INTERVAL '1 MONTH'
+    SELECT * FROM prices WHERE server_id = {{ server_id}} AND timestamp > NOW() - INTERVAL '1 MONTH'
 ),
 most_recent_run AS (
     SELECT
@@ -37,67 +37,61 @@ lowest_10_prices AS (
     FROM lowest_prices WHERE price_rank < 10
     GROUP BY 1
 ),
-lowest_price_dates AS (
-    select
-       name_id,
-       timestamp::DATE AS price_date,
-       MIN(price) AS lowest_price
-    FROM server_prices
-    GROUP BY 1, 2
-),
-price_datetimes AS (
-    SELECT
-        lowest_price_dates.name_id,
-        lowest_price_dates.price_date,
-        MAX(timestamp) as price_datetime
-    FROM lowest_price_dates
-    JOIN server_prices ON
-        server_prices.name_id = lowest_price_dates.name_id AND
-        timestamp::date = price_date AND
-        lowest_price = price
-    GROUP BY 1, 2
-),
+
+ranked_prices AS (
+    select price as lowest_price,
+           name_id,
+           avail,
+           timestamp::DATE as price_date,
+           timestamp,
+           row_number() over (
+           PARTITION BY server_prices.name_id, timestamp::DATE
+           ORDER BY price
+           ) as rank
+   from server_prices
+    order by name_id, price_date, rank
+    ),
+
 price_quantities AS (
-    SELECT name_id, price_date, MAX(avail) as avail FROM (
-        SELECT
+     SELECT name_id, price_date, MAX(total_avail) as total_avail FROM (
+SELECT
             run_id,
-            lowest_price_dates.name_id,
-            lowest_price_dates.price_date,
-            SUM(avail) AS avail
-        FROM lowest_price_dates
-        JOIN server_prices ON
-            server_prices.name_id = lowest_price_dates.name_id AND
-            timestamp::date = price_date
+           name_id,
+            timestamp::DATE as price_date,
+            SUM(avail) AS total_avail
+        FROM server_prices
         GROUP BY 1, 2, 3
-    ) calc GROUP BY 1, 2
+    ) as calc
+      GROUP BY 1, 2
 ),
 final_prices as (
     select
         name_id,
         lowest_price,
         price_date,
-        price_datetime,
+        ranked_prices.timestamp,
         avail,
-        AVG(lowest_price) OVER (
-            PARTITION BY name_id
-            ORDER BY price_date
-            ROWS BETWEEN 5 PRECEDING AND CURRENT ROW
-        ) AS rolling_average
-    from lowest_price_dates
-    JOIN price_datetimes USING(name_id, price_date)
+        total_avail,
+        rank
+
+    from ranked_prices
     JOIN price_quantities USING(name_id, price_date)
-    GROUP BY 1, 2, 3, 4, 5
-    ORDER BY price_date DESC
+    where ranked_prices.rank <= 10
+    GROUP BY 1, 2, 3, 4, 5, 6,7
+    ORDER BY price_date DESC, name_id, lowest_price
 ),
-graph_data AS (
+    graph_data AS (
     SELECT
         name_id,
         JSON_AGG(
             JSON_BUILD_OBJECT(
-                'price_date', price_datetime,
-                'avail', avail,
-                'lowest_price', lowest_price,
-                'rolling_average', CAST(TO_CHAR(rolling_average, 'FM999999.00') AS NUMERIC)
+                --names are not great to make it backwards compatible with old JSON entries
+                'price_date', timestamp,
+                'date_only', timestamp::DATE,
+                'avail', total_avail,
+                'single_price_avail', avail,
+                'lowest_price', lowest_price
+
             )
         ) AS graph_data
     FROM final_prices

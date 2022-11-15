@@ -1,3 +1,4 @@
+import itertools
 from datetime import datetime
 from typing import List
 
@@ -124,8 +125,36 @@ class PriceSummary(models.Model):
 
     @property
     def ordered_graph_data(self) -> List:
-        test1 = self.graph_data
-        return sorted(self.graph_data, key=lambda obj: obj["price_date"])
+
+        lowest_price_graph = []
+        sorted_graph = sorted(list(self.graph_data), key=lambda x: x['date_only'])
+        for key, group in itertools.groupby(sorted_graph, lambda x: x['date_only']):
+
+            g = sorted(list(group), key=lambda d: d['lowest_price'])
+            avg_price = sum(p['lowest_price'] for p in g) / len(g)
+            avg_qty = sum(p['single_price_avail'] for p in g) / len(g)
+
+            for idx, item in reversed(list(enumerate(g))):
+                item.update({"avg_price": avg_price})
+                item.update({"avg_qty": avg_qty})
+                if item['lowest_price'] <= 30:
+                    if item['single_price_avail'] / avg_qty <= 0.05:
+                        if item['lowest_price'] / avg_price <= 0.60:
+                            # print(f'removed: {self.confirmed_name}, price of: {item["lowest_price"]}. Avg price was: {avg_price}')
+                            g.pop(idx)
+
+            lowest_price_graph.append(g[0])
+        price_arr = [p['lowest_price'] for p in lowest_price_graph]
+        x = 0.55  # smoothing factor for rolling average
+        i = 1
+        moving_averages = [price_arr[0]]
+        lowest_price_graph[0].update({'rolling_average': price_arr[0]})
+        while i < len(price_arr):
+            window_average = round((x * price_arr[i]) +
+                                   (1 - x) * moving_averages[-1], 2)
+            lowest_price_graph[i].update({'rolling_average': window_average})
+            i += 1
+        return lowest_price_graph
 
     @property
     def ordered_price_data(self) -> List:
@@ -139,41 +168,37 @@ class PriceSummary(models.Model):
     def recent_lowest_price(self) -> float:
         if not self.lowest_prices:
             return None
+        ordered_price = self.ordered_price_data
+        if ordered_price[0]["price"] < 30:
 
-        if self.ordered_price_data[0]["price"] < 20:
-            price_array = []
-            qty_array = []
+            avg_price = sum(p['price'] for p in ordered_price) / len(ordered_price)
+            avg_qty = sum(p['avail'] for p in ordered_price) / len(ordered_price)
 
-            for item in self.ordered_price_data:
-                price_array.append(item['price'])
-                qty_array.append(item['avail'])
-            avg_qty = sum(qty_array)/len(qty_array)
-            avg_price = sum(price_array)/len(price_array)
-            for idx, qty in reversed(list(enumerate(qty_array))):
-                if qty / avg_qty <= 0.05:
-                    if price_array[idx] / avg_price <= 0.50:
-                        print(f'removed: {self.confirmed_name}, price of: {price_array[idx]}. Avgprice was: {avg_price}')
-                        price_array.pop(idx)
+            for idx, item in reversed(list(enumerate(ordered_price))):
+                if item['avail'] / avg_qty <= 0.05:
+                    if item['price'] / avg_price <= 0.60:
+                        # print(f'removed: {self.confirmed_name}, price of: {item["price"]}. Avg price was: {avg_price}')
+                        ordered_price.pop(idx)
 
-            return price_array[0]
+            return ordered_price[0]
         else:
-            return self.ordered_price_data[0]["price"]
+            return self.ordered_price_data[0]
 
     @property
     def price_change_dict(self) -> dict:
         from nwmarketapp.api.utils import get_change
         graph_data = self.ordered_graph_data
         graph_data.reverse()
-        initial_price = graph_data[0]["lowest_price"]
-        for row in graph_data:
-            change = get_change(initial_price, row["lowest_price"])
-            if change != 0:
-                return {
-                    "price_change_date": isoparse(row["price_date"]),
-                    "price_change": round(change)
-                }
+        initial_price = self.recent_lowest_price['price']
+
+        if len(graph_data) > 1:
+            change = get_change(initial_price, graph_data[1]["lowest_price"])
+            return {
+                "price_change_date": isoparse(graph_data[1]["price_date"]),
+                "price_change": round(change)
+            }
         return {
-            "price_change_date": isoparse(row["price_date"]),
+            "price_change_date": isoparse(graph_data[0]["price_date"]),
             "price_change": 0
         }
 

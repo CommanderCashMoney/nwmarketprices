@@ -113,7 +113,7 @@ def get_list_by_nameid(name_id: int, server_id: str) -> dict:
         prev_date = prev_lowest[0][0]
         prev_lowest_price = min(prev_lowest)[1]
 
-        price_change = get_change(recent_lowest_price, prev_lowest_price)
+        price_change = get_change(recent_lowest_price['price'], prev_lowest_price)
         try:
             price_change = round(price_change)
         except ValueError:

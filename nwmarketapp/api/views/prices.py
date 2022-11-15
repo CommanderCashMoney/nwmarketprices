@@ -2,6 +2,7 @@ import json
 import logging
 import pytz
 from time import perf_counter
+from dateutil.parser import isoparse
 
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import connection
@@ -102,10 +103,10 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
             "graph_data": ps.ordered_graph_data[-15:],
             "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
             "lowest_price": render_to_string("snippets/lowest-price.html", {
-                "recent_lowest_price": ps.recent_lowest_price,
+                "recent_lowest_price": ps.recent_lowest_price['price'],
                 "components": crafts,
                 "craftCost": str(round(craftCost, 2)),
-                "last_checked": ps.recent_price_time,
+                "last_checked": isoparse(ps.recent_lowest_price['datetime']),
                 "price_change": ps.price_change,
                 "price_change_date": ps.price_change_date,
                 "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
