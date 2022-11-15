@@ -145,7 +145,7 @@ class PriceSummary(models.Model):
 
             lowest_price_graph.append(g[0])
         price_arr = [p['lowest_price'] for p in lowest_price_graph]
-        x = 0.4  # smoothing factor for rolling average
+        x = 0.55  # smoothing factor for rolling average
         i = 1
         moving_averages = [price_arr[0]]
         lowest_price_graph[0].update({'rolling_average': price_arr[0]})
