@@ -1,5 +1,5 @@
 WITH server_prices AS (
-    SELECT * FROM prices WHERE server_id = 8 AND timestamp > NOW() - INTERVAL '1 MONTH'
+    SELECT * FROM prices WHERE server_id = {{ server_id}} AND timestamp > NOW() - INTERVAL '1 MONTH'
 ),
 most_recent_run AS (
     SELECT

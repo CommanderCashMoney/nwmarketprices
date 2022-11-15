@@ -145,10 +145,9 @@ class PriceSummary(models.Model):
 
             lowest_price_graph.append(g[0])
         price_arr = [p['lowest_price'] for p in lowest_price_graph]
-        x = 0.5  # smoothing factor for rolling average
+        x = 0.75  # smoothing factor for rolling average
         i = 1
-        moving_averages = []
-        moving_averages.append(price_arr[0])
+        moving_averages = [price_arr[0]]
         lowest_price_graph[0].update({'rolling_average': price_arr[0]})
         while i < len(price_arr):
             window_average = round((x * price_arr[i]) +
@@ -192,7 +191,7 @@ class PriceSummary(models.Model):
         graph_data.reverse()
         initial_price = self.recent_lowest_price['price']
 
-        if len(graph_data) > 0:
+        if len(graph_data) > 1:
             change = get_change(initial_price, graph_data[1]["lowest_price"])
             return {
                 "price_change_date": isoparse(graph_data[1]["price_date"]),
