@@ -139,13 +139,13 @@ class PriceSummary(models.Model):
                 item.update({"avg_qty": avg_qty})
                 if item['lowest_price'] <= 30:
                     if item['single_price_avail'] / avg_qty <= 0.05:
-                        if item['lowest_price'] / avg_price <= 0.50:
-                            print(f'removed: {self.confirmed_name}, price of: {item["lowest_price"]}. Avg price was: {avg_price}')
+                        if item['lowest_price'] / avg_price <= 0.60:
+                            # print(f'removed: {self.confirmed_name}, price of: {item["lowest_price"]}. Avg price was: {avg_price}')
                             g.pop(idx)
 
             lowest_price_graph.append(g[0])
         price_arr = [p['lowest_price'] for p in lowest_price_graph]
-        x = 0.75  # smoothing factor for rolling average
+        x = 0.4  # smoothing factor for rolling average
         i = 1
         moving_averages = [price_arr[0]]
         lowest_price_graph[0].update({'rolling_average': price_arr[0]})
@@ -176,8 +176,8 @@ class PriceSummary(models.Model):
 
             for idx, item in reversed(list(enumerate(ordered_price))):
                 if item['avail'] / avg_qty <= 0.05:
-                    if item['price'] / avg_price <= 0.50:
-                        print(f'removed: {self.confirmed_name}, price of: {item["price"]}. Avg price was: {avg_price}')
+                    if item['price'] / avg_price <= 0.60:
+                        # print(f'removed: {self.confirmed_name}, price of: {item["price"]}. Avg price was: {avg_price}')
                         ordered_price.pop(idx)
 
             return ordered_price[0]
