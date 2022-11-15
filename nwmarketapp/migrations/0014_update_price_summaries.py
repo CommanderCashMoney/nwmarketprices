@@ -1,5 +1,7 @@
 from django.conf import settings
-from django.db import migrations, models
+from django.db import migrations, connection
+from django.template.loader import render_to_string
+
 from nwmarketapp.api.views.prices import update_server_prices
 
 
@@ -7,7 +9,9 @@ def update_price_summaries(apps, schema_editor):
     Servers = apps.get_model("nwmarketapp", "Servers")
     all_servers = Servers.objects.all().values("name", "id")
     for obj in all_servers:
-        update_server_prices(server_id=obj["id"])
+        query = render_to_string("queries/get_item_data_full.sql", context={"server_id": obj["id"]})
+        with connection.cursor() as cursor:
+            cursor.execute(query)
 
 def backwards(apps, schema_editor):
     pass
