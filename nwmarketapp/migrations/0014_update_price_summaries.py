@@ -2,9 +2,6 @@ from django.conf import settings
 from django.db import migrations, connection
 from django.template.loader import render_to_string
 
-from nwmarketapp.api.views.prices import update_server_prices
-
-
 def update_price_summaries(apps, schema_editor):
     Servers = apps.get_model("nwmarketapp", "Servers")
     all_servers = Servers.objects.all().values("name", "id")
