@@ -10,7 +10,7 @@ from django.views.decorators.vary import vary_on_cookie
 from nwmarket import settings
 from nwmarket.settings import CACHE_ENABLED
 from nwmarketapp.api.utils import check_version_compatibility
-from nwmarketapp.api.views.prices import get_item_data_v1
+from nwmarketapp.api.views.prices import get_item_data
 from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup
 from nwmarketapp.models import Price
 from django.http import JsonResponse
@@ -249,7 +249,7 @@ class ConfirmedNamesAPI(CreateAPIView):
 def index(request, *args, **kwargs):
     cn_id = request.GET.get("cn_id")
     if cn_id:
-        return get_item_data_v1(request, kwargs.get("server_id", "1"), cn_id)
+        return get_item_data(request, kwargs.get("server_id", "1"), cn_id)
     return render(request, 'index.html', {
         'servers': {server.id: server.name for server in Servers.objects.all()}
     })

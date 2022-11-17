@@ -14,61 +14,10 @@ from ratelimit.decorators import ratelimit
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.db.models import Subquery, OuterRef
-
-
 from nwmarket.settings import CACHE_ENABLED
-from nwmarketapp.api.utils import get_popular_items_dict, get_popular_items_dict_v2, get_price_graph_data, \
-    get_list_by_nameid
-from nwmarketapp.models import Craft, PriceSummary, Run, NWDBLookup, ConfirmedNames, Price, Servers
+from nwmarketapp.api.utils import get_popular_items_dict_v2
+from nwmarketapp.models import Craft, PriceSummary, Run, ConfirmedNames, Price, Servers
 
-
-def get_item_data_v1(request: WSGIRequest, server_id: int, item_id: str) -> JsonResponse:
-    p = perf_counter()
-    empty_response = JsonResponse({
-        "recent_lowest_price": 'N/A',
-        "price_change": 'Not Found',
-        "last_checked": 'Not Found'
-    }, status=200)
-    if not item_id.isnumeric():
-        # nwdb id was passed instead. COnvert this to my ids
-        confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
-        confirmed_names = confirmed_names.values_list('name', 'id', 'nwdb_id')
-        try:
-            item_id = confirmed_names.get(nwdb_id=item_id.lower())[1]
-        except ConfirmedNames.DoesNotExist:
-            return empty_response
-
-    item_data = get_list_by_nameid(item_id, server_id)
-    if item_data is None:
-        return empty_response
-    grouped_hist = item_data["grouped_hist"]
-    item_name = item_data["item_name"]
-    if not grouped_hist:
-        # we didnt find any prices with that name id
-        return empty_response
-
-    price_graph_data, avg_price_graph, num_listings = get_price_graph_data(grouped_hist)
-    # convert to old style
-    price_graph_data = [[price_dict["datetime"], price_dict["price"]] for price_dict in price_graph_data]
-
-    try:
-        nwdb_id = NWDBLookup.objects.get(name=item_data["item_name"])
-        nwdb_id = nwdb_id.item_id
-    except NWDBLookup.DoesNotExist:
-        nwdb_id = ''
-
-    return JsonResponse({
-        "recent_lowest_price": item_data["recent_lowest_price"],
-        "last_checked": item_data["recent_price_time"],
-        "price_graph_data": price_graph_data,
-        "price_change": item_data["price_change_text"],
-        "avg_graph_data": avg_price_graph,
-        "detail_view": item_data["lowest_10_raw"],
-        'item_name': item_name,
-        'num_listings': num_listings,
-        'nwdb_id': nwdb_id,
-        'calculation_time': perf_counter() - p
-    }, status=200)
 
 def createCraftObject(data):
     res = []
@@ -84,7 +33,16 @@ def createCraftObject(data):
     return res
 
 @cache_page(60 * 10)
-def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonResponse:
+def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse:
+
+    if not item_id.isnumeric():
+        # nwdb id was passed instead. COnvert this to my ids
+        confirmed_names = ConfirmedNames.objects.all().exclude(name__contains='"')
+        confirmed_names = confirmed_names.values_list('name', 'id', 'nwdb_id')
+        try:
+            item_id = confirmed_names.get(nwdb_id=item_id.lower())[1]
+        except ConfirmedNames.DoesNotExist:
+            return JsonResponse({"status": "not found"}, status=404)
     try:
         ps = PriceSummary.objects.get(server_id=server_id, confirmed_name_id=item_id)
         crafts = createCraftObject(Craft.objects.filter(item_id=item_id))
@@ -95,29 +53,44 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id: int) -> JsonRes
             craftCost = craftCost + craft["total"]
     except (PriceSummary.DoesNotExist, Craft.DoesNotExist):
         return JsonResponse({"status": "not found"}, status=404)
-    return JsonResponse(
-        {
-            "item_name": ps.confirmed_name.name,
-            "item_id": ps.confirmed_name.id,
-            "price_datetime": ps.recent_price_time,
-            "graph_data": ps.ordered_graph_data[-15:],
+    cn_id = request.GET.get("cn_id")
+    # Single item request from /0/[server_id]/?cn_id=[item_id]
+    # This is used by some of the price overlay tools
+    if cn_id:
+        json_data = {
+            "recent_lowest_price": ps.recent_lowest_price['price'],
+            "last_checked": isoparse(ps.recent_lowest_price['datetime']),
+            "price_graph_data": ps.ordered_graph_data[-15:],
+            "price_change": ps.price_change,
             "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
-            "lowest_price": render_to_string("snippets/lowest-price.html", {
-                "recent_lowest_price": ps.recent_lowest_price['price'],
-                "components": crafts,
-                "craftCost": str(round(craftCost, 2)),
-                "last_checked": isoparse(ps.recent_lowest_price['datetime']),
-                "price_change": ps.price_change,
-                "price_change_date": ps.price_change_date,
+            'item_name': ps.confirmed_name.name,
+            'nwdb_id': ps.confirmed_name.nwdb_id
+        }
+    else:
+        json_data = {
+                "item_name": ps.confirmed_name.name,
+                "item_id": ps.confirmed_name.id,
+                "price_datetime": ps.recent_price_time,
+                "graph_data": ps.ordered_graph_data[-15:],
                 "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
-                'item_name': ps.confirmed_name.name,
-                'nwdb_id': ps.confirmed_name.nwdb_id
-            })
-        }, safe=False)
+                "lowest_price": render_to_string("snippets/lowest-price.html", {
+                    "recent_lowest_price": ps.recent_lowest_price['price'],
+                    "components": crafts,
+                    "craftCost": str(round(craftCost, 2)),
+                    "last_checked": isoparse(ps.recent_lowest_price['datetime']),
+                    "price_change": ps.price_change,
+                    "price_change_date": ps.price_change_date,
+                    "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
+                    'item_name': ps.confirmed_name.name,
+                    'nwdb_id': ps.confirmed_name.nwdb_id
+                })}
+
+    return JsonResponse(json_data, safe=False)
+
 
 
 @cache_page(60 * 10)
-def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
+def initial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
     p = perf_counter()
     try:
         last_run = Run.objects.filter(server_id=server_id, approved=True).latest("id")
@@ -160,6 +133,7 @@ def intial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
 @ratelimit(key='ip', rate='1/s', block=True)
 @cache_page(60 * 10)
 def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
+    p = perf_counter()
     last_run = Run.objects.filter(server_id=server_id, approved=True).exclude(username="january").latest('id').start_date
     with connection.cursor() as cursor:
         query = f"""
@@ -172,7 +146,7 @@ def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
             where p.timestamp >= '{last_run}'
             and server_id = {server_id}
             and p.approved = true
-        ) rs WHERE Rank <= 5
+        ) rs WHERE Rank <= 10
         group by rs.name
         order by rs.name;
         """
@@ -188,13 +162,86 @@ def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
             "LastUpdated": row[4],
         } for row in data
     ]
-
+    print('v1:', perf_counter() - p)
     return FileResponse(
         json.dumps(items, default=str),
         as_attachment=True,
         content_type='application/json',
         filename='nwmarketprices.json'
     )
+
+
+# def latest_pricesv2(request: WSGIRequest, server_id: int) -> FileResponse:
+#     p = perf_counter()
+#     query = render_to_string("queries/get_server_latest_prices.sql", context={"server_id": server_id})
+#     with connection.cursor() as cursor:
+#         cursor.execute(query)
+#         data = cursor.fetchall()
+#     items = [
+#         {
+#             "ItemId": row[0],
+#             "top10": row[1],
+#         } for row in data
+#     ]
+#     print('v2:',perf_counter() - p)
+#     return FileResponse(
+#         json.dumps(items, default=str),
+#         as_attachment=True,
+#         content_type='application/json',
+#         filename='nwmarketprices.json'
+#     )
+# def latest_pricesv3(request: WSGIRequest, server_id: int) -> FileResponse:
+#     p = perf_counter()
+#
+#     try:
+#         ps = PriceSummary.objects.filter(server_id=server_id)
+#         ps_values = list(ps.values_list('confirmed_name_id', 'lowest_prices').order_by('confirmed_name_id'))
+#
+#     except (PriceSummary.DoesNotExist):
+#         json_data = {'status': 'not found'}
+#         return FileResponse(
+#             json.dumps(json_data, default=str),
+#             as_attachment=True,
+#             content_type='application/json',
+#             filename='nwmarketprices.json'
+#         )
+    # json_data = {
+    #     "item_name": ps.confirmed_name.name,
+    #     "item_id": ps.confirmed_name.id,
+    #     "price_datetime": ps.recent_price_time,
+    #     "graph_data": ps.ordered_graph_data[-15:],
+    #     "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
+    #
+    #     "recent_lowest_price": ps.recent_lowest_price['price'],
+    #
+    #     "last_checked": isoparse(ps.recent_lowest_price['datetime']),
+    #     "price_change": ps.price_change,
+    #     "price_change_date": ps.price_change_date,
+    #     'nwdb_id': ps.confirmed_name.nwdb_id
+    #     }
+    # for item in ps_values:
+    #     lowest10_prices = item[1]
+    #     lowest10_prices = item[0][1]
+    #     if lowest10_prices["price"] < 30:
+    #         avg_price = sum(p['price'] for p in item[1]) / len(item[1])
+    #         avg_qty = sum(a['avail'] for a in item[1])) / len(item[1])
+    #
+    #         for idx, item in reversed(list(enumerate(ordered_price))):
+    #             if item['avail'] / avg_qty <= 0.05:
+    #                 if item['price'] / avg_price <= 0.60:
+    #                     # print(f'removed: {self.confirmed_name}, price of: {item["price"]}. Avg price was: {avg_price}')
+    #                     ordered_price.pop(idx)
+    #
+    #         for lp in item[1]:
+    #             print(lp)
+    # print('v3:', perf_counter() - p)
+    # return FileResponse(
+    #     json.dumps(ps_values[0], default=str),
+    #     as_attachment=True,
+    #     content_type='application/json',
+    #     filename='nwmarketprices.json'
+    # )
+
 
 @api_view(['GET'])
 @ratelimit(key='ip', rate='1/m', block=True)
