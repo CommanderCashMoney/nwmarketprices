@@ -253,7 +253,7 @@ def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
         return JsonResponse({"status": "forbidden"}, status=status.HTTP_403_FORBIDDEN)
     query = render_to_string("queries/get_item_data_full.sql", context={"server_id": server_id})
     with connection.cursor() as cursor:
-        print(query)
+        # print(query)
         cursor.execute(query)
 
     return JsonResponse({"status": "ok", "calc_time": perf_counter() - p}, status=status.HTTP_201_CREATED)
