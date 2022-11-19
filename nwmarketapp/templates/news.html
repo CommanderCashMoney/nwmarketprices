@@ -19,15 +19,17 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="{% static 'nwmarketapp/popper.min.js' %}"></script>
     <script src="{% static 'nwmarketapp/utils.js' %}"></script>
+    <script src="{% static 'nwmarketapp/bulma-accordion.min.js' %}"></script>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
     <link rel="stylesheet" href="{% static 'nwmarketapp/bulma.css' %}">
+    <link rel="stylesheet" href="{% static 'nwmarketapp/bulma-accordion.min.css' %}">
     <link rel="stylesheet" href="{% static 'nwmarketapp/styles.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/placeholder-loading/dist/css/placeholder-loading.min.css">
     {% block additional_includes %}{% endblock %}
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WW3EJQVND0"></script>
-
+    <script type="text/javascript" src="/node_modules/bulma-accordion/dist/js/bulma-accordion.min.js"></script>
 
 <script data-cfasync="false">window.nitroAds=window.nitroAds||{createAd:function(){return new Promise(e=>{window.nitroAds.queue.push(["createAd",arguments,e])})},addUserToken:function(){window.nitroAds.queue.push(["addUserToken",arguments])},queue:[]};</script>
 <script data-cfasync="false" async src="https://s.nitropay.com/ads-1247.js"></script>
@@ -79,7 +81,7 @@ window['nitroAds'].createAd('left-rail1', {
 
    <div class="columns mt-1-desktop mb-0">
         <div class="column is-two-fifths mx-0 p-1">
-            <div class="container box has-text-centered my-auto full-height white-border" id="lowest-price-data">
+            <div class="container box has-text-centered my-auto full-height white-border">
                 <span class="popular-item-title">Recent scans</span>
                 <hr class="solid divider">
 
@@ -152,6 +154,30 @@ window['nitroAds'].createAd('left-rail1', {
             </div>
         </div>
     </div>
+    <div class="columns mt-1-desktop mb-0">
+        <div class="column is-full mx-0 p-1">
+            <div class="container box my-auto full-height white-border">
+                <span class="popular-item-title">Recent News from New World</span>
+                <hr class="solid divider">
+                   <section class="accordions">
+                      {% for entry in news_entries %}
+                          <article class="accordion">
+                            <div class="accordion-header toggle">
+                              <p>{{ entry.title }}</p>
+
+                            </div>
+                            <div class="accordion-body">
+                              <div class="accordion-content news_li">
+                                  {{ entry.description | safe}}
+                              </div>
+                            </div>
+                          </article>
+                       {% endfor %}
+                    </section>
+
+            </div>
+        </div>
+    </div>
 
 </div>
 
@@ -189,9 +215,10 @@ window['nitroAds'].createAd('video1', {
 });
 </script>
 </body>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-
+    const accordions = bulmaAccordion.attach();
   // Get all "navbar-burger" elements
   const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
 

@@ -23,8 +23,11 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView
 )
 
+from django.contrib.sitemaps.views import sitemap
+from nwmarketapp.sitemap import ServersSitemap
 from nwmarketapp.views import MyTokenObtainPairView
 from nwmarketapp.views import PricesUploadAPI, NameCleanupAPI, ConfirmedNamesAPI
+
 
 urlpatterns = [
     path('', include('nwmarketapp.urls')),
@@ -40,4 +43,6 @@ urlpatterns = [
     path('api/', include('nwmarketapp.api.urls')),
     path('account/', include('allauth.urls')),
     path('account/', include('nwmarketapp.profile.urls')),
+    path('sitemap.xml', sitemap, {'sitemaps': {'servers': ServersSitemap}}, name='django.contrib.sitemaps.views.sitemap')
+
 ]

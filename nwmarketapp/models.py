@@ -53,7 +53,17 @@ class Run(models.Model):
 class Servers(models.Model):
     id = models.IntegerField(db_column='id', primary_key=True)
     name = models.CharField(max_length=50, blank=True, null=True)
-    # last_updated = models.DateTimeField(editable=False, null=True)
+
+
+    @property
+    def last_updated(self) -> datetime:
+        last_run = Run.objects.filter(server_id=self.id).latest('start_date')
+        last_run_start_date = last_run.start_date
+        return last_run_start_date
+
+
+    def get_absolute_url(self):
+        return "/%i/" % self.id
 
     class Meta:
         db_table = 'servers'

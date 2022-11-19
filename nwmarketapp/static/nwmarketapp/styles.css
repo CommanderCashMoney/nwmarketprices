@@ -189,7 +189,13 @@ html {
 .hidden {
     display: none!important;
 }
-
+.news_li li{
+    margin-left: 50px;
+    list-style: disc;
+}
+.accordions .accordion .accordion-header {
+    background-color: #36363f;
+}
 .ph-item {
     background-color: #454A51!important;
     border-color: #454A51!important;

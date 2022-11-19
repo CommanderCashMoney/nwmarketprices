@@ -26,7 +26,7 @@ from django.core.exceptions import ValidationError
 from django.template.loader import render_to_string
 from django.db import connection
 from django.db.models import Subquery, OuterRef, Count
-
+import feedparser
 
 
 
@@ -265,8 +265,8 @@ def news(request):
     most_listed_item = list(Price.objects.values_list('name').annotate(name_count=Count('name')).order_by('-name_count')[:10])
     most_scanned_server = Run.objects.annotate(sn=Subquery(server_names.values('name')[:1]))
     most_scanned_server = list(most_scanned_server.values_list('sn').annotate(name_count=Count('sn')).order_by('-name_count')[:3])
-
-    return render(request, 'news.html', {'recent_scans': recent_scans, 'total_scans': total_scans, 'total_servers': total_servers, 'most_listed_item': most_listed_item, 'most_scanned_server': most_scanned_server})
+    news_feed = feedparser.parse("https://forums.newworld.com/c/official-news/official-news/50.rss")
+    return render(request, 'news.html', {'recent_scans': recent_scans, 'total_scans': total_scans, 'total_servers': total_servers, 'most_listed_item': most_listed_item, 'most_scanned_server': most_scanned_server, 'news_entries': news_feed.entries})
 
 def ads(request):
     response = redirect('https://api.nitropay.com/v1/ads-1247.txt', request)

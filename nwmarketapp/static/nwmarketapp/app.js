@@ -36,6 +36,7 @@ function changeServer(server_id, initialLoad=false){
             document.getElementById(key).innerHTML = value;
         }
     })
+    document.title = 'New World Market Prices - ' + servers[serverId];
 }
 
 const loadItem = (item_id, initialLoad = false) => {
@@ -87,6 +88,7 @@ const init = () => {
         document.getElementById("welcome-banner").classList.remove("hidden");
     }
     document.getElementById("server-name").innerText = servers[serverId];
+    document.title = 'New World Market Prices - ' + servers[serverId];
 }
 
 window.onpopstate = function(e){

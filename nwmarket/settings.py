@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.discord',
     'nwmarketapp.apps.NwmarketappConfig',
     'corsheaders',
+    'django.contrib.sitemaps',
 ]
 
 MIDDLEWARE = [
