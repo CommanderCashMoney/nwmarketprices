@@ -4,8 +4,18 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+{% load static %}
+<meta name="description" content="New World Exchange is a data analytics website for New World's trading data"/>
+      <meta property="og:title" content="New World Market Prices"/>
+      <meta property="og:type" content="website"/>
+      <meta property="og:url" content="https://nwmarketprices.com/"/>
+      <meta property="og:image" content="{% static 'nwmarketapp/android-chrome-512x512.png' %}"/>
+      <meta property="og:image:width" content="512"/>
+      <meta property="og:image:height" content="512"/>
+      <meta property="og:description" content="New World Market prices is a community driven site that displays Trading Post prices"/>
+      <meta property="og:site_name" content="New World Market Prices"/>
      <title>New World Market Prices</title>
-    {% load static %}
+
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'nwmarketapp/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'nwmarketapp/favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'nwmarketapp/favicon-16x16.png' %}">
