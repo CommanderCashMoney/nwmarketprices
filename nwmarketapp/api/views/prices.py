@@ -32,6 +32,7 @@ def createCraftObject(data):
         })
     return res
 
+@ratelimit(key='ip', rate='2/s', block=True)
 @cache_page(60 * 10)
 def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse:
 
@@ -130,7 +131,7 @@ def initial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse
     })
 
 
-@ratelimit(key='ip', rate='1/s', block=True)
+@ratelimit(key='ip', rate='5/m', block=True)
 @cache_page(60 * 10)
 def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
     p = perf_counter()
