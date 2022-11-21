@@ -46,15 +46,16 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse
             return JsonResponse({"status": "Item name not found in database"}, status=404)
     try:
         ps = PriceSummary.objects.get(server_id=server_id, confirmed_name_id=item_id)
+    except (PriceSummary.DoesNotExist):
+        return JsonResponse({"status": "No prices found for this item."}, status=404)
+    try:
         crafts = createCraftObject(Craft.objects.filter(item_id=item_id))
         craftCost = 0.0
         for craft in crafts:
             craft["price"] = sorted(PriceSummary.objects.get(server_id=server_id, confirmed_name_id=craft["id"]).lowest_prices, key=lambda obj: obj["price"])[0]["price"]
             craft["total"] = craft["price"] * craft["quantity"]
             craftCost = craftCost + craft["total"]
-    except (PriceSummary.DoesNotExist):
-        return JsonResponse({"status": "No prices found for this item."}, status=404)
-    except (Craft.DoesNotExist):
+    except (Craft.DoesNotExist, PriceSummary.DoesNotExist):
         crafts = None
         craftCost = 0.0
     cn_id = request.GET.get("cn_id")
