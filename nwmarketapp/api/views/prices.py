@@ -43,7 +43,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse
         try:
             item_id = confirmed_names.get(nwdb_id=item_id.lower())[1]
         except ConfirmedNames.DoesNotExist:
-            return JsonResponse({"status": "not found"}, status=404)
+            return JsonResponse({"status": "Item name not found in database"}, status=404)
     try:
         ps = PriceSummary.objects.get(server_id=server_id, confirmed_name_id=item_id)
         crafts = createCraftObject(Craft.objects.filter(item_id=item_id))
@@ -52,8 +52,11 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse
             craft["price"] = sorted(PriceSummary.objects.get(server_id=server_id, confirmed_name_id=craft["id"]).lowest_prices, key=lambda obj: obj["price"])[0]["price"]
             craft["total"] = craft["price"] * craft["quantity"]
             craftCost = craftCost + craft["total"]
-    except (PriceSummary.DoesNotExist, Craft.DoesNotExist):
-        return JsonResponse({"status": "not found"}, status=404)
+    except (PriceSummary.DoesNotExist):
+        return JsonResponse({"status": "No prices found for this item."}, status=404)
+    except (Craft.DoesNotExist):
+        crafts = None
+        craftCost = 0.0
     cn_id = request.GET.get("cn_id")
     # Single item request from /0/[server_id]/?cn_id=[item_id]
     # This is used by some of the price overlay tools

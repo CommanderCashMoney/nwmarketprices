@@ -15,7 +15,8 @@ const nwmpRequest = (url, method = "GET", init = null) => {
 }
 
 let notificationTimeout = null;
-const createNotifiation = (message, level) => {
+const createNotification = (message, level) => {
+
     if(notificationTimeout) {
         clearTimeout(notificationTimeout);
         notificationTimeout = null;
