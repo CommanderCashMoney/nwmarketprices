@@ -27,7 +27,8 @@ from django.template.loader import render_to_string
 from django.db import connection
 from django.db.models import Subquery, OuterRef, Count
 import feedparser
-
+from threading import Thread
+from time import perf_counter
 
 
 
@@ -87,6 +88,7 @@ class PricesUploadAPI(CreateAPIView):
         return version, price_list
 
     def create(self, request, *args, **kwargs):
+        p = perf_counter()
         try:
             version, price_list = self.get_request_data(request.data)
         except ValidationError as e:
@@ -115,6 +117,7 @@ class PricesUploadAPI(CreateAPIView):
             }}
             for price_data in price_list
         ]
+        print('Serializer start: ', perf_counter() - p)
         serializer = self.get_serializer(data=data, many=True)
         if not serializer.is_valid():
             if run:
@@ -124,20 +127,15 @@ class PricesUploadAPI(CreateAPIView):
                 "errors": serializer.errors,
                 "message": "Submitted data could not be serialized"
             }, status=status.HTTP_400_BAD_REQUEST)
+        print('perform_create start: ', perf_counter() - p)
+        t1 = Thread(target=self.add_prices, args=(serializer, data, run,), daemon=True)
+        t1.start()
 
-        self.perform_create(serializer)
-        headers = self.get_success_headers(data)
-
-        query = render_to_string("queries/get_item_data_full.sql", context={"server_id": run.server_id})
-        with connection.cursor() as cursor:
-            cursor.execute(query)
-            print('Prices updated')
-        self.send_discord_notification(run)
-
+        print('sent response after: ', perf_counter() - p)
         return JsonResponse({
             "status": True,
             "message": "Prices Added"
-        }, status=status.HTTP_201_CREATED, headers=headers)
+        }, status=status.HTTP_201_CREATED)
 
     @staticmethod
     def send_discord_notification(run: Run) -> None:
@@ -160,8 +158,23 @@ class PricesUploadAPI(CreateAPIView):
         except Exception:  # noqa
             logging.exception("Discord webhook failed")
 
-        # @staticmethod
-        # def update_servertimestamp() -> None:
+    def add_prices(self, serializer, data, run) -> None:
+        p = perf_counter()
+        self.perform_create(serializer)
+        print('perform_create finish: ', perf_counter() - p)
+        headers = self.get_success_headers(data)
+        print(headers)
+        print('sql start: ', perf_counter() - p)
+        query = render_to_string("queries/get_item_data_full.sql", context={"server_id": run.server_id})
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            print('Prices updated')
+
+        self.send_discord_notification(run)
+        print('SQL finish:', perf_counter() - p)
+
+
+
 
 
 
