@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/', include('nwmarketapp.api.urls')),
     path('account/', include('allauth.urls')),
     path('account/', include('nwmarketapp.profile.urls')),
-    path('sitemap.xml', sitemap, {'sitemaps': {'servers': ServersSitemap}}, name='django.contrib.sitemaps.views.sitemap')
+    path('sitemap.xml', sitemap, {'sitemaps': {'servers': ServersSitemap}}, name='django.contrib.sitemaps.views.sitemap'),
+    path('mw', include('nwmarketapp.marketwatchers.urls')),
 
 ]

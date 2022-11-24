@@ -162,8 +162,6 @@ class PricesUploadAPI(CreateAPIView):
         p = perf_counter()
         self.perform_create(serializer)
         print('perform_create finish: ', perf_counter() - p)
-        headers = self.get_success_headers(data)
-        print(headers)
         print('sql start: ', perf_counter() - p)
         query = render_to_string("queries/get_item_data_full.sql", context={"server_id": run.server_id})
         with connection.cursor() as cursor:
