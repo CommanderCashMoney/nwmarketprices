@@ -139,35 +139,44 @@ def initial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse
 @cache_page(60 * 10)
 def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
     p = perf_counter()
-    last_run = Run.objects.filter(server_id=server_id, approved=True).exclude(username="january").latest('id').start_date
-    with connection.cursor() as cursor:
-        query = f"""
-        SELECT  max(rs.nwdb_id),rs.name, trunc(avg(rs.price)::numeric,2), max(rs.avail), max(rs.timestamp)
-        FROM (
-            SELECT p.price,p.name,p.timestamp,cn.nwdb_id,p.avail, Rank()
-              over (Partition BY p.name_id ORDER BY price asc ) AS Rank
-            FROM prices p
-            join confirmed_names cn on p.name = cn.name
-            where p.timestamp >= '{last_run}'
-            and server_id = {server_id}
-            and p.approved = true
-        ) rs WHERE Rank <= 10
-        group by rs.name
-        order by rs.name;
-        """
-        cursor.execute(query)
-        data = cursor.fetchall()
+    final_prices = []
+    try:
+        ps = PriceSummary.objects.filter(server_id=server_id).select_related('confirmed_name')
+        ps_values = list(ps.values_list('confirmed_name__nwdb_id', 'confirmed_name__name', 'lowest_prices').order_by('confirmed_name__name'))
+
+    except (PriceSummary.DoesNotExist):
+        json_data = {'status': 'not found'}
+        return FileResponse(
+            json.dumps(json_data, default=str),
+            as_attachment=True,
+            content_type='application/json',
+            filename='nwmarketprices.json'
+        )
+
+    for item in ps_values:
+        lowest10_prices = sorted(list(item[2]), key=lambda d: d['price'])
+        if lowest10_prices[0]['price'] < 30:
+            avg_price = sum(p['price'] for p in lowest10_prices) / len(lowest10_prices)
+            avg_qty = sum(p['avail'] for p in lowest10_prices) / len(lowest10_prices)
+            for idx, item_price in reversed(list(enumerate(lowest10_prices))):
+                if item_price['avail'] / avg_qty <= 0.10:
+                    if item_price['price'] / avg_price <= 0.60:
+                        lowest10_prices.pop(idx)
+
+        final_prices.append([item[0], item[1], lowest10_prices[0]])
+
 
     items = [
         {
             "ItemId": row[0],
             "ItemName": row[1],
-            "Price": row[2],
-            "Availability": row[3],
-            "LastUpdated": row[4],
-        } for row in data
+            "Price": f"{row[2]['price']}",
+            "Availability": row[2]['avail'],
+            "LastUpdated": row[2]['datetime'],
+        } for row in final_prices
     ]
-    print('v1:', perf_counter() - p)
+    t = perf_counter() - p
+    print('latest-prices response time:', t)
     return FileResponse(
         json.dumps(items, default=str),
         as_attachment=True,
@@ -175,77 +184,6 @@ def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
         filename='nwmarketprices.json'
     )
 
-
-# def latest_pricesv2(request: WSGIRequest, server_id: int) -> FileResponse:
-#     p = perf_counter()
-#     query = render_to_string("queries/get_server_latest_prices.sql", context={"server_id": server_id})
-#     with connection.cursor() as cursor:
-#         cursor.execute(query)
-#         data = cursor.fetchall()
-#     items = [
-#         {
-#             "ItemId": row[0],
-#             "top10": row[1],
-#         } for row in data
-#     ]
-#     print('v2:',perf_counter() - p)
-#     return FileResponse(
-#         json.dumps(items, default=str),
-#         as_attachment=True,
-#         content_type='application/json',
-#         filename='nwmarketprices.json'
-#     )
-# def latest_pricesv3(request: WSGIRequest, server_id: int) -> FileResponse:
-#     p = perf_counter()
-#
-#     try:
-#         ps = PriceSummary.objects.filter(server_id=server_id)
-#         ps_values = list(ps.values_list('confirmed_name_id', 'lowest_prices').order_by('confirmed_name_id'))
-#
-#     except (PriceSummary.DoesNotExist):
-#         json_data = {'status': 'not found'}
-#         return FileResponse(
-#             json.dumps(json_data, default=str),
-#             as_attachment=True,
-#             content_type='application/json',
-#             filename='nwmarketprices.json'
-#         )
-    # json_data = {
-    #     "item_name": ps.confirmed_name.name,
-    #     "item_id": ps.confirmed_name.id,
-    #     "price_datetime": ps.recent_price_time,
-    #     "graph_data": ps.ordered_graph_data[-15:],
-    #     "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
-    #
-    #     "recent_lowest_price": ps.recent_lowest_price['price'],
-    #
-    #     "last_checked": isoparse(ps.recent_lowest_price['datetime']),
-    #     "price_change": ps.price_change,
-    #     "price_change_date": ps.price_change_date,
-    #     'nwdb_id': ps.confirmed_name.nwdb_id
-    #     }
-    # for item in ps_values:
-    #     lowest10_prices = item[1]
-    #     lowest10_prices = item[0][1]
-    #     if lowest10_prices["price"] < 30:
-    #         avg_price = sum(p['price'] for p in item[1]) / len(item[1])
-    #         avg_qty = sum(a['avail'] for a in item[1])) / len(item[1])
-    #
-    #         for idx, item in reversed(list(enumerate(ordered_price))):
-    #             if item['avail'] / avg_qty <= 0.05:
-    #                 if item['price'] / avg_price <= 0.60:
-    #                     # print(f'removed: {self.confirmed_name}, price of: {item["price"]}. Avg price was: {avg_price}')
-    #                     ordered_price.pop(idx)
-    #
-    #         for lp in item[1]:
-    #             print(lp)
-    # print('v3:', perf_counter() - p)
-    # return FileResponse(
-    #     json.dumps(ps_values[0], default=str),
-    #     as_attachment=True,
-    #     content_type='application/json',
-    #     filename='nwmarketprices.json'
-    # )
 
 
 @api_view(['GET'])
