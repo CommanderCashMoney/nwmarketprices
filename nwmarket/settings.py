@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'nwmarketapp.apps.NwmarketappConfig',
     'corsheaders',
     'django.contrib.sitemaps',
+    'ebhealthcheck.apps.EBHealthCheckConfig',
 ]
 
 MIDDLEWARE = [
