@@ -13,7 +13,6 @@ urlpatterns = [
 
     path('typeahead/', names.typeahead, name='typeahead'),
 
-    # path('latest-prices2/<int:server_id>/', prices.latest_pricesv3, name='latest-pricesv3'),
     path('latest-prices/<int:server_id>/', prices.latest_prices, name='latest-prices'),
     path('price-data/<int:server_id>/<str:item_id>/', prices.get_item_data, name='item-data'),
     path('server-price-data/<int:server_id>/', prices.initial_page_load_data, name="initial-page-load-data"),
