@@ -53,7 +53,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse
         craftCost = 0.0
         for craft in crafts:
             craft["price"] = sorted(PriceSummary.objects.get(server_id=server_id, confirmed_name_id=craft["id"]).lowest_prices, key=lambda obj: obj["price"])[0]["price"]
-            craft["total"] = craft["price"] * craft["quantity"]
+            craft["total"] = round(craft["price"] * craft["quantity"], 2)
             craftCost = craftCost + craft["total"]
     except (Craft.DoesNotExist, PriceSummary.DoesNotExist):
         crafts = None
