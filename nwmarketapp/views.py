@@ -194,6 +194,7 @@ def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> 
         price_accuracy=run_info.get("price_accuracy"),
         name_accuracy=run_info.get("name_accuracy"),
         section_name=run_info.get("section_name"),
+        session_id=run_info.get("session_id")
     )
     run.save()
     return run

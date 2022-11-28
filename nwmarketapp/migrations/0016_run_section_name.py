@@ -13,6 +13,15 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='run',
             name='section_name',
-            field=models.CharField(editable=False, max_length=100, null=True),
+            field=models.CharField(editable=False, max_length=100, null=True, default='Raw Resources'),
         ),
+        migrations.AddField(
+            model_name='run',
+            name='session_id',
+            field=models.TextField(editable=False, null=True),
+        ),
+
     ]
+
+
+
