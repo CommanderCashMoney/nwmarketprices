@@ -117,7 +117,7 @@ class PricesUploadAPI(CreateAPIView):
             }}
             for price_data in price_list
         ]
-        print('Serializer start: ', perf_counter() - p)
+
         serializer = self.get_serializer(data=data, many=True)
         if not serializer.is_valid():
             if run:
@@ -127,11 +127,11 @@ class PricesUploadAPI(CreateAPIView):
                 "errors": serializer.errors,
                 "message": "Submitted data could not be serialized"
             }, status=status.HTTP_400_BAD_REQUEST)
-        print('perform_create start: ', perf_counter() - p)
+
         t1 = Thread(target=self.add_prices, args=(serializer, data, run,), daemon=True)
         t1.start()
 
-        print('sent response after: ', perf_counter() - p)
+        print('price upload sent response after: ', perf_counter() - p)
         return JsonResponse({
             "status": True,
             "message": "Prices Added"
@@ -161,20 +161,11 @@ class PricesUploadAPI(CreateAPIView):
     def add_prices(self, serializer, data, run) -> None:
         p = perf_counter()
         self.perform_create(serializer)
-        print('perform_create finish: ', perf_counter() - p)
-        headers = self.get_success_headers(data)
-        print(headers)
-        print('sql start: ', perf_counter() - p)
         query = render_to_string("queries/get_item_data_full.sql", context={"server_id": run.server_id})
         with connection.cursor() as cursor:
             cursor.execute(query)
-            print('Prices updated')
-
+        print('price upload sql finished: ', perf_counter() - p)
         self.send_discord_notification(run)
-        print('SQL finish:', perf_counter() - p)
-
-
-
 
 
 
@@ -265,7 +256,7 @@ def index(request, *args, **kwargs):
     if cn_id:
         return get_item_data(request, kwargs.get("server_id", "1"), cn_id)
     return render(request, 'index.html', {
-        'servers': {server.id: server.name for server in Servers.objects.all()}
+        'servers': {server.id: server.name for server in Servers.objects.all().order_by("name")}
     })
 
 @cache_page(60 * 20)
