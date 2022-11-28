@@ -159,6 +159,8 @@ def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
             avg_price = sum(p['price'] for p in lowest10_prices) / len(lowest10_prices)
             avg_qty = sum(p['avail'] for p in lowest10_prices) / len(lowest10_prices)
             for idx, item_price in reversed(list(enumerate(lowest10_prices))):
+                if item_price['avail'] < 1:
+                    item_price['avail'] = 1
                 if item_price['avail'] / avg_qty <= 0.10:
                     if item_price['price'] / avg_price <= 0.60:
                         lowest10_prices.pop(idx)

@@ -149,9 +149,11 @@ class PriceSummary(models.Model):
                 item.update({"avg_price": avg_price})
                 item.update({"avg_qty": avg_qty})
                 if item['lowest_price'] <= 30:
+                    if item['single_price_avail'] < 1:
+                        item['single_price_avail'] = 1
                     if item['single_price_avail'] / avg_qty <= 0.10:
                         if item['lowest_price'] / avg_price <= 0.60:
-                            # print(f'removed: {self.confirmed_name}, price of: {item["lowest_price"]}. Avg price was: {avg_price}')
+
                             g.pop(idx)
 
             lowest_price_graph.append(g[0])
@@ -186,9 +188,10 @@ class PriceSummary(models.Model):
             avg_qty = sum(p['avail'] for p in ordered_price) / len(ordered_price)
 
             for idx, item in reversed(list(enumerate(ordered_price))):
+                if item['avail'] < 1:
+                    item['avail'] = 1
                 if item['avail'] / avg_qty <= 0.10:
                     if item['price'] / avg_price <= 0.60:
-                        # print(f'removed: {self.confirmed_name}, price of: {item["price"]}. Avg price was: {avg_price}')
                         ordered_price.pop(idx)
 
             return ordered_price[0]
