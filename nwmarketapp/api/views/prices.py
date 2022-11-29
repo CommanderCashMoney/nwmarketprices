@@ -97,18 +97,13 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse
 @cache_page(60 * 10)
 def initial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
     p = perf_counter()
-    try:
-        last_run = Run.objects.filter(server_id=server_id, approved=True).latest("id")
-        most_listed_item_top10 = Price.objects.filter(
-            run=last_run,
-            server_id=server_id
-        ).values_list(
-            'name',
-        ).annotate(
-            count=Count('price', distinct=True)
-        ).values_list("name", "count").order_by("-count")[:9]
-    except Run.DoesNotExist:
-        most_listed_item_top10 = []
+    most_listed_item_top10 = []
+    with connection.cursor() as cursor:
+        cursor.callproc('most_comp_top9', [server_id])
+        for row in cursor.fetchall():
+            most_listed_item_top10.append((row[0], row[1]))
+
+
 
 
     popular_items = get_popular_items_dict_v2(server_id)

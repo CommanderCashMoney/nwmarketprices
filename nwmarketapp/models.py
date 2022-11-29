@@ -39,7 +39,8 @@ class Run(models.Model):
     resolution = models.CharField(max_length=50, editable=False, default="1440p")
     price_accuracy = models.DecimalField(max_length=50, max_digits=4, decimal_places=1, null=True, editable=False)
     name_accuracy = models.DecimalField(max_length=50, max_digits=4, decimal_places=1, null=True, editable=False)
-    # section_name = models.CharField(max_length=100, editable=False, null=True)
+    section_name = models.CharField(max_length=100, editable=False, null=True, default='Raw Resources')
+    session_id = models.TextField(null=True, editable=False)
 
     class Meta:
         db_table = 'runs'
