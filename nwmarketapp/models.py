@@ -104,13 +104,20 @@ class NameMap(models.Model):
 class Price(models.Model):
     run = models.ForeignKey(Run, on_delete=models.CASCADE)
     price = models.FloatField()
-    avail = models.IntegerField()
+    avail = models.IntegerField(null=True)
     name = models.CharField(max_length=150)
     timestamp = models.DateTimeField()
     name_id = models.IntegerField(db_index=True)
     server_id = models.IntegerField()
     username = models.CharField(max_length=50)
     approved = models.BooleanField()
+    qty = models.IntegerField(null=True)
+    sold = models.IntegerField(null=True)
+    gs = models.IntegerField(null=True)
+    status = models.CharField(max_length=50, null=True)
+    completion_time = models.CharField(max_length=50, null=True)
+    gem = models.CharField(max_length=250, null=True)
+    perk = models.CharField(max_length=250, null=True)
 
     class Meta:
         db_table = 'prices'

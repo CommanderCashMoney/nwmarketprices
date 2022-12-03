@@ -69,6 +69,13 @@ class PriceSerializer(serializers.ModelSerializer):
             'approved',
             'username',
             'run',
+            'qty',
+            'sold',
+            'gs',
+            'status',
+            'completion_time',
+            'gem',
+            'perk',
         ]
 
 
@@ -162,11 +169,13 @@ class PricesUploadAPI(CreateAPIView):
     def add_prices(self, serializer, data, run) -> None:
         p = perf_counter()
         self.perform_create(serializer)
-        query = render_to_string("queries/get_item_data_full.sql", context={"server_id": run.server_id})
-        with connection.cursor() as cursor:
-            cursor.execute(query)
+        if run.section_name != 'Sold Items':
+            query = render_to_string("queries/get_item_data_full.sql", context={"server_id": run.server_id})
+            with connection.cursor() as cursor:
+                cursor.execute(query)
+            self.send_discord_notification(run)
         print('price upload sql finished: ', perf_counter() - p)
-        self.send_discord_notification(run)
+
 
 
 
