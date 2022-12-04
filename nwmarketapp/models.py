@@ -135,6 +135,28 @@ class Craft(models.Model):
         db_table = 'crafts'
 
 
+class SoldItems(models.Model):
+    server_id = models.IntegerField()
+    username = models.CharField(max_length=50, db_index=True)
+    timestamp = models.DateTimeField()
+    name = models.CharField(max_length=150)
+    name_id = models.IntegerField()
+    run = models.IntegerField()
+    price = models.FloatField()
+    qty = models.IntegerField(null=True)
+    sold = models.IntegerField(null=True)
+    gs = models.IntegerField(null=True)
+    status = models.CharField(max_length=50, null=True)
+    completion_time = models.CharField(max_length=50, null=True)
+    gem = models.CharField(max_length=250, null=True)
+    perk = models.CharField(max_length=250, null=True)
+    approved = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'sold_items'
+        unique_together = (("server_id", "name_id", "price", "qty", "sold", "completion_time", "status", "gs", "gem", "perk", "username"),)
+
+
 class PriceSummary(models.Model):
     server_id = models.IntegerField(db_index=True)
     confirmed_name = models.ForeignKey(ConfirmedNames, on_delete=models.CASCADE)

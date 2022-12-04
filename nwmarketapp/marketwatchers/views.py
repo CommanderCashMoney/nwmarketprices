@@ -1,17 +1,14 @@
-import json
-
-from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.password_validation import get_default_password_validators, validate_password
-from django.core.exceptions import ValidationError
-from django.core.handlers.wsgi import WSGIRequest
-from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render
+from nwmarketapp.models import SoldItems, Servers
+from django.db.models import Subquery, OuterRef
 
 
 @login_required(login_url="/", redirect_field_name="")
 def marketwatchers(request):
+    server_name = Servers.objects.filter(id=OuterRef('server_id')).order_by('-id')
+    sold_items = SoldItems.objects.filter(username=request.user.username).distinct('name', 'price', 'gs', 'qty', 'sold', 'status')
+    column_names = ['Name', 'Price', 'Gear Score', 'Qty', 'Sold', 'Status', 'Completion Time', 'Scanned', 'Server']
+    sold_items = list(sold_items.values_list('name', 'price', 'gs', 'qty', 'sold', 'status', 'completion_time', 'timestamp').annotate(rundate=Subquery(server_name.values('name')[:1])))
 
-
-
-    return render(request, "marketwatchers/index.html")
+    return render(request, "marketwatchers/index.html", {'sold_items': sold_items, 'sold_item_columns': column_names})
