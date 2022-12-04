@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block nav %}
+    {% with is_login_nav=True %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+{% block additional_includes %}
+     <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+     <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bulma.min.js"></script>
+{% endblock %}
+{% load static %}
+{% block content %}
+    <script>
+        $(document).ready(function() {
+            $('#sold_items').DataTable();
+        })
+    </script>
+<div class="container py-0 px-2">
+       <div class="columns mt-1-desktop mb-0">
+        <div class="column is-full mx-0 p-1">
+            <div class="container box has-text-centered my-auto full-height white-border">
+                <span class="popular-item-title">Sold Items tracking - beta</span>
+                <hr class="solid divider">
+                <table id="sold_items" class="table is-striped" style="width:100%">
+                    <thead>
+                        <tr>
+                             {% if sold_item_columns %}
+                                {% for col in sold_item_columns %}
+                                    <th> {{ col }}</th>
+                                 {% endfor %}
+                            {% endif %}
+
+                        </tr>
+
+                    </thead>
+                    <tbody>
+                     {% if sold_items %}
+                         {% for row in sold_items%}
+                    <tr>
+                        {% for item in row %}
+                            <td>{{ item }}</td>
+                        {% endfor %}
+                    </tr>
+                         {% endfor %}
+                    {% endif %}
+
+                    </tbody>
+                </table>
+
+
+
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

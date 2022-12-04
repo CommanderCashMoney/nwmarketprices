@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.vary import vary_on_cookie
 
 from nwmarket import settings
-from nwmarket.settings import CACHE_ENABLED
+from psycopg2.extras import execute_values
 from nwmarketapp.api.utils import check_version_compatibility
 from nwmarketapp.api.views.prices import get_item_data
 from nwmarketapp.models import ConfirmedNames, Run, Servers, NameCleanup
@@ -119,7 +119,7 @@ class PricesUploadAPI(CreateAPIView):
         ]
 
         serializer = self.get_serializer(data=data, many=True)
-        if not serializer.is_valid():
+        if not serializer.is_valid() and run.section_name != 'Sold Items':
             if run:
                 run.delete()
             return JsonResponse({
@@ -161,12 +161,22 @@ class PricesUploadAPI(CreateAPIView):
 
     def add_prices(self, serializer, data, run) -> None:
         p = perf_counter()
-        self.perform_create(serializer)
-        query = render_to_string("queries/get_item_data_full.sql", context={"server_id": run.server_id})
-        with connection.cursor() as cursor:
-            cursor.execute(query)
+
+        if run.section_name == 'Sold Items':
+            columns = data[0].keys()
+            query = "INSERT INTO sold_items ({}) VALUES %s".format(','.join(columns))
+            values = [[value for value in row.values()] for row in data]
+            with connection.cursor() as cursor:
+                execute_values(cursor, query, values)
+
+        else:
+            self.perform_create(serializer)
+            query = render_to_string("queries/get_item_data_full.sql", context={"server_id": run.server_id})
+            with connection.cursor() as cursor:
+                cursor.execute(query)
+            self.send_discord_notification(run)
         print('price upload sql finished: ', perf_counter() - p)
-        self.send_discord_notification(run)
+
 
 
 

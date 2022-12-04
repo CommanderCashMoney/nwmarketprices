@@ -19,6 +19,9 @@
                     <a class="navbar-item server settings-item" href="/account/profile/">
                         Settings
                     </a>
+                     <a class="navbar-item server settings-item" href="/mw/">
+                        Sold Item tracking - beta
+                    </a>
                     <form method="post" action="{% url 'account_logout' %}" class="pb-0">
                         {% csrf_token %}
                         <button class="button is-primary login" href="/account/logout/">
