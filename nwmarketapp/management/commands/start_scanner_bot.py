@@ -126,3 +126,9 @@ class ServerSelectView(discord.ui.View):
         server_select = ServerDropdown(region_selected)
         self.add_item(server_select)
 
+# to run on ssh into eb aws
+# $ eb ssh
+# $ sudo su -
+# $ export $(cat /opt/elasticbeanstalk/deployment/env | xargs)
+# $ source /var/app/venv/*/bin/activate
+# $ python3 /var/app/current/manage.py start_scanner_bot
