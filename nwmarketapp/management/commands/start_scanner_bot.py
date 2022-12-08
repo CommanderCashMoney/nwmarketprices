@@ -1,3 +1,5 @@
+from django.core.management.base import BaseCommand
+from django.conf import settings
 import discord
 import os
 from dotenv import load_dotenv
@@ -7,6 +9,23 @@ load_dotenv()
 bot = discord.Bot()
 conn = psycopg2.connect(f"dbname={os.getenv('DB_NAME')} user={os.getenv('RDS_USERNAME')} password={os.getenv('RDS_PASSWORD')} host={os.getenv('RDS_HOSTNAME')}")
 curr = conn.cursor()
+
+
+class Command(BaseCommand):
+    help = "Run a discord bot"
+
+    def handle(self, *args, **options):
+        print('starting bot')
+
+        @bot.slash_command()
+        async def scanner_signup(ctx):
+            await ctx.send("", view=RegionSelectView())
+
+        @bot.event
+        async def on_ready():
+            print(f"{bot.user} is ready and online!")
+
+        bot.run(os.getenv('DISCORDBOT_TOKEN'))
 
 
 class RegionSelectView(discord.ui.View):
@@ -22,6 +41,7 @@ class RegionSelectView(discord.ui.View):
     if rows:
         for row in rows:
             server_options.append(discord.SelectOption(label=row[0]))
+
     @discord.ui.select(
 
         placeholder="Select your region",
@@ -30,8 +50,8 @@ class RegionSelectView(discord.ui.View):
         options=server_options
 
     )
-
-    async def select_callback(self, select, interaction): # the function called when the user is done selecting options
+    async def select_callback(self, select,
+                              interaction):  # the function called when the user is done selecting options
 
         region_select = select.values[0]
         await interaction.response.send_message("", view=ServerSelectView(region_select), ephemeral=True)
@@ -50,7 +70,6 @@ class ServerDropdown(discord.ui.Select):
                 server_options.append(discord.SelectOption(label=row[0], value=str(row[1])))
         self.server_data = rows
         self.options = server_options[:25]
-
 
     async def callback(self, interaction):
         respond_message = 'Something went wrong..'
@@ -79,7 +98,8 @@ class ServerDropdown(discord.ui.Select):
                 server_name = [tup for tup in self.server_data if tup[1] == server_id]
                 server_auth_group_id = server_id + 3  # add +3 here because the auth group ids don't exactly match the server ids
                 server_name = server_name[0][0]
-                value_list = [(user_id, 1, ), (user_id, server_auth_group_id, )]  # adds two record id=1 for scanner user, and another row for the server
+                value_list = [(user_id, 1,), (user_id,
+                                              server_auth_group_id,)]  # adds two record id=1 for scanner user, and another row for the server
                 username = interaction.user.name
                 add_scanner_query = "INSERT INTO auth_user_groups (user_id, group_id) VALUES (%s, %s)"
                 with conn.cursor() as cursor:
@@ -99,8 +119,6 @@ class ServerDropdown(discord.ui.Select):
             await interaction.response.edit_message(view=RegionSelectView())
             await interaction.followup.send(respond_message, ephemeral=True)
 
-
-
 class ServerSelectView(discord.ui.View):
 
     def __init__(self, region_selected) -> None:
@@ -108,14 +126,3 @@ class ServerSelectView(discord.ui.View):
         server_select = ServerDropdown(region_selected)
         self.add_item(server_select)
 
-
-@bot.slash_command()
-async def scanner_signup(ctx):
-    await ctx.send("", view=RegionSelectView())
-
-
-@bot.event
-async def on_ready():
-    print(f"{bot.user} is ready and online!")
-
-bot.run(os.getenv('DISCORDBOT_TOKEN'))
