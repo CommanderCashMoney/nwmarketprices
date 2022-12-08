@@ -21,6 +21,12 @@ class Command(BaseCommand):
         async def scanner_signup(ctx):
             await ctx.send("", view=RegionSelectView())
 
+        @bot.slash_command()
+        async def stop_scanner_bot(ctx):
+            await ctx.respond("Add Scanner bot stopped", ephemeral=True)
+            exit()
+
+
         @bot.event
         async def on_ready():
             print(f"{bot.user} is ready and online!")
