@@ -79,6 +79,7 @@ class ServerDropdown(discord.ui.Select):
 
     async def callback(self, interaction):
         respond_message = 'Something went wrong..'
+        role = interaction.guild.get_role(950235365082533918)  # market watcher role
         userid_query = "SELECT ID FROM auth_user where username=%s"
         with conn.cursor() as cursor:
             cursor.execute(userid_query, (interaction.user.name,))
@@ -96,6 +97,10 @@ class ServerDropdown(discord.ui.Select):
             if group_id:
                 # user already setup as a scanner
                 respond_message = 'You are already set up as a scanner. If you need to switch your server or add a new server please message CashMoney'
+                if role not in interaction.user.roles:
+                    await interaction.user.add_roles(role)
+                await interaction.response.edit_message(view=RegionSelectView())
+                await interaction.followup.send(respond_message, ephemeral=True)
 
             else:
                 # user has done intial steps and is not a scanner yet. Add their roles in the database
@@ -113,11 +118,16 @@ class ServerDropdown(discord.ui.Select):
                         cursor.executemany(add_scanner_query, value_list)
                         conn.commit()
                         respond_message = f'Thanks {username} You have been added as a scanner to {server_name}'
+
                     except Exception as e:
                         print(e)
                         respond_message = f'Something went wrong when adding you. Please message CashMoney'
 
-            await interaction.response.send_message(respond_message, ephemeral=True)
+                if role not in interaction.user.roles:
+                    await interaction.user.add_roles(role)
+
+                await interaction.response.send_message(respond_message, ephemeral=True)
+                await interaction.user.add_roles()
 
         else:
             # user has not setup their password in the wesbite.
