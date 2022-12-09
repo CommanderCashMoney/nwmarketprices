@@ -57,29 +57,7 @@
 <body>
 <div id="notifications"></div>
 <div class="container left-container" id="left-rail1"></div>
-<script>
-window['nitroAds'].createAd('left-rail1', {
-  "refreshLimit": 10,
-  "refreshTime": 30,
-  "format": "rail",
-  "rail": "left",
-  "railOffsetTop": 0,
-  "railOffsetBottom": 0,
-  "railCollisionWhitelist": ['*'],
-  "sizes": [
-    [
-      "160",
-      "600"
-    ]
-  ],
-  "report": {
-    "enabled": true,
-    "icon": true,
-    "wording": "Report Ad",
-    "position": "bottom-right"
-  }
-});
-</script>
+
 <div class="container mt-4-desktop">
 
     <div class="container">
@@ -93,37 +71,7 @@ window['nitroAds'].createAd('left-rail1', {
 
 </div>
 <div class="container right-container"><div id="right-rail1"></div><div id="video1"></div></div>
-<script>
-window['nitroAds'].createAd('right-rail1', {
-  "refreshLimit": 10,
-  "refreshTime": 30,
-  "format": "rail",
-  "rail": "right",
-  "railOffsetTop": 0,
-  "railOffsetBottom": 0,
-  "railCollisionWhitelist": ['*'],
-  "sizes": [
-    [
-      "300",
-      "600"
-    ]
-  ],
-  "report": {
-    "enabled": true,
-    "icon": true,
-    "wording": "Report Ad",
-    "position": "bottom-right"
-  }
-});
-</script>
 
-
-<script>
-window['nitroAds'].createAd('video1', {
-  "format": "video-nc",
-  "video": {}
-});
-</script>
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -149,8 +97,55 @@ window['nitroAds'].createAd('video1', {
       });
     });
   }
+  window['nitroAds'].createAd('left-rail1', {
+  "refreshLimit": 10,
+  "refreshTime": 30,
+  "format": "rail",
+  "rail": "left",
+  "railOffsetTop": 0,
+  "railOffsetBottom": 0,
+  "railCollisionWhitelist": ['*'],
+  "sizes": [
+    [
+      "160",
+      "600"
+    ]
+  ],
+  "report": {
+    "enabled": true,
+    "icon": true,
+    "wording": "Report Ad",
+    "position": "bottom-right"
+  }
+    });
+  window['nitroAds'].createAd('right-rail1', {
+  "refreshLimit": 10,
+  "refreshTime": 30,
+  "format": "rail",
+  "rail": "right",
+  "railOffsetTop": 0,
+  "railOffsetBottom": 0,
+  "railCollisionWhitelist": ['*'],
+  "sizes": [
+    [
+      "300",
+      "600"
+    ]
+  ],
+  "report": {
+    "enabled": true,
+    "icon": true,
+    "wording": "Report Ad",
+    "position": "bottom-right"
+  }
+});
 
 });
+    window['nitroAds'].createAd('video1', {
+  "format": "video-nc",
+  "video": {}
+});
 </script>
+
 
 </html>
