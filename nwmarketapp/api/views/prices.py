@@ -32,7 +32,7 @@ def createCraftObject(data):
         })
     return res
 
-@ratelimit(key='ip', rate='2/s', block=True)
+@ratelimit(key='ip', rate='4/s', block=True)
 @cache_page(60 * 10)
 def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse:
 
