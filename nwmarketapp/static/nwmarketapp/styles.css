@@ -125,6 +125,12 @@ html {
 .lowest-price-text {
     font-size: 4.3em;
 }
+.highest-buyorder-text {
+    font-size: 0.9em;
+     color: #1d72aa;
+    margin-top: -15px;
+    align-self: center;
+}
 
 .item {
     display:flex;
@@ -307,6 +313,11 @@ html {
     .lowest-price-text {
         font-size: 3.3em;
     }
+     .highest-buyorder-text {
+        font-size: 0.75em;
+         color: #1d72aa;
+         align-self: center;
+    }
 
     .items-column {
         flex-basis: 400px;
@@ -316,6 +327,11 @@ html {
 @media only screen and (max-width: 1024px) {
     .lowest-price-text {
         font-size: 2.8em;
+    }
+       .highest-buyorder-text {
+        font-size: 0.6em;
+         color: #1d72aa;
+           align-self: center;
     }
 }
 @media only screen and (max-width: 1024px) {

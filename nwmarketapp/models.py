@@ -105,13 +105,14 @@ class NameMap(models.Model):
 class Price(models.Model):
     run = models.ForeignKey(Run, on_delete=models.CASCADE)
     price = models.FloatField()
-    avail = models.IntegerField()
+    avail = models.IntegerField(null=True)
     name = models.CharField(max_length=150)
     timestamp = models.DateTimeField()
     name_id = models.IntegerField(db_index=True)
     server_id = models.IntegerField()
     username = models.CharField(max_length=50)
     approved = models.BooleanField()
+    qty = models.IntegerField(null=True)
 
 
     class Meta:
@@ -168,19 +169,23 @@ class PriceSummary(models.Model):
 
             g = sorted(list(group), key=lambda d: d['lowest_price'])
             avg_price = sum(p['lowest_price'] for p in g) / len(g)
-            avg_qty = sum(p['single_price_avail'] for p in g) / len(g)
-
+            avg_avail = sum(p['single_price_avail'] for p in g) / len(g)
+            buy_orders = []
             for idx, item in reversed(list(enumerate(g))):
+                buy_orders.append(item['highest_buy_order'])
                 item.update({"avg_price": avg_price})
-                item.update({"avg_qty": avg_qty})
+                item.update({"avg_avail": avg_avail})
                 if item['lowest_price'] <= 30:
                     if item['single_price_avail'] < 1:
                         item['single_price_avail'] = 1
-                    if item['single_price_avail'] / avg_qty <= 0.10:
+                    if item['single_price_avail'] / avg_avail <= 0.10:
                         if item['lowest_price'] / avg_price <= 0.60:
-
                             g.pop(idx)
 
+            highest_bo = max([i for i in buy_orders if i is not None], default=0)
+            if highest_bo == 0:
+                highest_bo = None
+            g[0]['highest_buy_order'] = highest_bo  # set the highest buy order price before we might have had to pop one for an outlier
             lowest_price_graph.append(g[0])
         price_arr = [p['lowest_price'] for p in lowest_price_graph]
         x = 0.55  # smoothing factor for rolling average
@@ -208,17 +213,21 @@ class PriceSummary(models.Model):
             return None
         ordered_price = self.ordered_price_data
         if ordered_price[0]["price"] < 30:
-
+            buy_orders = []
             avg_price = sum(p['price'] for p in ordered_price) / len(ordered_price)
             avg_qty = sum(p['avail'] for p in ordered_price) / len(ordered_price)
 
             for idx, item in reversed(list(enumerate(ordered_price))):
+                buy_orders.append((item['buy_order_price'], item['qty']))
                 if item['avail'] < 1:
                     item['avail'] = 1
                 if item['avail'] / avg_qty <= 0.10:
                     if item['price'] / avg_price <= 0.60:
                         ordered_price.pop(idx)
 
+            highest_buy_order = max(buy_orders, key=lambda tup: (tup[0]) if (tup[0]) else 0)
+            ordered_price[0]['buy_order_price'] = highest_buy_order[0]  # set the highest buy order price before we might have popped it in the code above when remove lowest price outliers
+            ordered_price[0]['qty'] = highest_buy_order[1]
             return ordered_price[0]
         else:
             return self.ordered_price_data[0]

@@ -39,3 +39,22 @@ where timestamp <= '2022-11-02T00:00:0'
 delete from prices
 where timestamp <= '2022-11-02T00:00:0'
 --
+
+
+---RESET SEQUENCE ID
+SELECT MAX(id) FROM confirmed_names;
+
+-- Then run...
+-- This should be higher than the last result.
+SELECT nextval('confirmed_names_id_seq');
+
+-- If it's not higher... run this set the sequence last to your highest id.
+
+
+BEGIN;
+-- protect against concurrent inserts while you update the counter
+LOCK TABLE confirmed_names IN EXCLUSIVE MODE;
+-- Update the sequence
+SELECT setval('confirmed_names_id_seq', COALESCE((SELECT MAX(id)+1 FROM your_table), 1), false);
+COMMIT;
+END

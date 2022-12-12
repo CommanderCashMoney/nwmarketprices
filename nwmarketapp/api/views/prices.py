@@ -32,8 +32,8 @@ def createCraftObject(data):
         })
     return res
 
-@ratelimit(key='ip', rate='2/s', block=True)
-@cache_page(60 * 10)
+# @ratelimit(key='ip', rate='2/s', block=True)
+# @cache_page(60 * 10)
 def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse:
 
     if not item_id.isnumeric():
@@ -80,6 +80,8 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse
                 "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
                 "lowest_price": render_to_string("snippets/lowest-price.html", {
                     "recent_lowest_price": ps.recent_lowest_price['price'],
+                    "highest_buy_order": ps.recent_lowest_price['buy_order_price'],
+                    "highest_buy_order_qty": ps.recent_lowest_price['qty'],
                     "components": crafts,
                     "craftCost": str(round(craftCost, 2)),
                     "last_checked": isoparse(ps.recent_lowest_price['datetime']),
@@ -94,7 +96,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse
 
 
 
-@cache_page(60 * 10)
+# @cache_page(60 * 10)
 def initial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse:
     p = perf_counter()
     most_listed_item_top10 = []
