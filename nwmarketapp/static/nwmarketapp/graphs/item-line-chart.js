@@ -97,7 +97,7 @@ function create_linegraph(graphData) {
             data: buy_orders,
             yAxis: 0,
             lineWidth: 3,
-            color: 'rgb(49,96,30)',
+            color: 'rgb(76,147,46)',
             marker: {
                 radius: 2,
                 fillColor: "green",
@@ -106,7 +106,7 @@ function create_linegraph(graphData) {
         },
         {
             type: 'spline',
-            name: '15 Day Rolling Average',
+            name: 'Cumulative Moving Average',
             data: avg_prices,
             yAxis: 0,
             lineWidth: 3,

@@ -181,6 +181,10 @@ class PriceSummary(models.Model):
                     if item['single_price_avail'] / avg_avail <= 0.10:
                         if item['lowest_price'] / avg_price <= 0.60:
                             g.pop(idx)
+                            continue
+                    if item['lowest_price'] / avg_price <= 0.45:
+                        g.pop(idx)
+                        continue
 
             highest_bo = max([i for i in buy_orders if i is not None], default=0)
             if highest_bo == 0:
@@ -188,14 +192,14 @@ class PriceSummary(models.Model):
             g[0]['highest_buy_order'] = highest_bo  # set the highest buy order price before we might have had to pop one for an outlier
             lowest_price_graph.append(g[0])
         price_arr = [p['lowest_price'] for p in lowest_price_graph]
-        x = 0.55  # smoothing factor for rolling average
+
         i = 1
-        moving_averages = [price_arr[0]]
-        lowest_price_graph[0].update({'rolling_average': price_arr[0]})
-        while i < len(price_arr):
-            window_average = round((x * price_arr[i]) +
-                                   (1 - x) * moving_averages[-1], 2)
-            lowest_price_graph[i].update({'rolling_average': window_average})
+        moving_averages = []
+        cum_sum = np.cumsum(price_arr)
+        while i <= len(price_arr):
+            window_average = round(cum_sum[i - 1] / i, 2)
+            moving_averages.append(window_average)
+            lowest_price_graph[i-1].update({'rolling_average': window_average})
             i += 1
         return lowest_price_graph
 
@@ -224,6 +228,11 @@ class PriceSummary(models.Model):
                 if item['avail'] / avg_qty <= 0.10:
                     if item['price'] / avg_price <= 0.60:
                         ordered_price.pop(idx)
+                        continue
+                if item['price'] / avg_price <= 0.45:
+                    ordered_price.pop(idx)
+
+
 
             highest_buy_order = max(buy_orders, key=lambda tup: (tup[0]) if (tup[0]) else 0)
             ordered_price[0]['buy_order_price'] = highest_buy_order[0]  # set the highest buy order price before we might have popped it in the code above when remove lowest price outliers

@@ -132,6 +132,7 @@ html {
     align-self: center;
 }
 
+
 .item {
     display:flex;
     flex-direction:column;

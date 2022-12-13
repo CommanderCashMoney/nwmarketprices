@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block nav %}
+    {% with is_login_nav=True %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+{% block additional_includes %}
+     <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+     <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bulma.min.js"></script>
+{% endblock %}
+{% load static %}
+{% block content %}
+    <script>
+        $(document).ready(function() {
+            $('#buy_orders').DataTable();
+        })
+    </script>
+
+<div class="container py-0 px-2">
+       <div class="columns mt-1-desktop mb-0">
+        <div class="column is-full mx-0 p-1">
+            <div class="container box has-text-centered my-auto full-height white-border">
+                <span class="popular-item-title">Profitable buy orders from the last scan</span>
+            <div class="small">*Verify the items and their tier before buying.</div>
+                <hr class="solid divider">
+                {{ error_message }}
+                {%  if results %}
+                 <table id="buy_orders" class="table is-striped" style="width:100%">
+                    <thead>
+                        <tr>
+                             {% if column_names %}
+                                {% for col in column_names %}
+                                    <th> {{ col }}</th>
+                                 {% endfor %}
+                            {% endif %}
+
+                        </tr>
+
+                    </thead>
+                    <tbody>
+
+                         {% for row in results%}
+                    <tr>
+                        {% for item in row %}
+                            <td>{{ item }}</td>
+                        {% endfor %}
+                    </tr>
+                         {% endfor %}
+
+
+                    </tbody>
+                </table>
+                {% endif %}
+
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
