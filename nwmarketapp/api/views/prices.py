@@ -80,6 +80,8 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse
                 "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
                 "lowest_price": render_to_string("snippets/lowest-price.html", {
                     "recent_lowest_price": ps.recent_lowest_price['price'],
+                    "highest_buy_order": ps.recent_lowest_price['buy_order_price'],
+                    "highest_buy_order_qty": ps.recent_lowest_price['qty'],
                     "components": crafts,
                     "craftCost": str(round(craftCost, 2)),
                     "last_checked": isoparse(ps.recent_lowest_price['datetime']),
@@ -159,6 +161,9 @@ def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
                 if item_price['avail'] / avg_qty <= 0.10:
                     if item_price['price'] / avg_price <= 0.60:
                         lowest10_prices.pop(idx)
+                        continue
+                if item_price['price'] / avg_price <= 0.45:
+                    lowest10_prices.pop(idx)
 
         final_prices.append([item[0], item[1], lowest10_prices[0]])
 

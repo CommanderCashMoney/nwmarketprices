@@ -6,11 +6,15 @@ function create_linegraph(graphData) {
     const prices = []
     const num_listings = []
     const avg_prices = []
+    const buy_orders = []
+    console.log(buy_orders)
     for(let i=0; i < graphData.length; i++) {
         let dateObj = new Date(graphData[i]["price_date"]);
         prices.push([dateObj / 1, graphData[i]["lowest_price"]]);
         avg_prices.push([dateObj / 1, graphData[i]["rolling_average"]]);
         num_listings.push([dateObj / 1, graphData[i]["avail"]]);
+        buy_orders.push([dateObj / 1, graphData[i]["highest_buy_order"]]);
+
     }
 
     //	  LINE CHART
@@ -88,8 +92,21 @@ function create_linegraph(graphData) {
             }
         },
         {
+            type: 'line',
+            name: 'Buy Order',
+            data: buy_orders,
+            yAxis: 0,
+            lineWidth: 3,
+            color: 'rgb(76,147,46)',
+            marker: {
+                radius: 2,
+                fillColor: "green",
+                symbol: "square"
+            }
+        },
+        {
             type: 'spline',
-            name: '15 Day Rolling Average',
+            name: 'Cumulative Moving Average',
             data: avg_prices,
             yAxis: 0,
             lineWidth: 3,

@@ -3,6 +3,11 @@
 <div class="lowest-price-div full-height">
     <div class="lowest-price-item top">Lowest price as of {{ last_checked }}</div>
     <div class="lowest-price-text lowest-price-item middle">{{ recent_lowest_price|floatformat:2|intcomma }}</div>
+    {% if highest_buy_order %}
+
+    <div class="highest-buyorder-text middle">Highest Buy Order - Price: {{ highest_buy_order|floatformat:2|intcomma }} Qty: {{ highest_buy_order_qty }}</div>
+
+    {% endif %}
     <div class="lowest-price-item bottom">
         <div>
             <span id="lowest-10-modal-trigger" class="clickable">Raw Data</span>

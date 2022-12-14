@@ -69,6 +69,7 @@ class PriceSerializer(serializers.ModelSerializer):
             'approved',
             'username',
             'run',
+            'qty',
         ]
 
 
