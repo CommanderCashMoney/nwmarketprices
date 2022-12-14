@@ -35,7 +35,7 @@ def marketwatchers(request):
 
 @api_view(['GET'])
 @login_required(login_url="/", redirect_field_name="")
-# @ratelimit(key='ip', rate='1/m', block=True)
+@ratelimit(key='ip', rate='2/s', block=True)
 def buy_orders(request: WSGIRequest):
 
     scanner_groups = []
@@ -68,6 +68,15 @@ def buy_orders(request: WSGIRequest):
         cursor.execute(query)
         results = cursor.fetchall()
     column_names = ['Name', 'Highest Buy Order Price', 'Buy Order Qty','Lowest Sell Price', 'Sell Order Avail', 'Server Name', '% Diff']
+    item_exclusion_list = ['Desert Sunrise',
+                           'Pattern: Floral Regent Trousers',
+                           'Pattern: Floral Regent Tunic',
+                           'Pattern: Floral Regent Gloves',
+                           'Pattern: Floral Regent Loafers',
+                           'Pattern: Floral Regent Crown']
+    for idx, item in reversed(list(enumerate(results))):
+        if item[0] in item_exclusion_list:
+            results.pop(idx)
 
 
     return render(request, "marketwatchers/buy_orders.html", {'results': results, 'column_names': column_names})
