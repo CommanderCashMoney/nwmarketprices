@@ -164,8 +164,8 @@ def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
                     if item_price['price'] / avg_price <= 0.60:
                         lowest10_prices.pop(idx)
                         continue
-                if item_price['price'] / avg_price <= 0.45:
-                    lowest10_prices.pop(idx)
+                # if item_price['price'] / avg_price <= 0.45:
+                #     lowest10_prices.pop(idx)
             highest_buy_order = max(buy_orders, key=lambda tup: (tup[0]) if (tup[0]) else 0)
             lowest10_prices[0]['buy_order_price'] = highest_buy_order[0]  # set the highest buy order price before we might have popped it in the code above when remove lowest price outliers
             lowest10_prices[0]['qty'] = highest_buy_order[1]

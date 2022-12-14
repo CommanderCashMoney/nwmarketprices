@@ -182,9 +182,9 @@ class PriceSummary(models.Model):
                         if item['lowest_price'] / avg_price <= 0.60:
                             g.pop(idx)
                             continue
-                    if item['lowest_price'] / avg_price <= 0.45:
-                        g.pop(idx)
-                        continue
+                    # if item['lowest_price'] / avg_price <= 0.45:
+                    #     g.pop(idx)
+                    #     continue
 
             highest_bo = max([i for i in buy_orders if i is not None], default=0)
             if highest_bo == 0:
@@ -229,8 +229,8 @@ class PriceSummary(models.Model):
                     if item['price'] / avg_price <= 0.60:
                         ordered_price.pop(idx)
                         continue
-                if item['price'] / avg_price <= 0.45:
-                    ordered_price.pop(idx)
+                # if item['price'] / avg_price <= 0.45:
+                #     ordered_price.pop(idx)
 
             highest_buy_order = max(buy_orders, key=lambda tup: (tup[0]) if (tup[0]) else 0)
             ordered_price[0]['buy_order_price'] = highest_buy_order[0]  # set the highest buy order price before we might have popped it in the code above when remove lowest price outliers
