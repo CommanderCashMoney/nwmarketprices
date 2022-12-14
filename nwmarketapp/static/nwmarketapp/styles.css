@@ -192,7 +192,10 @@ html {
 .full-height {
     height:100%;
 }
-
+.overlay_timestamp_column {
+    flex: none;
+    width: 30%
+}
 .hidden {
     display: none!important;
 }

@@ -9,7 +9,7 @@
     <section class="modal-card-body">
         <div class="container">
             <div class="columns is-mobile">
-                <div class="column is-two-fifths column-title">Time Seen</div>
+                <div class="column overlay_timestamp_column column-title">Time Seen</div>
                 <div class="column is-one-fifth column-title">Price</div>
                 <div class="column column-title">Avail</div>
                 <div class="column is-one-fifth column-title">Buy Order</div>
@@ -17,7 +17,7 @@
             </div>
             {% for price in detail_view %}
             <div class="columns mb-0  is-mobile">
-                <div class="column is-two-fifths">{% fromisoformat price.datetime %}</div>
+                <div class="column overlay_timestamp_column">{% fromisoformat price.datetime %}</div>
                 <div class="column is-one-fifth">{{ price.price }}</div>
                 <div class="column">{{ price.avail }}</div>
 
