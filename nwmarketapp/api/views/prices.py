@@ -80,8 +80,8 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse
                 "detail_view": sorted(ps.lowest_prices, key=lambda obj: obj["price"]),
                 "lowest_price": render_to_string("snippets/lowest-price.html", {
                     "recent_lowest_price": ps.recent_lowest_price['price'],
-                    "highest_buy_order": ps.recent_lowest_price['buy_order_price'],
-                    "highest_buy_order_qty": ps.recent_lowest_price['qty'],
+                    "highest_buy_order": ps.recent_lowest_price.get('buy_order_price', None),
+                    "highest_buy_order_qty": ps.recent_lowest_price.get('qty', None),
                     "components": crafts,
                     "craftCost": str(round(craftCost, 2)),
                     "last_checked": isoparse(ps.recent_lowest_price['datetime']),
@@ -153,9 +153,11 @@ def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
     for item in ps_values:
         lowest10_prices = sorted(list(item[2]), key=lambda d: d['price'])
         if lowest10_prices[0]['price'] < 30:
+            buy_orders = []
             avg_price = sum(p['price'] for p in lowest10_prices) / len(lowest10_prices)
             avg_qty = sum(p['avail'] for p in lowest10_prices) / len(lowest10_prices)
             for idx, item_price in reversed(list(enumerate(lowest10_prices))):
+                buy_orders.append((item_price.get('buy_order_price', None), item_price.get('qty', None)))
                 if item_price['avail'] < 1:
                     item_price['avail'] = 1
                 if item_price['avail'] / avg_qty <= 0.10:
@@ -164,7 +166,9 @@ def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
                         continue
                 if item_price['price'] / avg_price <= 0.45:
                     lowest10_prices.pop(idx)
-
+            highest_buy_order = max(buy_orders, key=lambda tup: (tup[0]) if (tup[0]) else 0)
+            lowest10_prices[0]['buy_order_price'] = highest_buy_order[0]  # set the highest buy order price before we might have popped it in the code above when remove lowest price outliers
+            lowest10_prices[0]['qty'] = highest_buy_order[1]
         final_prices.append([item[0], item[1], lowest10_prices[0]])
 
 
@@ -175,6 +179,8 @@ def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
             "Price": f"{row[2]['price']}",
             "Availability": row[2]['avail'],
             "LastUpdated": row[2]['datetime'],
+            "HighestBuyOrder": row[2].get('buy_order_price', None),
+            "Qty": row[2].get('qty', None)
         } for row in final_prices
     ]
     t = perf_counter() - p

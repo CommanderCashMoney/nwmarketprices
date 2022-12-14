@@ -172,7 +172,7 @@ class PriceSummary(models.Model):
             avg_avail = sum(p['single_price_avail'] for p in g) / len(g)
             buy_orders = []
             for idx, item in reversed(list(enumerate(g))):
-                buy_orders.append(item['highest_buy_order'])
+                buy_orders.append(item.get('highest_buy_order', None))
                 item.update({"avg_price": avg_price})
                 item.update({"avg_avail": avg_avail})
                 if item['lowest_price'] <= 30:
@@ -222,7 +222,7 @@ class PriceSummary(models.Model):
             avg_qty = sum(p['avail'] for p in ordered_price) / len(ordered_price)
 
             for idx, item in reversed(list(enumerate(ordered_price))):
-                buy_orders.append((item['buy_order_price'], item['qty']))
+                buy_orders.append((item.get('buy_order_price', None), item.get('qty', None)))
                 if item['avail'] < 1:
                     item['avail'] = 1
                 if item['avail'] / avg_qty <= 0.10:
@@ -231,8 +231,6 @@ class PriceSummary(models.Model):
                         continue
                 if item['price'] / avg_price <= 0.45:
                     ordered_price.pop(idx)
-
-
 
             highest_buy_order = max(buy_orders, key=lambda tup: (tup[0]) if (tup[0]) else 0)
             ordered_price[0]['buy_order_price'] = highest_buy_order[0]  # set the highest buy order price before we might have popped it in the code above when remove lowest price outliers
