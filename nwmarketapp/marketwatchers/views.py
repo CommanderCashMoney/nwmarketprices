@@ -58,7 +58,7 @@ def buy_orders(request: WSGIRequest):
     last_scan_utc = last_scan_utc.replace(tzinfo=None)
     current_utc_time = datetime.utcnow()
     time_diff = current_utc_time - last_scan_utc
-    hours_since_last_scan = time_diff.seconds/3600
+    hours_since_last_scan = time_diff.total_seconds()/3600
     if hours_since_last_scan > 24 or num_runs < 10:
         # user hasnt done enough recent scans
         return render(request, "marketwatchers/buy_orders.html", {'error_message': "Try performing a full scan before accessing this page."})

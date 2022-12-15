@@ -13,7 +13,8 @@ const fetchAutocompleteData = () => {
 
 function changeServer(server_id, initialLoad=false){
     localStorage.setItem('lastServerId', server_id);
-    document.getElementById("server-name").innerText = servers[server_id];
+    let server_health = '<span class="' + servers[server_id]['health'] + '"></span>&nbsp;'
+    document.getElementById("server-name").innerHTML = server_health + servers[server_id]['name'];
     document.getElementById("export-data-modal-url").href = `/api/latest-prices/${server_id}/`;
 
     serverId = server_id;
@@ -36,7 +37,7 @@ function changeServer(server_id, initialLoad=false){
             document.getElementById(key).innerHTML = value;
         }
     })
-    document.title = 'New World Market Prices - ' + servers[serverId];
+    document.title = 'New World Market Prices - ' + servers[serverId]['name'];
 }
 
 const loadItem = (item_id, initialLoad = false) => {
@@ -87,8 +88,9 @@ const init = () => {
     } else {
         document.getElementById("welcome-banner").classList.remove("hidden");
     }
-    document.getElementById("server-name").innerText = servers[serverId];
-    document.title = 'New World Market Prices - ' + servers[serverId];
+    let server_health = '<span class="' + servers[serverId]['health'] + '"></span>&nbsp;'
+    document.getElementById("server-name").innerHTML = server_health +  servers[serverId]['name'];
+    document.title = 'New World Market Prices - ' + servers[serverId]['name'];
 }
 
 window.onpopstate = function(e){

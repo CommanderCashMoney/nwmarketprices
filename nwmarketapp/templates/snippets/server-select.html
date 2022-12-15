@@ -3,9 +3,12 @@
       Server Select
     </a>
     <div class="navbar-dropdown is-dark hidden white-border">
-    {% for server_id, server_name in servers.items %}
+    {% for server_id, server_data in servers.items %}
       <a class="navbar-item server" onclick="changeServer({{ server_id }})">
-          {{ server_name }}
+         <span class="{{ server_data.health }}"></span>&nbsp;
+
+          {{ server_data.name }}
+
       </a>
     {% endfor %}
     </div>

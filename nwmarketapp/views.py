@@ -1,9 +1,9 @@
 import logging
 from typing import List, Tuple
-
+import pytz
 import requests
 from constance import config  # noqa
-
+from datetime import datetime
 from django.shortcuts import render, redirect
 from django.views.decorators.vary import vary_on_cookie
 
@@ -268,9 +268,33 @@ def index(request, *args, **kwargs):
     cn_id = request.GET.get("cn_id")
     if cn_id:
         return get_item_data(request, kwargs.get("server_id", "1"), cn_id)
-    return render(request, 'index.html', {
-        'servers': {server.id: server.name for server in Servers.objects.all().order_by("name")}
-    })
+
+    runs = Run.objects.filter(server_id=OuterRef('id')).order_by('-id')
+    servers = Servers.objects.annotate(rundate=Subquery(runs.values('start_date')[:1]))
+    servers = servers.annotate(runtz=Subquery(runs.values('tz_name')[:1])).order_by('name')
+    server_list = list(servers.values_list('id', 'name', 'rundate', 'runtz'))
+    current_utc_time = datetime.utcnow()
+    server_details = dict()
+    for idx, item in enumerate(server_list):
+        if item[2] and item[3]:
+            tz = pytz.timezone(item[3])
+            last_scan_utc = tz.normalize(tz.localize(item[2])).astimezone(pytz.utc)
+            last_scan_utc = last_scan_utc.replace(tzinfo=None)
+            timediff = current_utc_time - last_scan_utc
+            hours_since_last_scan = timediff.total_seconds() / 3600
+            if 36 > hours_since_last_scan > 24:
+                dot_color = 'orange-dot'
+            elif hours_since_last_scan > 36:
+                dot_color = 'red-dot'
+            else:
+                dot_color = 'green-dot'
+
+            server_details[item[0]] = {'name': item[1], 'health': dot_color}
+        else:
+            server_details[item[0]] = {'name': item[1], 'health': 'red-dot'}
+
+    return render(request, 'index.html', {'servers': server_details})
+
 
 @cache_page(60 * 20)
 def news(request):

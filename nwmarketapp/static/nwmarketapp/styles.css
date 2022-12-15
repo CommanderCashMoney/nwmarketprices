@@ -199,6 +199,30 @@ html {
 .hidden {
     display: none!important;
 }
+.red-dot {
+  height: 15px;
+  width: 15px;
+  background-color: #9a0303;
+  border-radius: 50%;
+  display: inline-block;
+
+}
+.green-dot {
+  height: 15px;
+  width: 15px;
+  background-color: #22881f;
+  border-radius: 50%;
+  display: inline-block;
+
+}
+.orange-dot {
+  height: 15px;
+  width: 15px;
+  background-color: #9f4c1c;
+  border-radius: 50%;
+  display: inline-block;
+
+}
 .news_li li{
     margin-left: 50px;
     list-style: disc;
