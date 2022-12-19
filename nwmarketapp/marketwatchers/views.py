@@ -79,7 +79,11 @@ def buy_orders(request: WSGIRequest):
                            'Pattern: Holly Regent Mitts',
                            'Pattern: Tip of the Iceberg',
                            "Pattern: Winter's Warhammer",
-                           'Pattern: Holly Regent Footwear'
+                           'Pattern: Holly Regent Footwear',
+                           "Pattern: Blizzard's Fury",
+                           'Pattern: Festive Sled',
+                           'Pattern: Oak Regent Chestguard',
+                           'Pattern: Iceburst'
                            ]
     for idx, item in reversed(list(enumerate(results))):
         if item[0] in item_exclusion_list:
