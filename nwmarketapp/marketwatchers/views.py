@@ -1,3 +1,5 @@
+import time
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from nwmarketapp.models import SoldItems, Servers, Run
@@ -15,7 +17,7 @@ from ratelimit.decorators import ratelimit
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.db.models import Subquery, OuterRef
-
+from nwmarketapp.api.views.prices import get_item_data
 from nwmarketapp.models import Craft, PriceSummary, Run, ConfirmedNames, Price, Servers
 
 
@@ -32,6 +34,11 @@ def marketwatchers(request):
 
     return render(request, "marketwatchers/index.html", {'sold_items': sold_items, 'sold_item_columns': column_names})
 
+
+def dashboard(request: WSGIRequest):
+
+
+    return render(request, "marketwatchers/dashboard.html")
 
 @api_view(['GET'])
 @login_required(login_url="/", redirect_field_name="")
@@ -88,6 +95,28 @@ def buy_orders(request: WSGIRequest):
     for idx, item in reversed(list(enumerate(results))):
         if item[0] in item_exclusion_list:
             results.pop(idx)
+
+
+    # p = time.perf_counter()
+    # try:
+    #     ps = PriceSummary.objects.filter(server_id=2)
+    # except (PriceSummary.DoesNotExist):
+    #     return JsonResponse({"status": "No prices found for this item."}, status=404)
+    #
+    # all_item_ids = ps.values_list('confirmed_name_id')
+    # all_price_changes = []
+    # for item_id in all_item_ids:
+    #     item_data_json = get_item_data(request, server_id=2, item_id=str(item_id[0]))
+    #     all_price_changes.append(item_data_json)
+    # #     try:
+    # #         ps = PriceSummary.objects.get(server_id=7, confirmed_name_id=item_id)
+    # #         all_price_changes.append({'item_name': ps.confirmed_name.name, 'change': ps.price_change})
+    # #     except (PriceSummary.DoesNotExist):
+    # #         continue
+    # #
+    # # all_price_changes = sorted(all_price_changes, key=lambda obj: obj["change"])
+    # elapsed = time.perf_counter() - p
+    # print('process time: ', elapsed)
 
 
     return render(request, "marketwatchers/buy_orders.html", {'results': results, 'column_names': column_names})

@@ -1,0 +1,44 @@
+{% load static %}
+<div class="modal" id="item-selection-modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title is-size-5 is-size-6-mobile">
+
+          {% include 'snippets/typeahead-search.html' %}
+          </p>
+
+      <button class="delete close-modal" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body is-size-7-mobile">
+        <div class="block">
+          <span class="tag is-success">
+            Asmodeum
+            <button class="delete is-small"></button>
+          </span>
+        </div>
+        <div class="block">
+          <span class="tag is-success">
+            Asmodeum
+            <button class="delete is-small"></button>
+          </span>
+        </div>
+        <div class="block">
+          <span class="tag is-success">
+            Asmodeum
+            <button class="delete is-small"></button>
+          </span>
+        </div>
+        <div class="block">
+          <span class="tag is-success">
+            Asmodeum
+            <button class="delete is-small"></button>
+          </span>
+        </div>
+
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button close-modal">Close</button>
+    </footer>
+  </div>
+</div>
