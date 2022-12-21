@@ -15,7 +15,11 @@ function changeServer(server_id, initialLoad=false){
     localStorage.setItem('lastServerId', server_id);
     let server_health = '<span class="' + servers[server_id]['health'] + '"></span>&nbsp;'
     document.getElementById("server-name").innerHTML = server_health + servers[server_id]['name'];
-    document.getElementById("export-data-modal-url").href = `/api/latest-prices/${server_id}/`;
+    document.querySelectorAll('.export-data-modal-url').forEach((download_link)=>{
+        download_link.href = `/api/latest-prices/${server_id}/`;
+
+    });
+
 
     serverId = server_id;
     fetch(`/api/server-price-data/${serverId}/`)
@@ -121,7 +125,8 @@ const setupDropdown = (triggerId) => {
 // dropdown click event listener
 window.addEventListener('load', function() {
     init();
-    setupDropdown("server-select")
-    setupDropdown("settings")
+    setupDropdown("server-select");
+    setupDropdown("settings");
     setupModal("export-data-modal-trigger", "export-data-modal");
+    setupTabs();
 });
