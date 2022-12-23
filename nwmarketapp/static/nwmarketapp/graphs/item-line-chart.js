@@ -2,12 +2,13 @@ let lineChart = null;
 
 function create_linegraph(graphData) {
     console.log("creating linegraphg...")
+    console.log(graphData)
     const dates = []
     const prices = []
     const num_listings = []
     const avg_prices = []
     const buy_orders = []
-    console.log(buy_orders)
+
     for(let i=0; i < graphData.length; i++) {
         let dateObj = new Date(graphData[i]["price_date"]);
         prices.push([dateObj / 1, graphData[i]["lowest_price"]]);
@@ -329,3 +330,105 @@ window.addEventListener("load",function(event) {
 // Apply the theme
     Highcharts.setOptions(Highcharts.theme);
 });
+function create_mini_graph(graphData, div_id) {
+
+    const dates = []
+    const prices = []
+    const avg_prices = []
+    // const buy_orders = []
+
+    for(let i=0; i < graphData.length; i++) {
+        let dateObj = new Date(graphData[i]["price_date"]);
+        prices.push([dateObj / 1, graphData[i]["lowest_price"]]);
+        avg_prices.push([dateObj / 1, graphData[i]["rolling_average"]]);
+        // num_listings.push([dateObj / 1, graphData[i]["avail"]]);
+        // buy_orders.push([dateObj / 1, graphData[i]["highest_buy_order"]]);
+
+    }
+    miniChart = Highcharts.chart(div_id, {
+        chart: {
+            type: 'line',
+            backgroundColor:'#3A3F47',
+            plotBorderWidth: 0,
+            marginTop: 0,
+            marginBottom: 0,
+            marginLeft:10,
+            plotShadow: false,
+            borderWidth: 0,
+            plotBorderWidth: 0,
+            marginRight:10
+        },
+         tooltip: {
+             xDateFormat: '%A, %b %e, %H:%M',
+            shared: true,
+            split: false,
+             outside: true,
+             hideDelay: 100,
+            // enabled: true,
+             userHTML: true,
+             style: {
+                 padding: 0,
+                 width: 0,
+                 height: 0,
+             }
+
+         },
+        title: {
+            text: ''
+        },
+        xAxis: {
+        type: 'datetime',
+            enabled:false,
+            showEmpty:false,
+        },
+        // xAxis: {
+        //     enabled:false,
+        //     showEmpty:false,
+        // },
+        yAxis: {
+            min: 0,
+            title: {
+                text: ''
+            },
+            showEmpty:false,
+            enabled:false
+        },
+        credits: {
+            enabled: false
+        },
+        legend: {
+            enabled:false
+        },
+        plotOptions: {
+            line:{
+                lineWidth:1.5,
+            },
+             showInLegend: false,
+             tooltip: {}
+        },
+        series: [
+            {
+            marker: {
+                enabled: false
+                },
+            // animation:false,
+            name: '',
+            data: prices
+            },
+
+        {
+            name: '',
+            data: avg_prices,
+            opacity: 0.3,
+            dashStyle: 'ShortDash',
+            marker: {
+                 enabled: false
+            }
+        },
+        ]
+    });
+
+
+
+};
+

@@ -55,6 +55,10 @@ window.addEventListener('load', function() {
     init();
     setupDropdown("server-select")
     setupDropdown("settings")
-    setupModal("item-selection-modal-trigger", "item-selection-modal");
+    // setupModal("item-selection-modal-trigger", "item-selection-modal");
+
+
+
+
 });
 

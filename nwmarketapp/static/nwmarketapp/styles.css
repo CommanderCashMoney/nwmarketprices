@@ -306,7 +306,59 @@ html {
 }
 
 .box {
-    background-color:  #3A3F47!important;
+    background-color:  #3A3F47;
+}
+.tracked-item{
+    padding: 10px;
+    box-shadow: 0 0.5em 0.7em -0.125em rgb(10 10 10 / 15%), 0 0 0 1px rgb(10 10 10 / 5%);
+}
+.item-name { grid-area:item-name; }
+.updated { grid-area: updated; }
+.mini-graph { grid-area: mini-graph;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.price { grid-area: price;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.change { grid-area: change; text-align: right;}
+
+.grid-container {
+  display: grid;
+  grid-template-areas:
+    'item-name mini-graph price'
+    'updated mini-graph change';
+
+  gap: 10px;
+  padding: 10px;
+  row-gap: 0px;
+    width:100%;
+}
+
+.grid-container > div {
+  padding: 0px 0;
+
+}
+
+
+.timestamp{
+    font-size: 0.5em;
+}
+.highcharts-container {
+    overflow: visible !important;
+}
+.tooltip {
+    position: relative;
+    z-index: 50;
+    border: 1px solid rgb(0, 108, 169);
+    border-radius: 2px;
+    background-color: #ffffff;
+    padding: 0px;
+    font-size: 7pt;
 }
 
 .navbar, .navbar-item {

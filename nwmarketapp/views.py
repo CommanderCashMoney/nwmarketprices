@@ -262,8 +262,8 @@ class ConfirmedNamesAPI(CreateAPIView):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
-@cache_page(60 * 10)
-@vary_on_cookie
+# @cache_page(60 * 10)
+# @vary_on_cookie
 def index(request, *args, **kwargs):
     cn_id = request.GET.get("cn_id")
     if cn_id:

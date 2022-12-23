@@ -1,7 +1,6 @@
 import itertools
 from datetime import datetime
 from typing import List
-
 from dateutil.parser import isoparse
 from django.contrib.auth.models import User
 from django.db import models
@@ -168,6 +167,7 @@ class PriceSummary(models.Model):
         for key, group in itertools.groupby(sorted_graph, lambda x: x['date_only']):
 
             g = sorted(list(group), key=lambda d: d['lowest_price'])
+            # todo need to fix this to use the filter
             avg_price = sum(p['lowest_price'] for p in g) / len(g)
             avg_avail = sum(p['single_price_avail'] for p in g) / len(g)
             buy_orders = []
@@ -182,9 +182,7 @@ class PriceSummary(models.Model):
                         if item['lowest_price'] / avg_price <= 0.60:
                             g.pop(idx)
                             continue
-                    # if item['lowest_price'] / avg_price <= 0.45:
-                    #     g.pop(idx)
-                    #     continue
+
 
             highest_bo = max([i for i in buy_orders if i is not None], default=0)
             if highest_bo == 0:
@@ -217,24 +215,8 @@ class PriceSummary(models.Model):
             return None
         ordered_price = self.ordered_price_data
         if ordered_price[0]["price"] < 30:
-            buy_orders = []
-            avg_price = sum(p['price'] for p in ordered_price) / len(ordered_price)
-            avg_qty = sum(p['avail'] for p in ordered_price) / len(ordered_price)
+            ordered_price = self.filter_price_ouliers(ordered_price)
 
-            for idx, item in reversed(list(enumerate(ordered_price))):
-                buy_orders.append((item.get('buy_order_price', None), item.get('qty', None)))
-                if item['avail'] < 1:
-                    item['avail'] = 1
-                if item['avail'] / avg_qty <= 0.10:
-                    if item['price'] / avg_price <= 0.60:
-                        ordered_price.pop(idx)
-                        continue
-                # if item['price'] / avg_price <= 0.45:
-                #     ordered_price.pop(idx)
-
-            highest_buy_order = max(buy_orders, key=lambda tup: (tup[0]) if (tup[0]) else 0)
-            ordered_price[0]['buy_order_price'] = highest_buy_order[0]  # set the highest buy order price before we might have popped it in the code above when remove lowest price outliers
-            ordered_price[0]['qty'] = highest_buy_order[1]
             return ordered_price[0]
         else:
             return self.ordered_price_data[0]
@@ -264,6 +246,27 @@ class PriceSummary(models.Model):
     @property
     def price_change_date(self) -> datetime:
         return self.price_change_dict["price_change_date"]
+
+    @staticmethod
+    def filter_price_ouliers(price_list: list) -> List:
+        buy_orders = []
+        avg_price = sum(p['price'] for p in price_list) / len(price_list)
+        avg_qty = sum(p['avail'] for p in price_list) / len(price_list)
+        for idx, item_price in reversed(list(enumerate(price_list))):
+            buy_orders.append((item_price.get('buy_order_price', None), item_price.get('qty', None)))
+            if item_price['avail'] < 1:
+                item_price['avail'] = 1
+            if item_price['avail'] / avg_qty <= 0.10:
+                if item_price['price'] / avg_price <= 0.60:
+                    price_list.pop(idx)
+                    continue
+
+        highest_buy_order = max(buy_orders, key=lambda tup: (tup[0]) if (tup[0]) else 0)
+        price_list[0]['buy_order_price'] = highest_buy_order[
+            0]  # set the highest buy order price before we might have popped it in the code above when remove lowest price outliers
+        price_list[0]['qty'] = highest_buy_order[1]
+
+        return price_list
 
     class Meta:
         db_table = 'price_summaries'

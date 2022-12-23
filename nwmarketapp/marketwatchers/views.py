@@ -1,5 +1,5 @@
 import time
-
+import json
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from nwmarketapp.models import SoldItems, Servers, Run
@@ -18,6 +18,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.db.models import Subquery, OuterRef
 from nwmarketapp.api.views.prices import get_item_data
+from nwmarketapp.api.utils import get_dashboard_items
 from nwmarketapp.models import Craft, PriceSummary, Run, ConfirmedNames, Price, Servers
 
 
@@ -36,9 +37,40 @@ def marketwatchers(request):
 
 
 def dashboard(request: WSGIRequest):
+    # todo get user saved items from cookie
+    server_id = 2
+    tracked_items = [1223, 258, 1776, 166, 3943, 1627, 435, 1324, 326]
+    results = get_dashboard_items(server_id, tracked_items)
 
 
-    return render(request, "marketwatchers/dashboard.html")
+    return render(request, "marketwatchers/dashboard.html", {'dashboard_data': results})
+
+def price_changes(request: WSGIRequest, server_id):
+    p = time.perf_counter()
+    try:
+        ps = PriceSummary.objects.filter(server_id=2)
+    except PriceSummary.DoesNotExist:
+        return JsonResponse({"status": "No prices found for this item."}, status=404)
+
+    all_price_changes = []
+    for obj in ps:
+        item_data_json = get_item_data(request, server_id=2, item_id=str(item_id[0]))
+        all_price_changes.append(item_data_json)
+    all_item_ids = ps.values_list('confirmed_name_id')
+    all_price_changes = []
+
+    #     try:
+    #         ps = PriceSummary.objects.get(server_id=7, confirmed_name_id=item_id)
+    #         all_price_changes.append({'item_name': ps.confirmed_name.name, 'change': ps.price_change})
+    #     except (PriceSummary.DoesNotExist):
+    #         continue
+    #
+    # all_price_changes = sorted(all_price_changes, key=lambda obj: obj["change"])
+    elapsed = time.perf_counter() - p
+    print('process time: ', elapsed)
+
+    return None
+
 
 @api_view(['GET'])
 @login_required(login_url="/", redirect_field_name="")
