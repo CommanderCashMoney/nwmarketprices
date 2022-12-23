@@ -199,6 +199,7 @@ class PriceSummary(models.Model):
             moving_averages.append(window_average)
             lowest_price_graph[i-1].update({'rolling_average': window_average})
             i += 1
+
         return lowest_price_graph
 
     @property

@@ -41,33 +41,50 @@ def dashboard(request: WSGIRequest):
     server_id = 2
     tracked_items = [1223, 258, 1776, 166, 3943, 1627, 435, 1324, 326]
     results = get_dashboard_items(server_id, tracked_items)
-
+    test1 = price_changes(request, 2)
 
     return render(request, "marketwatchers/dashboard.html", {'dashboard_data': results})
 
 def price_changes(request: WSGIRequest, server_id):
+    # todo confirm they are logged in and if they are a scanner
     p = time.perf_counter()
     try:
         ps = PriceSummary.objects.filter(server_id=2)
     except PriceSummary.DoesNotExist:
         return JsonResponse({"status": "No prices found for this item."}, status=404)
 
-    all_price_changes = []
+    price_drops = []
+    price_increases = []
     for obj in ps:
-        item_data_json = get_item_data(request, server_id=2, item_id=str(item_id[0]))
-        all_price_changes.append(item_data_json)
-    all_item_ids = ps.values_list('confirmed_name_id')
-    all_price_changes = []
+        if obj.recent_lowest_price['avail'] > 4:
+            if obj.price_change < -30:
+                if obj.ordered_graph_data[-1]['rolling_average'] > obj.recent_lowest_price['price']:
+                    try:
+                        vs_avg = 100 - ((obj.recent_lowest_price['price'] / obj.ordered_graph_data[-1]['rolling_average']) * 100.0)
+                    except ZeroDivisionError:
+                        vs_avg = 0
+                    if vs_avg > 20:
+                        price_drops.append({'item_name': obj.confirmed_name.name, 'change': obj.price_change, 'vs_avg': round(vs_avg)})
 
-    #     try:
-    #         ps = PriceSummary.objects.get(server_id=7, confirmed_name_id=item_id)
-    #         all_price_changes.append({'item_name': ps.confirmed_name.name, 'change': ps.price_change})
-    #     except (PriceSummary.DoesNotExist):
-    #         continue
-    #
-    # all_price_changes = sorted(all_price_changes, key=lambda obj: obj["change"])
+            if obj.price_change > 30:
+                if obj.ordered_graph_data[-1]['rolling_average'] < obj.recent_lowest_price['price']:
+                    try:
+                        vs_avg = 100 - ((obj.ordered_graph_data[-1]['rolling_average'] / obj.recent_lowest_price['price']) * 100.0)
+                    except ZeroDivisionError:
+                        vs_avg = 0
+                    if vs_avg > 20:
+                        price_increases.append({'item_name': obj.confirmed_name.name, 'change': obj.price_change, 'vs_avg': round(vs_avg)})
+
+    price_drops = sorted(price_drops, key=lambda item: item["change"])[:20]
+    price_increases = sorted(price_increases, key=lambda item: item["change"], reverse=True)[:20]
+
+
     elapsed = time.perf_counter() - p
     print('process time: ', elapsed)
+
+    return None
+
+def compared_to_all_servers(request: WSGIRequest, server_id):
 
     return None
 
