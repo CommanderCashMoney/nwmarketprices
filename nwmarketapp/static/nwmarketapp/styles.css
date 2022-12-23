@@ -297,6 +297,10 @@ html {
     padding-top: 2px;
 }
 
+.price-change-table{
+    background-color: transparent;
+
+}
 .password-input::placeholder {
     color: #6c6b6bc4;
 }

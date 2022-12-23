@@ -85,10 +85,23 @@
       <div class="tile is-parent">
         <article class="tile is-child box">
           <p class="title">Price increases</p>
-          <p class="subtitle">since 12/2/2022</p>
-          <div class="content">
 
-        </div>>
+          <div class="content">
+            <table class="table is-narrow is-size-7 price-change-table">
+            <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Price</th>
+                  <th>Recent change</th>
+                  <th>Vs rolling average</th>
+
+                </tr>
+              </thead>
+              <tbody id="price_increases-table">
+
+            </tbody>
+          </table>
+        </div>
         </article>
       </div>
     </div>
@@ -98,11 +111,22 @@
     <article class="tile is-child box">
       <div class="content">
         <p class="title">Price drops</p>
-        <p class="subtitle">since 12/2/2022</p>
+
         <div class="content">
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam semper diam at erat pulvinar, at pulvinar felis blandit. Vestibulum volutpat tellus diam, consequat gravida libero rhoncus ut. Morbi maximus, leo sit amet vehicula eleifend, nunc dui porta orci, quis semper odio felis ut quam.</p>
-          <p>Suspendisse varius ligula in molestie lacinia. Maecenas varius eget ligula a sagittis. Pellentesque interdum, nisl nec interdum maximus, augue diam porttitor lorem, et sollicitudin felis neque sit amet erat. Maecenas imperdiet felis nisi, fringilla luctus felis hendrerit sit amet. Aenean vitae gravida diam, finibus dignissim turpis. Sed eget varius ligula, at volutpat tortor.</p>
-          <p>Integer sollicitudin, tortor a mattis commodo, velit urna rhoncus erat, vitae congue lectus dolor consequat libero. Donec leo ligula, maximus et pellentesque sed, gravida a metus. Cras ullamcorper a nunc ac porta. Aliquam ut aliquet lacus, quis faucibus libero. Quisque non semper leo.</p>
+          <table class="table is-narrow is-size-7 price-change-table">
+            <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Price</th>
+                  <th>Recent change</th>
+                  <th>Vs rolling average</th>
+
+                </tr>
+              </thead>
+              <tbody id="price_drops-table">
+
+            </tbody>
+          </table>
         </div>
       </div>
     </article>
@@ -114,9 +138,9 @@ window.onload = function(){
     let mini_graph_data = null
     {% for item in dashboard_data %}
         mini_graph_data = {{item.graph_data|safe}}
-            console.log(mini_graph_data)
         create_mini_graph(mini_graph_data, 'chart-{{ item.item_id }}')
     {% endfor %}
+
 
 
 

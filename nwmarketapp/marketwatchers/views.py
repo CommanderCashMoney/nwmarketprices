@@ -1,25 +1,24 @@
 import time
-import json
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from nwmarketapp.models import SoldItems, Servers, Run
+from nwmarketapp.models import SoldItems
 import pytz
 from datetime import datetime
 
-
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import connection
-
-from django.http import FileResponse, JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
 
 from ratelimit.decorators import ratelimit
-from rest_framework import status
+
 from rest_framework.decorators import api_view
 from django.db.models import Subquery, OuterRef
-from nwmarketapp.api.views.prices import get_item_data
+
 from nwmarketapp.api.utils import get_dashboard_items
-from nwmarketapp.models import Craft, PriceSummary, Run, ConfirmedNames, Price, Servers
+from nwmarketapp.models import Craft, PriceSummary, Run, Servers
+from django.views.decorators.cache import cache_page
 
 
 @login_required(login_url="/", redirect_field_name="")
@@ -41,10 +40,12 @@ def dashboard(request: WSGIRequest):
     server_id = 2
     tracked_items = [1223, 258, 1776, 166, 3943, 1627, 435, 1324, 326]
     results = get_dashboard_items(server_id, tracked_items)
-    test1 = price_changes(request, 2)
+
 
     return render(request, "marketwatchers/dashboard.html", {'dashboard_data': results})
 
+# @ratelimit(key='ip', rate='1/s', block=True)
+# @cache_page(60 * 10)
 def price_changes(request: WSGIRequest, server_id):
     # todo confirm they are logged in and if they are a scanner
     p = time.perf_counter()
@@ -64,7 +65,7 @@ def price_changes(request: WSGIRequest, server_id):
                     except ZeroDivisionError:
                         vs_avg = 0
                     if vs_avg > 20:
-                        price_drops.append({'item_name': obj.confirmed_name.name, 'change': obj.price_change, 'vs_avg': round(vs_avg)})
+                        price_drops.append({'item_name': obj.confirmed_name.name, 'item_id': obj.confirmed_name_id, 'price': obj.recent_lowest_price['price'], 'price_change': obj.price_change, 'vs_avg': -abs(round(vs_avg))})
 
             if obj.price_change > 30:
                 if obj.ordered_graph_data[-1]['rolling_average'] < obj.recent_lowest_price['price']:
@@ -73,16 +74,16 @@ def price_changes(request: WSGIRequest, server_id):
                     except ZeroDivisionError:
                         vs_avg = 0
                     if vs_avg > 20:
-                        price_increases.append({'item_name': obj.confirmed_name.name, 'change': obj.price_change, 'vs_avg': round(vs_avg)})
+                        price_increases.append({'item_name': obj.confirmed_name.name, 'item_id': obj.confirmed_name_id, 'price': obj.recent_lowest_price['price'], 'price_change': obj.price_change, 'vs_avg': round(vs_avg)})
 
-    price_drops = sorted(price_drops, key=lambda item: item["change"])[:20]
-    price_increases = sorted(price_increases, key=lambda item: item["change"], reverse=True)[:20]
+    price_drops = sorted(price_drops, key=lambda item: item["price_change"])[:20]
+    price_increases = sorted(price_increases, key=lambda item: item["price_change"], reverse=True)[:20]
 
 
     elapsed = time.perf_counter() - p
     print('process time: ', elapsed)
 
-    return None
+    return JsonResponse({'price_drops': price_drops, 'price_increases': price_increases})
 
 def compared_to_all_servers(request: WSGIRequest, server_id):
 
