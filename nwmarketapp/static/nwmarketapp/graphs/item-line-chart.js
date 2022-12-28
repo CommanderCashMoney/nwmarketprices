@@ -2,7 +2,7 @@ let lineChart = null;
 
 function create_linegraph(graphData) {
     console.log("creating linegraphg...")
-    console.log(graphData)
+
     const dates = []
     const prices = []
     const num_listings = []
@@ -15,6 +15,7 @@ function create_linegraph(graphData) {
         avg_prices.push([dateObj / 1, graphData[i]["rolling_average"]]);
         num_listings.push([dateObj / 1, graphData[i]["avail"]]);
         buy_orders.push([dateObj / 1, graphData[i]["highest_buy_order"]]);
+
 
     }
 
@@ -335,16 +336,16 @@ function create_mini_graph(graphData, div_id) {
     const dates = []
     const prices = []
     const avg_prices = []
-    // const buy_orders = []
+
 
     for(let i=0; i < graphData.length; i++) {
         let dateObj = new Date(graphData[i]["price_date"]);
         prices.push([dateObj / 1, graphData[i]["lowest_price"]]);
         avg_prices.push([dateObj / 1, graphData[i]["rolling_average"]]);
-        // num_listings.push([dateObj / 1, graphData[i]["avail"]]);
-        // buy_orders.push([dateObj / 1, graphData[i]["highest_buy_order"]]);
+
 
     }
+
     miniChart = Highcharts.chart(div_id, {
         chart: {
             type: 'line',

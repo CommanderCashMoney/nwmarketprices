@@ -33,6 +33,7 @@ function changeServer(server_id, initialLoad=false){
         const { most_listed, fetch_time, ...popularItemData } = data;
         top10data = most_listed;
         drawBar();
+        console.log(data)
         for (const [key, value] of Object.entries(popularItemData)) {
             document.getElementById(key).innerHTML = value;
         }

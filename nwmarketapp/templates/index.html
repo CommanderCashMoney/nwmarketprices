@@ -1,4 +1,9 @@
 {% extends 'base.html' %}
+{% block nav %}
+    {% with show_login=True show_servers=True show_search=True %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
 {% load static %}
 {% block additional_includes %}
     <script src="{% static 'nwmarketapp/app.js' %}"></script>
@@ -77,7 +82,7 @@
     </div>
 </div>
 <script>
-const servers = {{ servers|safe }};
+
 let top10data = null;
 </script>
 {% include 'snippets/export-data-modal.html' %}

@@ -11,23 +11,97 @@ const fetchAutocompleteData = () => {
     )
 }
 
-const selectItem = (item_id, initialLoad = false) => {
+const selectItem = (item_id) => {
    itemId = item_id;
-   console.log(itemId)
-
 
 };
 
+window.onpopstate = function(e){
+    init();
+};
 
 const init = () => {
+     const lastServerId = localStorage.getItem("lastServerId");
+     document.getElementById("item-tracking").classList.add("hidden");
+
      fetchAutocompleteData();
-     const params = getParamsFromUrl();
+
+
+     //get server_id from URL
+     const loc = window.location;
+     let serverFromURL
+     if(!loc.pathname) {
+         serverFromURL =  null;
+     } else {
+         const parts = loc.pathname.split("/");
+         serverFromURL = parts[3]
+
+         if (!serverFromURL) {
+             serverFromURL = null;
+         }
+     }
+     serverId = serverFromURL || lastServerId || 2;
+     changeServer(serverId);
+     let server_health = '<span class="' + servers[serverId]['health'] + '"></span>&nbsp;'
+     document.getElementById("server-name").innerHTML = server_health +  servers[serverId]['name'];
+     document.title = 'New World Market Prices - Dashboard - ' + servers[serverId]['name'];
 
 }
 
 window.onpopstate = function(e){
     init();
 };
+
+function changeServer(server_id){
+    localStorage.setItem('lastServerId', server_id);
+    let server_health = '<span class="' + servers[server_id]['health'] + '"></span>&nbsp;'
+    document.getElementById("server-name").innerHTML = server_health + servers[server_id]['name'];
+    document.getElementById("item-selection-link").classList.add("hidden");
+
+    serverId = server_id;
+
+    fetch(`/mw/dashboard_items/${serverId}/`)
+    .then(res => {
+        if (res.ok) {
+            return res.json();
+        } else {
+            return Promise.reject('error: ' + res.status)
+        }
+    })
+    .then(data => {
+        document.getElementById("welcome-banner").classList.add("hidden");
+        document.getElementById("item-tracking").classList.remove("hidden");
+
+        window.history.pushState({
+            serverId: serverId,
+            itemId: itemId
+        }, "New World Market Prices", `/mw/dashboard/${serverId}`)
+
+
+        const elem = document.getElementById("tracked-items");
+        elem.innerHTML = data["item_data"];
+        for (let i = 0; i < data["mini_graph_data"].length; i++){
+            let obj =  data["mini_graph_data"][i]
+
+            create_mini_graph(eval(obj.graph_data), 'chart-' + obj.item_id)
+
+        }
+
+
+     }).catch((error) => {
+
+        console.log('error is', error);
+        document.getElementById("welcome-banner").classList.remove("hidden");
+        document.getElementById("loading-message").classList.add("hidden");
+        document.getElementById("item-selection-link").classList.remove("hidden");
+    })
+
+
+
+
+
+    document.title = 'New World Market Prices - Dashboard - ' + servers[serverId]['name'];
+}
 
 const setupDropdown = (triggerId) => {
     const select = document.getElementById(triggerId);
@@ -50,7 +124,7 @@ const setupDropdown = (triggerId) => {
     });
 }
 const loadPriceChanges = (serverId) => {
-    serverId = 2
+
     nwmpRequest(`/mw/price_changes/${serverId}`)
     .then(data => {
         let sections = ['price_drops', 'price_increases']
@@ -83,7 +157,52 @@ const loadPriceChanges = (serverId) => {
                   document.getElementById(tableId).appendChild(row);
 
             }
+            let phId = sections[x] + '-ph'
+            document.getElementById(phId).style.display='none'
         }
+
+
+
+
+    }).catch((data) => {
+
+        console.log(data);
+        createNotification(data['status'], "danger")
+    })
+}
+const loadRareItems = (serverId) => {
+
+    nwmpRequest(`/mw/rare_items/${serverId}`)
+    .then(data => {
+
+        for (let i = 0; i < data['rare_items'].length; i++){
+             let obj = data['rare_items'][i]
+
+              let row = document.createElement("tr");
+
+              let nameCell = document.createElement("td");
+              let priceCell = document.createElement("td");
+              let lastseenCell = document.createElement("td");
+
+
+              let item_url = '/' + obj.item_id + '/' + serverId
+              nameCell.innerHTML = `<a href='${item_url}'>` + obj.item_name + "</a>";
+              priceCell.innerHTML = obj.price;
+              lastseenCell.innerHTML = obj.last_seen + ' days ago';
+
+              // Append the cells to the row
+              row.appendChild(nameCell);
+              row.appendChild(priceCell);
+              row.appendChild(lastseenCell);
+
+              let tableId = 'rare_items-table'
+
+              document.getElementById(tableId).appendChild(row);
+
+        }
+        let phId = 'rare_items-ph'
+        document.getElementById(phId).style.display='none'
+
 
 
 
@@ -100,8 +219,9 @@ window.addEventListener('load', function() {
     init();
     setupDropdown("server-select")
     setupDropdown("settings")
-    loadPriceChanges(2)
-    // setupModal("item-selection-modal-trigger", "item-selection-modal");
+    loadPriceChanges(serverId)
+    loadRareItems(serverId)
+
 
 
 

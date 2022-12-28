@@ -1,18 +1,11 @@
-import itertools
 from collections import defaultdict
 from time import perf_counter
 from typing import Dict, List, Any
-from dateutil.parser import isoparse
 import cloudscraper
 import concurrent
-import numpy as np
 import requests
 from constance import config
-import json
-from django.db.models import Min, Max
-from django.db.models.functions import TruncDate
-
-from nwmarketapp.models import PriceSummary, Run, Price
+from nwmarketapp.models import PriceSummary
 
 
 def check_version_compatibility(version: str) -> bool:
@@ -99,31 +92,6 @@ def get_popular_items_dict_v2(server_id) -> Any:
                 break
     return return_values
 
-def get_dashboard_items(server_id: int, item_ids: list):
-    try:
-        ps = PriceSummary.objects.filter(server_id=server_id, confirmed_name_id__in=item_ids).select_related('confirmed_name')
-
-    except PriceSummary.DoesNotExist:
-        json_data = {'status': 'not found'}
-        return json_data
-
-    results = []
-    for obj in ps:
-        json_data = {
-            'item_name': obj.confirmed_name.name,
-            'item_id': obj.confirmed_name_id,
-            'nwdb_id': obj.confirmed_name.nwdb_id,
-            'lowest_price': obj.recent_lowest_price,
-            'graph_data': json.dumps(obj.ordered_graph_data[-15:]),
-            'price_change': obj.price_change,
-            "last_checked": isoparse(obj.recent_lowest_price['datetime'])
-
-        }
-        results.append(json_data)
-
-
-
-    return results
 
 
 
@@ -186,3 +154,5 @@ def get_all_nwdb_items() -> List[Dict]:
                 "item_type": res["itemType"]
             })
     return all_nwdb_items
+
+

@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% block nav %}
-    {% with is_login_nav=True %}
+    {% with show_login=True show_servers=True %}
         {{ block.super }}
     {% endwith %}
 {% endblock %}
 {% load static %}
-{% load humanize %}
+
 {% block additional_includes %}
      <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
      <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bulma.min.js"></script>
@@ -16,54 +16,32 @@
 
 {% block content %}
 
-{#<div class="tile is-ancestor" style="margin-top: 0px">#}
-{#  <div class="tile is-parent">#}
-{#    <article class="tile is-child box" id="item-tracking">#}
-{#      <p class="title">Welcome to your monitoring dashboard</p>#}
-{#        <p class="subtitle">Here you can choose up to 10 items to monitor changes on. Other useful graphs and data can be found below. Some data is only available to Market Watchers. To sign up visit the #become-a-scanner channel on <a>Discord</a>.</p>#}
-{#        <div class="content">#}
-{#            To get started <a id="item-selection-modal-trigger" style="text-decoration: underline">click here to choose your items to track</a>#}
-{##}
-{#        </div>#}
-{##}
-{#    </article>#}
-{#  </div>#}
-{##}
-{#</div>#}
-<div class="tile is-ancestor" style="margin-top: 0px">
+<div class="tile is-ancestor" style="margin-top: 0px" id="welcome-banner">
+  <div class="tile is-parent">
+    <article class="tile is-child box white-border">
+      <p class="title">Welcome to your monitoring dashboard</p>
+        <p class="subtitle">Here you can choose up to 10 items to monitor changes on. Other useful graphs and data can be found below. Some data is only available to Market Watchers. To sign up visit the #become-a-scanner channel on <a>Discord</a>.</p>
+        <div class="content hidden" id="item-selection-link">
+            To get started <a id="item-selection-modal-trigger" style="text-decoration: underline">click here to choose your items to track</a>
+
+        </div>
+        <div id="loading-message">Loading items... Please wait<div class="lds-dual-ring"></div></div>
+
+    </article>
+  </div>
+
+
+
+</div>
+<div class="tile is-ancestor hidden" style="margin-top: 0px" id="item-tracking">
   <div class="tile is-parent">
 
-    <article class="tile is-child box white-border" id="item-tracking">
+    <article class="tile is-child box white-border">
 
          <p class="subtitle">Custom item tracking. <a>Click here</a> to change.</p>
-      <div class="columns">
-
-              {% for item in dashboard_data %}
-                   {% if forloop.first %}<div class="column">{% endif %}
-              <article class="tile box tracked-item ">
-               <div class="grid-container">
-                  <div class="item-name is-size-6">{{ item.item_name }}</div>
-                  <div class="updated timestamp">Updated: {{ item.last_checked|naturaltime }}</div>
-                  <div class="mini-graph"><div id="chart-{{ item.item_id }}" class="chart" style="width: 164px;height: 45px;"></div></div>
-                  <div class="price is-size-6">{{ item.lowest_price.price }}</div>
-                   {% if item.price_change < 0 %}
-                        <div class="change is-size-6 yellow_text">{{ item.price_change }}%</div>
-                   {% else %}
-                         <div class="change is-size-6 blue_text">{{ item.price_change }}%</div>
-                   {% endif %}
-
-
-               </div>
-
-              </article>
-
-
-                {% if forloop.counter|divisibleby:3 and not forloop.last %}</div><div class="column"> {% endif %}
-
-              {% endfor %}
+          <div class="columns" id="tracked-items">
 
           </div>
-</div>
 
     </article>
   </div>
@@ -74,8 +52,41 @@
     <div class="tile">
       <div class="tile is-parent is-vertical">
         <article class="tile is-child box">
-          <p class="title">Higher vs other servers</p>
-          <p class="subtitle">Top box</p>
+          <p class="title">Rarely seen items</p>
+          <p class="subtitle">These showed up in the last scan but haven't been seen for at least 7 days prior</p>
+             <table class="table is-narrow is-size-7 dashboard-table">
+            <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Price</th>
+                  <th>Last seen</th>
+
+
+                </tr>
+              </thead>
+              <tbody id="rare_items-table">
+
+            </tbody>
+          </table>
+              <div id="rare_items-ph">
+                <div class="ph-item">
+                    <div class="ph-col-12">
+                        <div class="ph-row">
+                            {% for i in "x"|rjust:"10" %}
+                            <div class="ph-col-4"></div>
+                            <div class="ph-col-2 empty"></div>
+                            <div class="ph-col-2"></div>
+                            <div class="ph-col-2 empty"></div>
+                            <div class="ph-col-2"></div>
+                                {% if not forloop.last %}
+                            <div class="ph-col-12 empty"></div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+        </div>
+
         </article>
         <article class="tile is-child box">
           <p class="title">Lower vs other servers</p>
@@ -85,9 +96,9 @@
       <div class="tile is-parent">
         <article class="tile is-child box">
           <p class="title">Price increases</p>
-
+        <p class="subtitle">Lowest price of last scan vs lowest price of the previous day.</p>
           <div class="content">
-            <table class="table is-narrow is-size-7 price-change-table">
+            <table class="table is-narrow is-size-7 dashboard-table">
             <thead>
                 <tr>
                   <th>Name</th>
@@ -99,8 +110,27 @@
               </thead>
               <tbody id="price_increases-table">
 
-            </tbody>
+
+              </tbody>
           </table>
+               <div id="price_increases-ph">
+                <div class="ph-item">
+                    <div class="ph-col-12">
+                        <div class="ph-row">
+                            {% for i in "x"|rjust:"20" %}
+                            <div class="ph-col-4"></div>
+                            <div class="ph-col-2 empty"></div>
+                            <div class="ph-col-2"></div>
+                            <div class="ph-col-2 empty"></div>
+                            <div class="ph-col-2"></div>
+                                {% if not forloop.last %}
+                            <div class="ph-col-12 empty"></div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         </article>
       </div>
@@ -111,9 +141,9 @@
     <article class="tile is-child box">
       <div class="content">
         <p class="title">Price drops</p>
-
+    <p class="subtitle">Lowest price of last scan vs lowest price of the previous day.</p>
         <div class="content">
-          <table class="table is-narrow is-size-7 price-change-table">
+          <table class="table is-narrow is-size-7 dashboard-table">
             <thead>
                 <tr>
                   <th>Name</th>
@@ -127,26 +157,30 @@
 
             </tbody>
           </table>
+              <div id="price_drops-ph">
+                <div class="ph-item">
+                    <div class="ph-col-12">
+                        <div class="ph-row">
+                            {% for i in "x"|rjust:"20" %}
+                            <div class="ph-col-4"></div>
+                            <div class="ph-col-2 empty"></div>
+                            <div class="ph-col-2"></div>
+                            <div class="ph-col-2 empty"></div>
+                            <div class="ph-col-2"></div>
+                                {% if not forloop.last %}
+                            <div class="ph-col-12 empty"></div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
         </div>
       </div>
     </article>
   </div>
 </div>
 
-<script>
-window.onload = function(){
-    let mini_graph_data = null
-    {% for item in dashboard_data %}
-        mini_graph_data = {{item.graph_data|safe}}
-        create_mini_graph(mini_graph_data, 'chart-{{ item.item_id }}')
-    {% endfor %}
 
-
-
-
-}
-
-</script>
 
 {% include 'marketwatchers/snippets/pop-modal.html' %}
 {% endblock %}

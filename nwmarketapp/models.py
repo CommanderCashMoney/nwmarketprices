@@ -167,7 +167,6 @@ class PriceSummary(models.Model):
         for key, group in itertools.groupby(sorted_graph, lambda x: x['date_only']):
 
             g = sorted(list(group), key=lambda d: d['lowest_price'])
-            # todo need to fix this to use the filter
             avg_price = sum(p['lowest_price'] for p in g) / len(g)
             avg_avail = sum(p['single_price_avail'] for p in g) / len(g)
             buy_orders = []
@@ -189,6 +188,8 @@ class PriceSummary(models.Model):
                 highest_bo = None
             g[0]['highest_buy_order'] = highest_bo  # set the highest buy order price before we might have had to pop one for an outlier
             lowest_price_graph.append(g[0])
+
+        lowest_price_graph = lowest_price_graph[-15:]
         price_arr = [p['lowest_price'] for p in lowest_price_graph]
 
         i = 1

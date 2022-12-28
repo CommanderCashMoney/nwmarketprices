@@ -231,9 +231,10 @@ html {
     background-color: #36363f;
 }
 .ph-item {
-    background-color: #454A51!important;
-    border-color: #454A51!important;
+    background-color: transparent!important;
+    border-color: transparent!important;
 }
+
 
 @media only screen and (max-width: 600px) {
   .no-pad-mobile {
@@ -297,10 +298,35 @@ html {
     padding-top: 2px;
 }
 
-.price-change-table{
+.dashboard-table{
     background-color: transparent;
 
 }
+.lds-dual-ring {
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border-radius: 50%;
+  border: 6px solid #fff;
+  border-color: #fff transparent #fff transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .password-input::placeholder {
     color: #6c6b6bc4;
 }
