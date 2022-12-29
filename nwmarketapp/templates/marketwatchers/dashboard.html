@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+
 {% block nav %}
     {% with show_login=True show_servers=True %}
         {{ block.super }}
@@ -38,7 +39,7 @@
 
     <article class="tile is-child box white-border">
 
-         <p class="subtitle">Custom item tracking. <a>Click here</a> to change.</p>
+         <p class="subtitle">Custom item tracking. <a id="item-selection-modal-trigger2">Click here</a> to change.</p>
           <div class="columns" id="tracked-items">
 
           </div>
@@ -182,5 +183,5 @@
 
 
 
-{% include 'marketwatchers/snippets/pop-modal.html' %}
+{% include 'marketwatchers/snippets/item-selection-modal.html' %}
 {% endblock %}

@@ -19,7 +19,7 @@
 
       </article>
 
-        {% if dashboard_data|length > 10  %}
+        {% if dashboard_data|length >= 10  %}
             {%  firstof 4 as num_per_col %}
         {% endif %}
         {% if dashboard_data|length < 10 and dashboard_data|length >= 6%}

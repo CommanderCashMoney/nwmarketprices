@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List
 from dateutil.parser import isoparse
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 import numpy as np
 
@@ -128,6 +129,15 @@ class Craft(models.Model):
 
     class Meta:
         db_table = 'crafts'
+
+class AuthUserTrackedItems(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, db_index=True)
+    item_ids = ArrayField(models.IntegerField(null=True), null=True)
+    server_id = models.IntegerField(null=True)
+
+
+    class Meta:
+        db_table = 'auth_user_tracked_items'
 
 
 class SoldItems(models.Model):

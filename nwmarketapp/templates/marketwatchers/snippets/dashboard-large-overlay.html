@@ -1,0 +1,14 @@
+<div class="container py-0 px-2">
+    <div class="columns mt-1-desktop mb-0 hidden" id="price-data">
+        <div class="column is-two-fifths mx-0 p-1">
+            <div class="container box has-text-centered my-auto full-height white-border" id="lowest-price-data">
+                {% include 'snippets/lowest-price.html' %}
+            </div>
+        </div>
+        <div class="column is-three-fifths has-text-centered p-1 is-flex full-width">
+            <div class="box white-border full-width" id="line-graph-column">
+            {% include 'snippets/item-graph.html' %}
+            </div>
+        </div>
+    </div>
+</div>

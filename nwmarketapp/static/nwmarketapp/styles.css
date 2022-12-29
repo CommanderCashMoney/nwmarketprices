@@ -326,6 +326,16 @@ html {
     transform: rotate(360deg);
   }
 }
+.custom-item-selection-modal .navbar-item {
+    background-color: transparent!important;
+}
+.custom-item-selection-modal .item-search-container {
+    margin: auto!important;
+}
+.custom-item-selection-modal .delete{
+    display: none;
+}
+
 
 .password-input::placeholder {
     color: #6c6b6bc4;
