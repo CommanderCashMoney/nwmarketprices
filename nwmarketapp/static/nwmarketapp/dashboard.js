@@ -1,4 +1,4 @@
-max_tracked_num = 7
+max_tracked_num = 6
 
 const fetchAutocompleteData = () => {
     fetch(
@@ -237,8 +237,8 @@ const loadPriceChanges = (serverId) => {
                     let avgCell = document.createElement("td");
 
 
-                    let item_url = '/' + obj.item_id + '/' + serverId
-                    nameCell.innerHTML = `<a href='${item_url}'>` + obj.item_name + "</a>";
+                    let item_id = obj.item_id
+                    nameCell.innerHTML = `<a onclick="loadGraphModal(${serverId}, ${item_id});return false;">` + obj.item_name + "</a>";
                     priceCell.innerHTML = obj.price;
                     changeCell.innerHTML = obj.price_change + '%';
                     avgCell.innerHTML = obj.vs_avg + '%';
@@ -413,6 +413,34 @@ const loadTopSold = (serverId) => {
     })
 
 }
+
+const loadGraphModal = (serverId, itemId) => {
+     nwmpRequest(`/api/price-data/${serverId}/${itemId}`)
+    .then(data => {
+       create_linegraph(data["graph_data"],'dashboard-graph-modal-chart');
+       const DataModal = document.getElementById('dashboard-graph-modal');
+       const modalTitle = document.getElementById('graph-modal-title');
+       modalTitle.innerHTML = data['item_name']
+       DataModal.classList.add("is-active");
+
+
+        DataModal.querySelectorAll(".close-modal").forEach((elem) => {
+
+            elem.onclick = () => {
+                DataModal.classList.remove("is-active");
+            }
+
+        });
+
+       console.log('GraphOverlay success', data)
+
+    }).catch((data) => {
+        console.log('GraphOverlay fail',data);
+
+    })
+
+}
+
 
 window.addEventListener('load', function() {
     init();

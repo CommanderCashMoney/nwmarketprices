@@ -1,0 +1,23 @@
+{% load static %}
+<div class="modal" id="dashboard-graph-modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title is-size-5 is-size-6-mobile" id="graph-modal-title">Detailed graph</p>
+      <button class="delete close-modal" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body is-size-7-mobile">
+       <div id="graph-modal-content">
+
+           <figure class="highcharts-figure">
+                <div id="dashboard-graph-modal-chart"></div>
+            </figure>
+
+       </div>
+
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button close-modal">Close</button>
+    </footer>
+  </div>
+</div>

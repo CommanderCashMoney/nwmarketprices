@@ -64,17 +64,17 @@ const setupModal = (triggerId, modalId) => {
         const DataModal = document.getElementById(modalId);
         DataModal.classList.add("is-active");
 
-        if(typeof(selectedItems) !== 'undefined' && selectedItems.length > 0 ){
+        if (typeof (selectedItems) !== 'undefined' && selectedItems.length > 0) {
             populateSelectedItems()
         }
         DataModal.querySelectorAll(".close-modal").forEach((elem) => {
 
-            if(elem.id == 'save_items'){
+            if (elem.id == 'save_items') {
                 elem.onclick = () => {
                     saveTrackedItems()
                     DataModal.classList.remove("is-active");
                 }
-            }else {
+            } else {
                 elem.onclick = () => {
                     DataModal.classList.remove("is-active");
                 }
