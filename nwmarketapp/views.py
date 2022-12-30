@@ -273,7 +273,7 @@ def index(request, *args, **kwargs):
 
     return render(request, 'index.html', {'servers': server_details})
 
-def get_serverlist(): # todo move this to utils
+def get_serverlist():
     runs = Run.objects.filter(server_id=OuterRef('id')).order_by('-id')
     servers = Servers.objects.annotate(rundate=Subquery(runs.values('start_date')[:1]))
     servers = servers.annotate(runtz=Subquery(runs.values('tz_name')[:1])).order_by('name')
