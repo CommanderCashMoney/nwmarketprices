@@ -153,22 +153,8 @@ def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
     for item in ps_values:
         lowest10_prices = sorted(list(item[2]), key=lambda d: d['price'])
         if lowest10_prices[0]['price'] < 30:
-            buy_orders = []
-            avg_price = sum(p['price'] for p in lowest10_prices) / len(lowest10_prices)
-            avg_qty = sum(p['avail'] for p in lowest10_prices) / len(lowest10_prices)
-            for idx, item_price in reversed(list(enumerate(lowest10_prices))):
-                buy_orders.append((item_price.get('buy_order_price', None), item_price.get('qty', None)))
-                if item_price['avail'] < 1:
-                    item_price['avail'] = 1
-                if item_price['avail'] / avg_qty <= 0.10:
-                    if item_price['price'] / avg_price <= 0.60:
-                        lowest10_prices.pop(idx)
-                        continue
-                # if item_price['price'] / avg_price <= 0.45:
-                #     lowest10_prices.pop(idx)
-            highest_buy_order = max(buy_orders, key=lambda tup: (tup[0]) if (tup[0]) else 0)
-            lowest10_prices[0]['buy_order_price'] = highest_buy_order[0]  # set the highest buy order price before we might have popped it in the code above when remove lowest price outliers
-            lowest10_prices[0]['qty'] = highest_buy_order[1]
+            lowest10_prices = PriceSummary.filter_price_ouliers(lowest10_prices)
+
         final_prices.append([item[0], item[1], lowest10_prices[0]])
 
 
@@ -204,7 +190,6 @@ def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
         return JsonResponse({"status": "forbidden"}, status=status.HTTP_403_FORBIDDEN)
     query = render_to_string("queries/get_item_data_full.sql", context={"server_id": server_id})
     with connection.cursor() as cursor:
-        # print(query)
         cursor.execute(query)
 
     return JsonResponse({"status": "ok", "calc_time": perf_counter() - p}, status=status.HTTP_201_CREATED)

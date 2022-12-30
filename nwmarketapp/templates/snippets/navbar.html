@@ -5,7 +5,7 @@
             <a href="/" style="color: white">New World Market Prices</a>
         </span>
         <div class="navbar-item"></div>
-        {% if not is_login_nav %}
+        {% if show_login %}
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
            data-target="burger">
             <span aria-hidden="true"></span>
@@ -14,8 +14,10 @@
         </a>
         {% endif %}
     </div>
-    {% if not is_login_nav %}
-    {% include 'snippets/typeahead-search.html' %}
+    {% if show_search %}
+        {% include 'snippets/typeahead-search.html' %}
+    {% endif %}
+    {% if show_login %}
     <div class="navbar-end is-dark">
         <div id="burger" class="navbar-menu is-dark burger-menu">
             {% include 'snippets/server-select.html' %}

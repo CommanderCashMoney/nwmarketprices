@@ -66,7 +66,7 @@ const loadItem = (item_id, initialLoad = false) => {
         document.getElementById("welcome-banner").classList.add("hidden");
         const elem = document.getElementById("lowest-price-data");
         elem.innerHTML = data["lowest_price"];
-        create_linegraph(data["graph_data"]);
+        create_linegraph(data["graph_data"],'line-graph-container');
         setupModal("lowest-10-modal-trigger", "lowest-10-modal");
     }).catch((data) => {
 

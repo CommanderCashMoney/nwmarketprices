@@ -1,0 +1,100 @@
+{% load static %}
+
+<div class="modal" id="item-selection-modal">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head custom-item-selection-modal">
+
+
+          {% include 'snippets/typeahead-search.html' %}
+
+
+      <button class="delete close-modal" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body is-size-7-mobile">
+       <div class="columns" id="tracked-items">
+           <div class="column">
+               <article class="tile box tracked-item ">
+                   <div class="grid-container tracked-item-selection" >
+                       Available
+                   </div>
+               </article>
+                <article class="tile box tracked-item ">
+                   <div class="grid-container tracked-item-selection" >
+                       Available
+                   </div>
+               </article>
+                <article class="tile box tracked-item ">
+                   <div class="grid-container tracked-item-selection">
+                        Available
+                   </div>
+               </article>
+                <article class="tile box tracked-item ">
+                   <div class="grid-container tracked-item-selection" >
+                       Available
+                   </div>
+               </article>
+
+           </div>
+            <div class="column">
+                <article class="tile box tracked-item ">
+                   <div class="grid-container tracked-item-selection" >
+                       Available
+                   </div>
+               </article>
+                <article class="tile box tracked-item ">
+                   <div class="grid-container tracked-item-selection" >
+                       Available
+                   </div>
+               </article>
+                <article class="tile box tracked-item ">
+                   <div class="grid-container tracked-item-selection" >
+                       Available
+                   </div>
+               </article>
+                <article class="tile box tracked-item ">
+                   <div class="grid-container tracked-item-selection" >
+                       Available
+                   </div>
+               </article>
+
+           </div>
+            <div class="column">
+                <article class="tile box tracked-item ">
+                   <div class="grid-container tracked-item-selection" >
+                       Available
+                   </div>
+               </article>
+                <article class="tile box tracked-item ">
+                   <div class="grid-container tracked-item-selection" >
+                       Available
+                   </div>
+               </article>
+                <article class="tile box tracked-item ">
+                   <div class="grid-container tracked-item-selection" >
+                       Available
+                   </div>
+               </article>
+                <article class="tile box tracked-item ">
+                   <div class="grid-container tracked-item-selection" >
+                       Available
+                   </div>
+               </article>
+
+           </div>
+       </div>
+
+
+<form method="POST" id="tracked-items-form">
+    {% csrf_token %}
+
+</form>
+
+
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button close-modal is-success" id="save_items">Save Changes</button>
+      <button class="button close-modal">Cancel</button>
+    </footer>
+  </div>
+</div>

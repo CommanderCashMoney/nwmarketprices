@@ -61,11 +61,23 @@ const getParamsFromUrl = () => {
 
 const setupModal = (triggerId, modalId) => {
     document.getElementById(triggerId).onclick = () => {
-        const exportDataModal = document.getElementById(modalId);
-        exportDataModal.classList.add("is-active");
-        exportDataModal.querySelectorAll(".close-modal").forEach((elem) => {
-            elem.onclick = () => {
-                exportDataModal.classList.remove("is-active");
+        const DataModal = document.getElementById(modalId);
+        DataModal.classList.add("is-active");
+
+        if (typeof (selectedItems) !== 'undefined' && selectedItems.length > 0) {
+            populateSelectedItems()
+        }
+        DataModal.querySelectorAll(".close-modal").forEach((elem) => {
+
+            if (elem.id == 'save_items') {
+                elem.onclick = () => {
+                    saveTrackedItems()
+                    DataModal.classList.remove("is-active");
+                }
+            } else {
+                elem.onclick = () => {
+                    DataModal.classList.remove("is-active");
+                }
             }
         });
     }

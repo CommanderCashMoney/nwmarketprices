@@ -269,6 +269,11 @@ def index(request, *args, **kwargs):
     if cn_id:
         return get_item_data(request, kwargs.get("server_id", "1"), cn_id)
 
+    server_details = get_serverlist()
+
+    return render(request, 'index.html', {'servers': server_details})
+
+def get_serverlist():
     runs = Run.objects.filter(server_id=OuterRef('id')).order_by('-id')
     servers = Servers.objects.annotate(rundate=Subquery(runs.values('start_date')[:1]))
     servers = servers.annotate(runtz=Subquery(runs.values('tz_name')[:1])).order_by('name')
@@ -292,9 +297,7 @@ def index(request, *args, **kwargs):
             server_details[item[0]] = {'name': item[1], 'health': dot_color}
         else:
             server_details[item[0]] = {'name': item[1], 'health': 'red-dot'}
-
-    return render(request, 'index.html', {'servers': server_details})
-
+    return server_details
 
 @cache_page(60 * 20)
 def news(request):

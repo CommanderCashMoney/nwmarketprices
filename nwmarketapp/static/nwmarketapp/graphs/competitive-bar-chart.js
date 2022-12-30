@@ -22,6 +22,20 @@ const drawBar = () => {
         },
         xAxis: {
             categories: names,
+            gridLineColor: '#707073',
+            labels: {
+                style: {
+                    color: '#E0E0E3'
+                }
+            },
+            lineColor: '#707073',
+            tickColor: '#707073',
+            title: {
+                style: {
+                    color: '#A0A0A3'
+
+                }
+            }
         },
         yAxis: {
             min: 0,
@@ -29,8 +43,12 @@ const drawBar = () => {
                 text: null,
                 align: 'high',
             },
+            gridLineColor: '#707073',
             labels: {
                 overflow: 'justify',
+                style: {
+                    color: '#E0E0E3'
+                }
             },
         },
         plotOptions: {
@@ -39,6 +57,11 @@ const drawBar = () => {
                  pointPadding: 0.2,
                  borderWidth: 0,
             },
+        },
+        credits: {
+            style: {
+                color: 'transparent'
+            }
         },
         legend: {
             enabled: false
