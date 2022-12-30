@@ -3,6 +3,7 @@ const initTypeahead = (data) => {
     $.typeahead({
         input: '.item-search',
         display: "name",
+
         source: {data: data},
         callback: {
             onInit: function (node) {
@@ -10,6 +11,7 @@ const initTypeahead = (data) => {
             },
             onClickAfter: function(node, a, item, event){
                 selectItem(item.id, item.name);
+
             },
             onSubmit: function (node, form, item, event) {
                 selectItem(item.id, item.name);
@@ -29,6 +31,7 @@ const selectItem = (item_id, item_name) => {
 
     selectedItems.push({'itemId': item_id, 'itemName':item_name})
     populateSelectedItems()
+    document.getElementById('item-search').value=''
 
 };
 

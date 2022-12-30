@@ -21,13 +21,13 @@
   <div class="tile is-parent">
     <article class="tile is-child box white-border">
       <p class="title">Welcome to your monitoring dashboard</p>
-        <p class="subtitle">Here you can choose up to 10 items to monitor changes on. Other useful graphs and data can be found below. Some data is only available to Market Watchers. To sign up visit the #become-a-scanner channel on <a>Discord</a>.</p>
+        <p class="subtitle">Here you can choose specific items to monitor changes on along with other useful graphs and data. Some data is only available to Market Watchers and Discord Supporters. To sign up visit the #become-a-scanner channel on <a href="https://discord.gg/9xfcG6jTVj" target="_blank">Discord</a>.</p>
         <div class="content hidden" id="item-selection-link">
             To get started <a id="item-selection-modal-trigger" style="text-decoration: underline">click here to choose your items to track</a>
 
         </div>
         <div id="loading-message">Loading items... Please wait<div class="lds-dual-ring"></div></div>
-
+        <div id="not-loggedin-message" class="hidden">To get started, please sign in with your Discord credentials in the top right to be able to track items</div>
     </article>
   </div>
 
@@ -86,12 +86,114 @@
                         </div>
                     </div>
                 </div>
-        </div>
+              </div>
+            <div class="hidden locked-item">
+                Available to Market Watchers and Discord Supporters only. To sign up please visit the <a href="https://discord.gg/9xfcG6jTVj" target="_blank">Discord channel</a>
+                <img class="lock-icon" src="{% static 'nwmarketapp/lock_icon.png' %}">
+            </div>
 
         </article>
         <article class="tile is-child box">
-          <p class="title">Lower vs other servers</p>
-          <p class="subtitle">Bottom box</p>
+          <p class="title">Most sold items</p>
+            <p class="subtitle">Recorded from Market Watcher sold orders in the past 15 days</p>
+            <div class="tabs">
+                <li class="is-active">
+                    <a id="AllServers">
+                        <span>All Servers</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="CurrentServer">
+                        <span>Current Server</span>
+                    </a>
+                </li>
+
+            </div>
+            <div class="tab-content">
+                <div class="tab-pane is-active" id="AllServers">
+                    <table class="table is-narrow is-size-7 dashboard-table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Avg Price</th>
+                            <th>Avg Qty</th>
+                            <th>Total times sold</th>
+
+
+                        </tr>
+                        </thead>
+                        <tbody id="top_sold_items_allservers-table">
+                        </tbody>
+                    </table>
+                    <div id="top_sold_items_allservers-ph">
+                        <div class="ph-item">
+                            <div class="ph-col-12">
+                                <div class="ph-row">
+                                    {% for i in "x"|rjust:"10" %}
+                                        <div class="ph-col-4"></div>
+                                        <div class="ph-col-2 empty"></div>
+                                        <div class="ph-col-2"></div>
+                                        <div class="ph-col-2 empty"></div>
+                                        <div class="ph-col-2"></div>
+                                        {% if not forloop.last %}
+                                            <div class="ph-col-12 empty"></div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hidden locked-item">
+                        Available to Market Watchers and Discord Supporters only. To sign up please visit the <a
+                            href="https://discord.gg/9xfcG6jTVj" target="_blank">Discord channel</a>
+                        <img class="lock-icon" src="{% static 'nwmarketapp/lock_icon.png' %}">
+                    </div>
+
+                </div>
+                <div class="tab-pane" id="CurrentServer">
+
+                    <table class="table is-narrow is-size-7 dashboard-table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Avg Price</th>
+                            <th>Avg Qty</th>
+                            <th>Total times sold</th>
+
+
+                        </tr>
+                        </thead>
+                        <tbody id="top_sold_items_currentserver-table">
+                        </tbody>
+                    </table>
+                    <div id="top_sold_items_currentserver-ph">
+                        <div class="ph-item">
+                            <div class="ph-col-12">
+                                <div class="ph-row">
+                                    {% for i in "x"|rjust:"10" %}
+                                        <div class="ph-col-4"></div>
+                                        <div class="ph-col-2 empty"></div>
+                                        <div class="ph-col-2"></div>
+                                        <div class="ph-col-2 empty"></div>
+                                        <div class="ph-col-2"></div>
+                                        {% if not forloop.last %}
+                                            <div class="ph-col-12 empty"></div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hidden locked-item">
+                        Available to Market Watchers and Discord Supporters only. To sign up please visit the <a
+                            href="https://discord.gg/9xfcG6jTVj" target="_blank">Discord channel</a>
+                        <img class="lock-icon" src="{% static 'nwmarketapp/lock_icon.png' %}">
+                    </div>
+                </div>
+
+            </div>
+
+
         </article>
       </div>
       <div class="tile is-parent">
@@ -131,6 +233,10 @@
                         </div>
                     </div>
                 </div>
+            </div>
+           <div class="hidden locked-item">
+                Available to Market Watchers and Discord Supporters only. To sign up please visit the <a href="https://discord.gg/9xfcG6jTVj" target="_blank">Discord channel</a>
+                <img class="lock-icon" src="{% static 'nwmarketapp/lock_icon.png' %}">
             </div>
         </div>
         </article>
@@ -175,7 +281,11 @@
                         </div>
                     </div>
                 </div>
-        </div>
+              </div>
+            <div class="hidden locked-item">
+                Available to Market Watchers and Discord Supporters only. To sign up please visit the <a href="https://discord.gg/9xfcG6jTVj" target="_blank">Discord channel</a>
+                <img class="lock-icon" src="{% static 'nwmarketapp/lock_icon.png' %}">
+            </div>
       </div>
     </article>
   </div>

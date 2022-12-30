@@ -352,6 +352,26 @@ html {
     padding: 10px;
     box-shadow: 0 0.5em 0.7em -0.125em rgb(10 10 10 / 15%), 0 0 0 1px rgb(10 10 10 / 5%);
 }
+.lock-icon{
+    max-width: 70%;
+    margin-left: 15%
+
+}
+.tabs {
+    margin-bottom: -1px !important;
+    justify-content: left;
+}
+.tab-content {
+
+    padding-top: 10px;
+}
+.tab-pane {
+    display: none
+}
+.is-active {
+    display: initial
+}
+
 .item-name { grid-area:item-name; }
 .updated { grid-area: updated; }
 .mini-graph { grid-area: mini-graph;

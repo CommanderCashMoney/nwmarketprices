@@ -4,7 +4,7 @@
            {% if forloop.first %}<div class="column">{% endif %}
           <article class="tile box tracked-item ">
            <div class="grid-container">
-              <div class="item-name is-size-6">{{ item.item_name }}</div>
+               <div class="item-name is-size-6"><a href="/{{ item.item_id }}/{{ item.server_id }}">{{ item.item_name }}</a></div>
               <div class="updated timestamp">Updated: {{ item.last_checked|naturaltime }}</div>
               <div class="mini-graph"><div id="chart-{{ item.item_id }}" class="chart" style="width: 164px;height: 45px;"></div></div>
               <div class="price is-size-6">{{ item.lowest_price.price }}</div>

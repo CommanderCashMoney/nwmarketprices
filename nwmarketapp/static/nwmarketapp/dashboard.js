@@ -1,5 +1,4 @@
-let serverId = null;
-
+max_tracked_num = 7
 
 const fetchAutocompleteData = () => {
     fetch(
@@ -12,7 +11,7 @@ const fetchAutocompleteData = () => {
 }
 
 const saveTrackedItems = () => {
-    console.log('sending items ', serverId)
+
     const form = document.getElementById("tracked-items-form");
     const csrftoken = form.querySelector("[name=csrfmiddlewaretoken]").value;
 
@@ -87,15 +86,9 @@ const loadTrackedItems = (serverId) => {
     document.getElementById("item-selection-link").classList.add("hidden");
     document.getElementById("item-tracking").classList.add("hidden");
     document.getElementById("loading-message").classList.remove("hidden");
-    fetch(`/mw/dashboard_items/${serverId}/`)
-    .then(res => {
-        if (res.ok) {
-            return res.json();
-        } else {
-            return Promise.reject('error: ' + res.status)
-        }
-    })
+     nwmpRequest(`/mw/dashboard_items/${serverId}/`)
     .then(data => {
+
         document.getElementById("welcome-banner").classList.add("hidden");
         document.getElementById("item-tracking").classList.remove("hidden");
 
@@ -104,7 +97,11 @@ const loadTrackedItems = (serverId) => {
         for (let i = 0; i < data["mini_graph_data"].length; i++){
             let obj =  data["mini_graph_data"][i]
 
-            create_mini_graph(eval(obj.graph_data), 'chart-' + obj.item_id)
+            if(obj.graph_data == null){
+                   document.getElementById('chart-' + obj.item_id).innerHTML = 'No prices found'
+            }else {
+                create_mini_graph(eval(obj.graph_data), 'chart-' + obj.item_id)
+            }
 
         }
         selectedItems = []
@@ -112,17 +109,31 @@ const loadTrackedItems = (serverId) => {
             let obj =  data["mini_graph_data"][i]
             selectedItems.push({'itemId': obj.item_id, 'itemName': obj.item_name})
         }
-        console.log('onload', selectedItems)
+        max_tracked_num = data['max_tracked_num']
         populateSelectedItems()
 
 
 
-     }).catch((error) => {
-        // no tracked items found for this server
-        document.getElementById("welcome-banner").classList.remove("hidden");
-        document.getElementById("loading-message").classList.add("hidden");
-        document.getElementById("item-selection-link").classList.remove("hidden");
-        document.getElementById("item-tracking").classList.add("hidden");
+    }).catch((data) => {
+
+         max_tracked_num = data['max_tracked_num']
+         populateSelectedItems()
+
+         if(data['status'] == 'Not logged in'){
+             //not logged in
+            document.getElementById("welcome-banner").classList.remove("hidden");
+            document.getElementById("loading-message").classList.add("hidden");
+            document.getElementById("item-tracking").classList.add("hidden");
+            document.getElementById("not-loggedin-message").classList.remove("hidden");
+
+
+         }else {
+             // no tracked items found for this server
+             document.getElementById("welcome-banner").classList.remove("hidden");
+             document.getElementById("loading-message").classList.add("hidden");
+             document.getElementById("item-selection-link").classList.remove("hidden");
+             document.getElementById("item-tracking").classList.add("hidden");
+         }
     })
 
 }
@@ -134,34 +145,37 @@ function changeServer(server_id){
 
     serverId = server_id;
     loadTrackedItems(serverId)
-    populateSelectedItems()
+    // populateSelectedItems()
 
     window.history.pushState({
             serverId: serverId,
         }, "New World Market Prices", `/mw/dashboard/${serverId}`)
     loadPriceChanges(serverId)
     loadRareItems(serverId)
+    loadTopSold(serverId)
     document.title = 'New World Market Prices - Dashboard - ' + servers[serverId]['name'];
 }
 
 const populateSelectedItems = () => {
 
-    const numItemsAvailable = 12
-    console.log('populate modal')
-    selectedItems.splice(12, selectedItems.length)
-    console.log(selectedItems)
+
+    selectedItems.splice(max_tracked_num, selectedItems.length)
+
     const parent = document.getElementsByClassName('tracked-item-selection')
     for (let i = 0; i < parent.length; i++) {
 
         if(selectedItems.length > i){
 
             let item = selectedItems[i]
-
             let itemVal = `<span class="is-size-6">${item['itemName']}</span><button class="delete is-medium" id="delete-${item['itemId']}"></button>`
             parent[i].innerHTML = itemVal
 
         }else{
-            parent[i].innerHTML = '<span style=\"color: rgba(255, 255, 255, 0.2);\">[Empty]</span>'
+            if (i > (max_tracked_num-1)){
+                parent[i].innerHTML = ' <img class="lock-icon" src="/static/nwmarketapp/lock_icon.png"><span style=\"color: rgba(255, 255, 255, 0.2);\">[Locked]</span>'
+            }else {
+                parent[i].innerHTML = '<span style=\"color: rgba(255, 255, 255, 0.2);\">[Empty]</span>'
+            }
         }
     }
     const deleteBtns = document.getElementsByClassName('delete')
@@ -172,9 +186,7 @@ const populateSelectedItems = () => {
             removeItem(btnId.slice(7))
         }
     }
-    // document.getElementById(`delete-${item['itemId']}`).onclick = () => {
-    //            removeItem(item['itemId'])
-    //         }
+
 
 
 };
@@ -204,54 +216,85 @@ const loadPriceChanges = (serverId) => {
     for (let x = 0; x < sections.length; x++) {
         let phId = sections[x] + '-ph'
         let tableId = sections[x] + '-table'
-        document.getElementById(phId).style.display='block'
+        document.getElementById(phId).style.display = 'block'
         document.getElementById(tableId).innerHTML = '';
 
 
     }
     nwmpRequest(`/mw/price_changes/${serverId}`)
-    .then(data => {
+        .then(data => {
 
-        for (let x = 0; x < sections.length; x++){
+            for (let x = 0; x < sections.length; x++) {
 
-            for (let i = 0; i < data[sections[x]].length; i++){
-                 let obj = data[sections[x]][i]
+                for (let i = 0; i < data[sections[x]].length; i++) {
+                    let obj = data[sections[x]][i]
 
-                  let row = document.createElement("tr");
+                    let row = document.createElement("tr");
 
-                  let nameCell = document.createElement("td");
-                  let priceCell = document.createElement("td");
-                  let changeCell = document.createElement("td");
-                  let avgCell = document.createElement("td");
+                    let nameCell = document.createElement("td");
+                    let priceCell = document.createElement("td");
+                    let changeCell = document.createElement("td");
+                    let avgCell = document.createElement("td");
 
 
-                  let item_url = '/' + obj.item_id + '/' + serverId
-                  nameCell.innerHTML = `<a href='${item_url}'>` + obj.item_name + "</a>";
-                  priceCell.innerHTML = obj.price;
-                  changeCell.innerHTML = obj.price_change + '%';
-                  avgCell.innerHTML = obj.vs_avg + '%';
+                    let item_url = '/' + obj.item_id + '/' + serverId
+                    nameCell.innerHTML = `<a href='${item_url}'>` + obj.item_name + "</a>";
+                    priceCell.innerHTML = obj.price;
+                    changeCell.innerHTML = obj.price_change + '%';
+                    avgCell.innerHTML = obj.vs_avg + '%';
 
-                  // Append the cells to the row
-                  row.appendChild(nameCell);
-                  row.appendChild(priceCell);
-                  row.appendChild(changeCell);
-                  row.appendChild(avgCell);
-                  let tableId = sections[x] + '-table'
+                    // Append the cells to the row
+                    row.appendChild(nameCell);
+                    row.appendChild(priceCell);
+                    row.appendChild(changeCell);
+                    row.appendChild(avgCell);
+                    let tableId = sections[x] + '-table'
 
-                  document.getElementById(tableId).appendChild(row);
+                    document.getElementById(tableId).appendChild(row);
 
+                }
+                let phId = sections[x] + '-ph'
+                document.getElementById(phId).style.display = 'none'
             }
-            let phId = sections[x] + '-ph'
-            document.getElementById(phId).style.display='none'
-        }
 
 
-
-
-    }).catch((data) => {
+        }).catch((data) => {
 
         console.log(data);
-        createNotification(data['status'], "danger")
+        // createNotification(data['status'], "danger")
+        if (data['status'] == 'No recent scans from user') {
+            //rare items lock
+            let tableId = 'rare_items-table'
+            document.getElementById(tableId).innerHTML = '';
+            let phId = 'rare_items-ph'
+            document.getElementById(phId).style.display = 'none'
+            //price changes lock
+            for (let x = 0; x < sections.length; x++) {
+                let phId = sections[x] + '-ph'
+                let tableId = sections[x] + '-table'
+                document.getElementById(phId).style.display = 'none'
+                document.getElementById(tableId).innerHTML = '';
+                document.getElementsByClassName('locked-item')
+                let lockItems = document.getElementsByClassName('locked-item')
+                for (let i = 0; i < lockItems.length; i++) {
+                    lockItems[i].classList.remove("hidden");
+                }
+            }
+            sections = ['top_sold_items_allservers', 'top_sold_items_currentserver']
+            //sold items lock
+            for (let x = 0; x < sections.length; x++) {
+                let phId = sections[x] + '-ph'
+                let tableId = sections[x] + '-table'
+                document.getElementById(phId).style.display = 'none'
+                document.getElementById(tableId).innerHTML = '';
+                document.getElementsByClassName('locked-item')
+                let lockItems = document.getElementsByClassName('locked-item')
+                for (let i = 0; i < lockItems.length; i++) {
+                    lockItems[i].classList.remove("hidden");
+                }
+            }
+
+        }
     })
 }
 const loadRareItems = (serverId) => {
@@ -298,11 +341,79 @@ const loadRareItems = (serverId) => {
     }).catch((data) => {
 
         console.log(data);
-        createNotification(data['status'], "danger")
+        // createNotification(data['status'], "danger")
     })
 }
+const loadTopSold = (serverId) => {
+    // set up tab functionality
+    document.querySelectorAll('.tabs').forEach((tab)=>{
+    tab.querySelectorAll('li').forEach((li)=>{
+      li.onclick = () => {
+          tab.querySelector('li.is-active').classList.remove('is-active')
+          li.classList.add('is-active')
+          tab.nextElementSibling.querySelector('.tab-pane.is-active').classList.remove('is-active')
+          tab.nextElementSibling.querySelector('.tab-pane#'+li.firstElementChild.getAttribute('id'))
+            .classList.add("is-active")
+      }
+    })
+  })
+  // get data
+    let sections = ['top_sold_items_allservers', 'top_sold_items_currentserver']
+    for (let x = 0; x < sections.length; x++) {
+        let phId = sections[x] + '-ph'
+        let tableId = sections[x] + '-table'
+        document.getElementById(phId).style.display='block'
+        document.getElementById(tableId).innerHTML = '';
 
-// dropdown click event listener
+    }
+
+
+   nwmpRequest(`/mw/top_sold_items/${serverId}`)
+    .then(data => {
+
+        for (let x = 0; x < sections.length; x++){
+
+            for (let i = 0; i < data[sections[x]].length; i++){
+                 let obj = data[sections[x]][i]
+
+                  let row = document.createElement("tr");
+
+                  let nameCell = document.createElement("td");
+                  let priceCell = document.createElement("td");
+                  let qtyCell = document.createElement("td");
+                  let totalCell = document.createElement("td");
+
+
+                  let item_url = '/' + obj.ItemId + '/' + serverId
+                  nameCell.innerHTML = `<a href='${item_url}'>` + obj.ItemName + "</a>";
+                  priceCell.innerHTML = obj.AvgPrice;
+                  qtyCell.innerHTML = obj.AvgQty;
+                  totalCell.innerHTML = obj.Total;
+
+                  // Append the cells to the row
+                  row.appendChild(nameCell);
+                  row.appendChild(priceCell);
+                  row.appendChild(qtyCell);
+                  row.appendChild(totalCell);
+                  let tableId = sections[x] + '-table'
+
+                  document.getElementById(tableId).appendChild(row);
+
+            }
+            let phId = sections[x] + '-ph'
+            document.getElementById(phId).style.display='none'
+        }
+
+
+
+
+    }).catch((data) => {
+        console.log(data);
+
+    })
+
+}
+
 window.addEventListener('load', function() {
     init();
     setupDropdown("server-select")

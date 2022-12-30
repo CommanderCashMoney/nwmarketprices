@@ -5,7 +5,9 @@ import cloudscraper
 import concurrent
 import requests
 from constance import config
-from nwmarketapp.models import PriceSummary
+from nwmarketapp.models import PriceSummary, Run
+import pytz
+from datetime import datetime, timedelta
 
 
 def check_version_compatibility(version: str) -> bool:
@@ -93,6 +95,27 @@ def get_popular_items_dict_v2(server_id) -> Any:
     return return_values
 
 
+def check_scanner_status(request):
+
+    scanner_groups = []
+    for g in request.user.groups.all():
+        scanner_groups.append(g.name)
+    if 'scanner_user' not in scanner_groups:
+
+        return {'scanner': False}
+    server_ids = []
+    for group in scanner_groups:
+        if 'server-' in group:
+            server_ids.append(group[group.index("-") + 1:])
+    # Get users last scan date. If it's more than 24 hours old show no data.
+
+    current_utc_time = datetime.now()
+    try:
+        all_runs = Run.objects.filter(username=request.user.username, start_date__gte=(current_utc_time - timedelta(days=1)))
+    except Run.DoesNotExist:
+        return {'scanner': True, 'recent_scans': False}
+
+    return {'scanner': True, 'recently_scanned': True, 'server_ids': server_ids}
 
 
 
