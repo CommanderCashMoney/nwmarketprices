@@ -316,8 +316,8 @@ const loadRareItems = (serverId) => {
               let lastseenCell = document.createElement("td");
 
 
-              let item_url = '/' + obj.item_id + '/' + serverId
-              nameCell.innerHTML = `<a href='${item_url}'>` + obj.item_name + "</a>";
+              let item_id = obj.item_id
+              nameCell.innerHTML = `<a onclick="loadGraphModal(${serverId}, ${item_id});return false;">` + obj.item_name + "</a>";
               priceCell.innerHTML = obj.price;
               lastseenCell.innerHTML = obj.last_seen + ' days ago';
 
@@ -384,8 +384,8 @@ const loadTopSold = (serverId) => {
                   let totalCell = document.createElement("td");
 
 
-                  let item_url = '/' + obj.ItemId + '/' + serverId
-                  nameCell.innerHTML = `<a href='${item_url}'>` + obj.ItemName + "</a>";
+                  let item_id = obj.ItemId
+                  nameCell.innerHTML = `<a onclick="loadGraphModal(${serverId}, ${item_id});return false;">` + obj.ItemName + "</a>";
                   priceCell.innerHTML = obj.AvgPrice;
                   qtyCell.innerHTML = obj.AvgQty;
                   totalCell.innerHTML = obj.Total;
@@ -408,7 +408,9 @@ const loadTopSold = (serverId) => {
 
 
     }).catch((data) => {
+
         console.log(data);
+         // createNotification(data['status'], "danger");
 
     })
 
@@ -420,7 +422,9 @@ const loadGraphModal = (serverId, itemId) => {
        create_linegraph(data["graph_data"],'dashboard-graph-modal-chart');
        const DataModal = document.getElementById('dashboard-graph-modal');
        const modalTitle = document.getElementById('graph-modal-title');
-       modalTitle.innerHTML = data['item_name']
+       let item_url = '/' + data['item_id'] + '/' + serverId
+       modalTitle.innerHTML = `<a href='${item_url}'>` + data['item_name'] + '</a>'
+       // modalTitle.innerHTML = data['item_name']
        DataModal.classList.add("is-active");
 
 
@@ -432,10 +436,11 @@ const loadGraphModal = (serverId, itemId) => {
 
         });
 
-       console.log('GraphOverlay success', data)
+
 
     }).catch((data) => {
         console.log('GraphOverlay fail',data);
+        createNotification(data['status'], "danger");
 
     })
 

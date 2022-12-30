@@ -32,8 +32,8 @@ def createCraftObject(data):
         })
     return res
 
-# @ratelimit(key='ip', rate='4/s', block=True)
-# @cache_page(60 * 10)
+@ratelimit(key='ip', rate='4/s', block=True)
+@cache_page(60 * 10)
 def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse:
 
     if not item_id.isnumeric():
@@ -132,8 +132,8 @@ def initial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse
     })
 
 
-# @ratelimit(key='ip', rate='5/m', block=True)
-# @cache_page(60 * 10)
+@ratelimit(key='ip', rate='5/m', block=True)
+@cache_page(60 * 10)
 def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
     p = perf_counter()
     final_prices = []
@@ -190,7 +190,6 @@ def update_server_prices(request: WSGIRequest, server_id: int) -> JsonResponse:
         return JsonResponse({"status": "forbidden"}, status=status.HTTP_403_FORBIDDEN)
     query = render_to_string("queries/get_item_data_full.sql", context={"server_id": server_id})
     with connection.cursor() as cursor:
-        # print(query)
         cursor.execute(query)
 
     return JsonResponse({"status": "ok", "calc_time": perf_counter() - p}, status=status.HTTP_201_CREATED)
