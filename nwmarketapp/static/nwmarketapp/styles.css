@@ -223,6 +223,12 @@ html {
   display: inline-block;
 
 }
+.tab-pane {
+    display: none
+}
+.is-active {
+    display: initial
+}
 .news_li li{
     margin-left: 50px;
     list-style: disc;
