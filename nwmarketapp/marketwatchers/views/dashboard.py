@@ -82,8 +82,8 @@ def dashboard(request: WSGIRequest, server_id):
     return render(request, "marketwatchers/dashboard.html", {'servers': server_details})
 
 
-# @ratelimit(key='ip', rate='1/s', block=True)
-# @cache_page(60 * 5)
+@ratelimit(key='ip', rate='1/s', block=True)
+@cache_page(60 * 5)
 def price_changes(request: WSGIRequest, server_id):
     scanner_status = check_scanner_status(request)
     if not scanner_status['scanner'] or not scanner_status['recently_scanned']:
@@ -101,11 +101,6 @@ def price_changes(request: WSGIRequest, server_id):
 
     price_drops = []
     price_increases = []
-
-
-
-
-
 
     for obj in ps:
 
@@ -153,28 +148,20 @@ def rare_items(request: WSGIRequest, server_id):
         return JsonResponse({"status": "No recent scans from user"}, status=404)
 
     p = time.perf_counter()
+    query = render_to_string("queries/rare_items.sql", context={"server_id": server_id})
 
     try:
-        ps = PriceSummary.objects.filter(server_id=server_id)
+        ps = PriceSummary.objects.raw(query)
     except PriceSummary.DoesNotExist:
-        return JsonResponse({"status": "No prices found for this item."}, status=404)
+        return JsonResponse({"status": "No prices found."}, status=404)
 
-    current_time = datetime.now()
+
     rare_items_list = []
     for obj in ps:
-        # show only items seen in the last 24 hours
-        time_diff = current_time - obj.recent_price_time
-        hours_since_seen = time_diff.total_seconds() / 3600
-        if hours_since_seen <= 24:
-            if len(obj.ordered_graph_data) > 1:
-                # prior to today, this item hasn't been seen for 7 or more days. But it was seen at least once
-                previously_seen_time = parser.parse(obj.ordered_graph_data[-2]['price_date'])
-                time_diff = current_time - previously_seen_time
-                hours_since_previously_seen = time_diff.total_seconds() / 3600
-                if hours_since_previously_seen > 168:
-                    rare_items_list.append({'item_name': obj.confirmed_name.name, 'item_id': obj.confirmed_name_id,
-                                            'price': obj.recent_lowest_price['price'],
-                                            'last_seen': time_diff.days})
+
+        rare_items_list.append({'item_name': obj.confirmed_name.name, 'item_id': obj.confirmed_name_id,
+                                'price': obj.recent_lowest_price['price'],
+                                'last_seen': obj.diff})
 
     rare_items_list = sorted(rare_items_list, key=lambda item: item["last_seen"], reverse=True)[:10]
     elapsed = time.perf_counter() - p
