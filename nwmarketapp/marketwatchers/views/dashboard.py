@@ -105,7 +105,7 @@ def price_changes(request: WSGIRequest, server_id):
     for obj in ps:
 
         # if obj.recent_lowest_price['avail'] > 4:
-        if obj.price_change < -50:
+        if obj.price_change < -40:
             if obj.ordered_graph_data[-1]['rolling_average'] > obj.recent_lowest_price['price']:
                 try:
                     vs_avg = 100 - ((obj.recent_lowest_price['price'] / obj.ordered_graph_data[-1][
@@ -117,7 +117,7 @@ def price_changes(request: WSGIRequest, server_id):
                                         'price': obj.recent_lowest_price['price'], 'price_change': obj.price_change,
                                         'vs_avg': -abs(round(vs_avg))})
 
-        if obj.price_change > 1000:
+        if obj.price_change > 800:
             if obj.ordered_graph_data[-1]['rolling_average'] < obj.recent_lowest_price['price']:
                 try:
                     vs_avg = 100 - ((obj.ordered_graph_data[-1]['rolling_average'] / obj.recent_lowest_price[
@@ -140,8 +140,8 @@ def price_changes(request: WSGIRequest, server_id):
     return JsonResponse({'price_drops': price_drops, 'price_increases': price_increases})
 
 
-# @ratelimit(key='ip', rate='1/s', block=True)
-# @cache_page(60 * 5)
+@ratelimit(key='ip', rate='1/s', block=True)
+@cache_page(60 * 5)
 def rare_items(request: WSGIRequest, server_id):
     scanner_status = check_scanner_status(request)
     if not scanner_status['scanner'] or not scanner_status['recently_scanned']:
