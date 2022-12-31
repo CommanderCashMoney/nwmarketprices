@@ -187,7 +187,7 @@ class PriceSummary(models.Model):
                 if item['lowest_price'] <= 30:
                     if item['single_price_avail'] < 1:
                         item['single_price_avail'] = 1
-                    if item['single_price_avail'] / avg_avail <= 0.10:
+                    if item['single_price_avail'] / avg_avail <= 0.13:
                         if item['lowest_price'] / avg_price <= 0.60:
                             g.pop(idx)
                             continue
@@ -268,7 +268,7 @@ class PriceSummary(models.Model):
             buy_orders.append((item_price.get('buy_order_price', None), item_price.get('qty', None)))
             if item_price['avail'] < 1:
                 item_price['avail'] = 1
-            if item_price['avail'] / avg_qty <= 0.10:
+            if item_price['avail'] / avg_qty <= 0.13:
                 if item_price['price'] / avg_price <= 0.60:
                     price_list.pop(idx)
                     continue

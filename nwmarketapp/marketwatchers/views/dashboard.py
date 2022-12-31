@@ -82,8 +82,8 @@ def dashboard(request: WSGIRequest, server_id):
     return render(request, "marketwatchers/dashboard.html", {'servers': server_details})
 
 
-@ratelimit(key='ip', rate='1/s', block=True)
-@cache_page(60 * 5)
+# @ratelimit(key='ip', rate='1/s', block=True)
+# @cache_page(60 * 5)
 def price_changes(request: WSGIRequest, server_id):
     scanner_status = check_scanner_status(request)
     if not scanner_status['scanner'] or not scanner_status['recently_scanned']:
@@ -91,39 +91,50 @@ def price_changes(request: WSGIRequest, server_id):
 
     p = time.perf_counter()
 
+    query = render_to_string("queries/largest_price_changes.sql", context={"server_id": server_id})
+
     try:
-        ps = PriceSummary.objects.filter(server_id=server_id)
+        ps = PriceSummary.objects.raw(query)
     except PriceSummary.DoesNotExist:
         return JsonResponse({"status": "No prices found."}, status=404)
 
 
     price_drops = []
     price_increases = []
-    for obj in ps:
-        if obj.recent_lowest_price['avail'] > 4:
-            if obj.price_change < -30:
-                if obj.ordered_graph_data[-1]['rolling_average'] > obj.recent_lowest_price['price']:
-                    try:
-                        vs_avg = 100 - ((obj.recent_lowest_price['price'] / obj.ordered_graph_data[-1][
-                            'rolling_average']) * 100.0)
-                    except ZeroDivisionError:
-                        vs_avg = 0
-                    if vs_avg > 20:
-                        price_drops.append({'item_name': obj.confirmed_name.name, 'item_id': obj.confirmed_name_id,
-                                            'price': obj.recent_lowest_price['price'], 'price_change': obj.price_change,
-                                            'vs_avg': -abs(round(vs_avg))})
 
-            if obj.price_change > 30:
-                if obj.ordered_graph_data[-1]['rolling_average'] < obj.recent_lowest_price['price']:
-                    try:
-                        vs_avg = 100 - ((obj.ordered_graph_data[-1]['rolling_average'] / obj.recent_lowest_price[
-                            'price']) * 100.0)
-                    except ZeroDivisionError:
-                        vs_avg = 0
-                    if vs_avg > 20:
-                        price_increases.append({'item_name': obj.confirmed_name.name, 'item_id': obj.confirmed_name_id,
-                                                'price': obj.recent_lowest_price['price'],
-                                                'price_change': obj.price_change, 'vs_avg': round(vs_avg)})
+
+
+
+
+
+    for obj in ps:
+
+        # if obj.recent_lowest_price['avail'] > 4:
+        if obj.price_change < -50:
+            if obj.ordered_graph_data[-1]['rolling_average'] > obj.recent_lowest_price['price']:
+                try:
+                    vs_avg = 100 - ((obj.recent_lowest_price['price'] / obj.ordered_graph_data[-1][
+                        'rolling_average']) * 100.0)
+                except ZeroDivisionError:
+                    vs_avg = 0
+                if vs_avg > 30:
+                    price_drops.append({'item_name': obj.confirmed_name.name, 'item_id': obj.confirmed_name_id,
+                                        'price': obj.recent_lowest_price['price'], 'price_change': obj.price_change,
+                                        'vs_avg': -abs(round(vs_avg))})
+
+        if obj.price_change > 1000:
+            if obj.ordered_graph_data[-1]['rolling_average'] < obj.recent_lowest_price['price']:
+                try:
+                    vs_avg = 100 - ((obj.ordered_graph_data[-1]['rolling_average'] / obj.recent_lowest_price[
+                        'price']) * 100.0)
+                except ZeroDivisionError:
+                    vs_avg = 0
+                if vs_avg > 30:
+                    price_increases.append({'item_name': obj.confirmed_name.name, 'item_id': obj.confirmed_name_id,
+                                            'price': obj.recent_lowest_price['price'],
+                                            'price_change': obj.price_change, 'vs_avg': round(vs_avg)})
+
+
 
     price_drops = sorted(price_drops, key=lambda item: item["price_change"])[:20]
     price_increases = sorted(price_increases, key=lambda item: item["price_change"], reverse=True)[:20]
@@ -134,8 +145,8 @@ def price_changes(request: WSGIRequest, server_id):
     return JsonResponse({'price_drops': price_drops, 'price_increases': price_increases})
 
 
-@ratelimit(key='ip', rate='1/s', block=True)
-@cache_page(60 * 5)
+# @ratelimit(key='ip', rate='1/s', block=True)
+# @cache_page(60 * 5)
 def rare_items(request: WSGIRequest, server_id):
     scanner_status = check_scanner_status(request)
     if not scanner_status['scanner'] or not scanner_status['recently_scanned']:
