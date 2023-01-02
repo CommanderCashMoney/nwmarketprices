@@ -40,13 +40,13 @@ with tbl1 as (
 
          from tbl2
           ),
-     tbl4 as (
+    tbl4 as (
          select confirmed_name_id,
-               DATE_PART('day', date_only::DATE) - DATE_PART('day', prev_date::DATE) as diff
+                extract(day from date_only::timestamp - prev_date::timestamp) as diff
          from tbl3
 
          where date_only::DATE > NOW() - INTERVAL '2 DAYS'
-           and DATE_PART('day', date_only::DATE) - DATE_PART('day', prev_date::DATE) > 7
+          and  extract(day from date_only::timestamp - prev_date::timestamp) >= 7
            and confirmed_name_id = prev_cn
          order by DATE_PART('day', date_only::DATE) - DATE_PART('day', prev_date::DATE) desc
      )
