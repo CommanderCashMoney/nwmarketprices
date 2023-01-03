@@ -19,7 +19,10 @@ function changeServer(server_id, initialLoad=false){
         download_link.href = `/api/latest-prices/${server_id}/`;
 
     });
-    document.getElementById('dashboard-link').href= '/mw/dashboard/' + server_id
+    linkItem = document.getElementById('dashboard-link')
+    if (linkItem) {
+       linkItem.href = '/mw/dashboard/' + server_id
+    }
 
 
     serverId = server_id;
