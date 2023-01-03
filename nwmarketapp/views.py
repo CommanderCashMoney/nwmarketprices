@@ -302,12 +302,12 @@ def get_serverlist():
 @cache_page(60 * 20)
 def news(request):
     server_names = Servers.objects.filter(id=OuterRef('server_id'))
-    recent_scans = Run.objects.annotate(sn=Subquery(server_names.values('name')[:1])).order_by('-id')[:15]
+    recent_scans = Run.objects.annotate(sn=Subquery(server_names.values('name')[:1])).filter(section_name='Raw Resources').order_by('-id')[:15]
 
     recent_scans = list(recent_scans.values_list('start_date', 'sn'))
-    total_scans = Run.objects.count()
+    total_scans = Run.objects.filter(section_name='Raw Resources').count()
     total_servers = Servers.objects.count()
-    most_scanned_server = Run.objects.annotate(sn=Subquery(server_names.values('name')[:1]))
+    most_scanned_server = Run.objects.annotate(sn=Subquery(server_names.values('name')[:1])).filter(section_name='Raw Resources')
     most_scanned_server = list(most_scanned_server.values_list('sn').annotate(name_count=Count('sn')).order_by('-name_count')[:7])
     news_feed = feedparser.parse("https://forums.newworld.com/c/official-news/official-news/50.rss")
     return render(request, 'news.html', {'recent_scans': recent_scans, 'total_scans': total_scans, 'total_servers': total_servers, 'most_scanned_server': most_scanned_server, 'news_entries': news_feed.entries})
