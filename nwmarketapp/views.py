@@ -150,12 +150,12 @@ class PricesUploadAPI(CreateAPIView):
         server_name = Servers.objects.get(pk=run.server_id).name
         try:
             requests.post(webhook_url, data={
-                "content": f"Scan upload from {run.username}. "
-                           f"Server ID: {run.server_id}, "
-                           f"Server Name: {server_name}, "
-                           f"Total Prices: {total_listings}, "
-                           f"Unique Items: {total_unique_items}, "
-                           f"Section: {run.section_name}"
+                           "content": f"Server Name: {server_name}, " 
+                                      f"Server ID: {run.server_id}, "
+                                      f"User: {run.username}. "                                  
+                                      f"Total Prices: {total_listings}, "
+                                      f"Unique Items: {total_unique_items}, "
+                                      f"Section: {run.section_name}"
             })
         except Exception:  # noqa
             logging.exception("Discord webhook failed")
