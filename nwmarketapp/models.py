@@ -180,8 +180,7 @@ class PriceSummary(models.Model):
             avg_price = sum(p['lowest_price'] for p in g) / len(g)
             avg_avail = sum(p['single_price_avail'] for p in g) / len(g)
             buy_orders = []
-            if self.confirmed_name.name == 'Death Mote':
-                print('lol')
+
             for idx, item in reversed(list(enumerate(g))):
                 buy_orders.append(item.get('highest_buy_order', None))
                 item.update({"avg_price": avg_price})

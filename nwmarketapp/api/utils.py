@@ -103,9 +103,9 @@ def check_scanner_status(request):
 
     if 'scanner_user' not in scanner_groups:
         if 'discord-gold' not in scanner_groups:
-            return {'scanner': False, 'discord-gold': False}
+            return {'scanner': False, 'discord-gold': False, 'recent_scans': False, 'server_ids': None}
         else:
-            return {'scanner': False, 'discord-gold': True}
+            return {'scanner': False, 'discord-gold': True, 'recent_scans': False, 'server_ids': None}
     if 'discord-gold' in scanner_groups:
         discord_gold = True
     else:
@@ -120,10 +120,10 @@ def check_scanner_status(request):
     try:
         all_runs = Run.objects.filter(username=request.user.username, start_date__gte=(current_utc_time - timedelta(days=1))).count()
     except Run.DoesNotExist:
-        return {'scanner': True, 'recent_scans': False, 'discord-gold': discord_gold}
+        return {'scanner': True, 'recent_scans': False, 'discord-gold': discord_gold, 'server_ids': None}
 
     if all_runs < 10:
-        return {'scanner': True, 'recent_scans': False, 'discord-gold': discord_gold}
+        return {'scanner': True, 'recent_scans': False, 'discord-gold': discord_gold, 'server_ids': None}
 
     return {'scanner': True, 'recently_scanned': True, 'server_ids': server_ids, 'discord-gold': discord_gold}
 
