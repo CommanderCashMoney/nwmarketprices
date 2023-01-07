@@ -284,6 +284,7 @@ def get_serverlist():
         if item[2] and item[3]:
             tz = pytz.timezone(item[3])
             last_scan_utc = tz.normalize(tz.localize(item[2])).astimezone(pytz.utc)
+
             last_scan_utc = last_scan_utc.replace(tzinfo=None)
             timediff = current_utc_time - last_scan_utc
             hours_since_last_scan = timediff.total_seconds() / 3600
@@ -294,7 +295,7 @@ def get_serverlist():
             else:
                 dot_color = 'green-dot'
 
-            server_details[item[0]] = {'name': item[1], 'health': dot_color, 'last_scanned': humanize.naturaltime(last_scan_utc)}
+            server_details[item[0]] = {'name': item[1], 'health': dot_color, 'last_scanned': humanize.naturaltime(item[2])}
         else:
             server_details[item[0]] = {'name': item[1], 'health': 'red-dot', 'last_scanned': None}
     return server_details
