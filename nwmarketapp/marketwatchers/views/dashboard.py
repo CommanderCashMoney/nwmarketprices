@@ -188,7 +188,10 @@ def get_dashboard_items(request: WSGIRequest, server_id: int):
         return JsonResponse({"status": "No items found.", 'max_tracked_num': max_tracked_num}, status=404)
 
     item_ids = item_ids.item_ids
-    # item_ids = item_ids[:max_tracked_num]
+    if not item_ids:
+        return JsonResponse({"status": "No items found.", 'max_tracked_num': max_tracked_num}, status=404)
+
+    item_ids = item_ids[:max_tracked_num]
     try:
         ps = PriceSummary.objects.filter(server_id=server_id, confirmed_name_id__in=item_ids).select_related(
             'confirmed_name')

@@ -6,7 +6,6 @@ import concurrent
 import requests
 from constance import config
 from nwmarketapp.models import PriceSummary, Run
-import pytz
 from datetime import datetime, timedelta
 
 
@@ -126,7 +125,6 @@ def check_scanner_status(request):
         return {'scanner': True, 'recently_scanned': False, 'discord-gold': discord_gold, 'server_ids': None}
 
     return {'scanner': True, 'recently_scanned': True, 'server_ids': server_ids, 'discord-gold': discord_gold}
-
 
 
 def load_url(url, reqs=requests):

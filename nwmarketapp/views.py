@@ -29,7 +29,7 @@ from django.db.models import Subquery, OuterRef, Count
 import feedparser
 from threading import Thread
 from time import perf_counter
-
+import humanize
 
 
 class TokenPairSerializer(TokenObtainPairSerializer):
@@ -294,9 +294,9 @@ def get_serverlist():
             else:
                 dot_color = 'green-dot'
 
-            server_details[item[0]] = {'name': item[1], 'health': dot_color}
+            server_details[item[0]] = {'name': item[1], 'health': dot_color, 'last_scanned': humanize.naturaltime(item[2])}
         else:
-            server_details[item[0]] = {'name': item[1], 'health': 'red-dot'}
+            server_details[item[0]] = {'name': item[1], 'health': 'red-dot', 'last_scanned': None}
     return server_details
 
 @cache_page(60 * 20)
