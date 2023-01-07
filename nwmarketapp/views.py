@@ -294,7 +294,7 @@ def get_serverlist():
             else:
                 dot_color = 'green-dot'
 
-            server_details[item[0]] = {'name': item[1], 'health': dot_color, 'last_scanned': humanize.naturaltime(item[2])}
+            server_details[item[0]] = {'name': item[1], 'health': dot_color, 'last_scanned': humanize.naturaltime(last_scan_utc)}
         else:
             server_details[item[0]] = {'name': item[1], 'health': 'red-dot', 'last_scanned': None}
     return server_details
