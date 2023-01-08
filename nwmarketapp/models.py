@@ -194,6 +194,10 @@ class PriceSummary(models.Model):
                         if item['lowest_price'] / avg_price <= 0.55:
                             g.pop(idx)
                             continue
+                    elif item['lowest_price'] / avg_price <= 0.05:
+                        g.pop(idx)
+                        print(f'removed: {self.confirmed_name.name} with price of {item["lowest_price"]}')
+                        continue
 
 
             highest_bo = max([i for i in buy_orders if i is not None], default=0)
@@ -278,6 +282,10 @@ class PriceSummary(models.Model):
                 if item_price['price'] / avg_price <= 0.55:
                     price_list.pop(idx)
                     continue
+            elif item_price['price'] / avg_price <= 0.05:
+                price_list.pop(idx)
+
+                continue
 
         highest_buy_order = max(buy_orders, key=lambda tup: (tup[0]) if (tup[0]) else 0)
         price_list[0]['buy_order_price'] = highest_buy_order[
