@@ -37,9 +37,6 @@ def buy_orders(request: WSGIRequest):
                 results.pop(idx)
                 break
 
-
-
-
     return render(request, "marketwatchers/buy_orders.html", {'results': results, 'column_names': column_names})
 
 

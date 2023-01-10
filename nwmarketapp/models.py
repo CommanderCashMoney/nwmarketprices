@@ -179,6 +179,7 @@ class PriceSummary(models.Model):
             g = sorted(list(group), key=lambda d: d['lowest_price'])
             avg_price = sum(p['lowest_price'] for p in g) / len(g)
             avg_avail = sum(p['single_price_avail'] for p in g) / len(g)
+            max_price = max(p['lowest_price'] for p in g)
             buy_orders = []
 
             for idx, item in reversed(list(enumerate(g))):
@@ -194,9 +195,9 @@ class PriceSummary(models.Model):
                         if item['lowest_price'] / avg_price <= 0.55:
                             g.pop(idx)
                             continue
-                    elif item['lowest_price'] / avg_price <= 0.05:
+                    elif item['lowest_price'] / avg_price <= 0.05 and max_price < 50 and avail_diff <= 0.8 and avg_avail > 5:
                         g.pop(idx)
-                        print(f'removed: {self.confirmed_name.name} with price of {item["lowest_price"]}')
+                        print(f'removed: {self.confirmed_name.name} with price of {item["lowest_price"]} on {self.server_id} with date: {item["date_only"]}')
                         continue
 
 
