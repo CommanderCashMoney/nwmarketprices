@@ -27,6 +27,9 @@
                         Sold Item tracking
                     </a>
                     {% endif %}
+                    <a id='dashboard-link' class="navbar-item server settings-item" href="/mw/dashboard/2">
+                        Custom Dashboard
+                    </a>
                     <form method="post" action="{% url 'account_logout' %}" class="pb-0">
                         {% csrf_token %}
                         <button class="button is-primary login" href="/account/logout/">

@@ -142,6 +142,11 @@ function changeServer(server_id){
     localStorage.setItem('lastServerId', server_id);
     let server_health = '<span class="' + servers[server_id]['health'] + '"></span>&nbsp;'
     document.getElementById("server-name").innerHTML = server_health + servers[server_id]['name'];
+    document.getElementById("server-timestamp").innerHTML =  'Updated ' + servers[server_id]['last_scanned']
+    let linkItem = document.getElementById('dashboard-link')
+    if (linkItem) {
+       linkItem.href = '/mw/dashboard/' + server_id
+    }
 
     serverId = server_id;
     loadTrackedItems(serverId)

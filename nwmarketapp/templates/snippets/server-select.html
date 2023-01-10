@@ -1,7 +1,10 @@
 <div class="navbar-item has-dropdown server-select" id="server-select">
+    <div style="margin-top: 6%">
     <a class="navbar-link" id="server-name">
       Server Select
     </a>
+        <div class="timestamp" style="margin-top: -10px; margin-left: 22%" id="server-timestamp"> Update 2 days ago</div>
+    </div>
     <div class="navbar-dropdown is-dark hidden white-border">
     {% for server_id, server_data in servers.items %}
       <a class="navbar-item server" onclick="changeServer({{ server_id }})">

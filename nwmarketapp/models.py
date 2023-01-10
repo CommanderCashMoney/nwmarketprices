@@ -180,17 +180,24 @@ class PriceSummary(models.Model):
             avg_price = sum(p['lowest_price'] for p in g) / len(g)
             avg_avail = sum(p['single_price_avail'] for p in g) / len(g)
             buy_orders = []
+
             for idx, item in reversed(list(enumerate(g))):
                 buy_orders.append(item.get('highest_buy_order', None))
                 item.update({"avg_price": avg_price})
                 item.update({"avg_avail": avg_avail})
                 if item['lowest_price'] <= 30:
-                    if item['single_price_avail'] < 1:
-                        item['single_price_avail'] = 1
-                    if item['single_price_avail'] / avg_avail <= 0.13:
-                        if item['lowest_price'] / avg_price <= 0.60:
+                    try:
+                        avail_diff = item['single_price_avail'] / avg_avail
+                    except ZeroDivisionError:
+                        avail_diff = 1/avg_avail
+                    if avail_diff <= 0.22:
+                        if item['lowest_price'] / avg_price <= 0.55:
                             g.pop(idx)
                             continue
+                    elif item['lowest_price'] / avg_price <= 0.05:
+                        g.pop(idx)
+                        print(f'removed: {self.confirmed_name.name} with price of {item["lowest_price"]}')
+                        continue
 
 
             highest_bo = max([i for i in buy_orders if i is not None], default=0)
@@ -266,12 +273,19 @@ class PriceSummary(models.Model):
         avg_qty = sum(p['avail'] for p in price_list) / len(price_list)
         for idx, item_price in reversed(list(enumerate(price_list))):
             buy_orders.append((item_price.get('buy_order_price', None), item_price.get('qty', None)))
-            if item_price['avail'] < 1:
-                item_price['avail'] = 1
-            if item_price['avail'] / avg_qty <= 0.13:
-                if item_price['price'] / avg_price <= 0.60:
+
+            try:
+                avail_diff = item_price['avail'] / avg_qty
+            except ZeroDivisionError:
+                avail_diff = 1 / avg_qty
+            if avail_diff <= 0.22:
+                if item_price['price'] / avg_price <= 0.55:
                     price_list.pop(idx)
                     continue
+            elif item_price['price'] / avg_price <= 0.05:
+                price_list.pop(idx)
+
+                continue
 
         highest_buy_order = max(buy_orders, key=lambda tup: (tup[0]) if (tup[0]) else 0)
         price_list[0]['buy_order_price'] = highest_buy_order[

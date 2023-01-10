@@ -3,6 +3,7 @@ const initTypeahead = (data) => {
         input: '.item-search',
         display: "name",
         source: {data: data},
+        maxItem: 10,
         callback: {
             onInit: function (node) {
                 console.log('Typeahead Initiated on ' + node.selector);

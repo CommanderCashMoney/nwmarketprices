@@ -1,6 +1,7 @@
 import logging
 from typing import List, Tuple
 import pytz
+import tzlocal
 import requests
 from constance import config  # noqa
 from datetime import datetime
@@ -29,7 +30,7 @@ from django.db.models import Subquery, OuterRef, Count
 import feedparser
 from threading import Thread
 from time import perf_counter
-
+import humanize
 
 
 class TokenPairSerializer(TokenObtainPairSerializer):
@@ -150,12 +151,12 @@ class PricesUploadAPI(CreateAPIView):
         server_name = Servers.objects.get(pk=run.server_id).name
         try:
             requests.post(webhook_url, data={
-                "content": f"Scan upload from {run.username}. "
-                           f"Server ID: {run.server_id}, "
-                           f"Server Name: {server_name}, "
-                           f"Total Prices: {total_listings}, "
-                           f"Unique Items: {total_unique_items}, "
-                           f"Section: {run.section_name}"
+                           "content": f"Server Name: {server_name}, " 
+                                      f"Server ID: {run.server_id}, "
+                                      f"User: {run.username}. "                                  
+                                      f"Total Prices: {total_listings}, "
+                                      f"Unique Items: {total_unique_items}, "
+                                      f"Section: {run.section_name}"
             })
         except Exception:  # noqa
             logging.exception("Discord webhook failed")
@@ -284,6 +285,9 @@ def get_serverlist():
         if item[2] and item[3]:
             tz = pytz.timezone(item[3])
             last_scan_utc = tz.normalize(tz.localize(item[2])).astimezone(pytz.utc)
+            localtz = tzlocal.get_localzone()
+            localtime = last_scan_utc.replace(tzinfo=pytz.utc).astimezone(localtz)
+            localtime = localtime.replace(tzinfo=None)
             last_scan_utc = last_scan_utc.replace(tzinfo=None)
             timediff = current_utc_time - last_scan_utc
             hours_since_last_scan = timediff.total_seconds() / 3600
@@ -294,20 +298,20 @@ def get_serverlist():
             else:
                 dot_color = 'green-dot'
 
-            server_details[item[0]] = {'name': item[1], 'health': dot_color}
+            server_details[item[0]] = {'name': item[1], 'health': dot_color, 'last_scanned': humanize.naturaltime(localtime)}
         else:
-            server_details[item[0]] = {'name': item[1], 'health': 'red-dot'}
+            server_details[item[0]] = {'name': item[1], 'health': 'red-dot', 'last_scanned': None}
     return server_details
 
 @cache_page(60 * 20)
 def news(request):
     server_names = Servers.objects.filter(id=OuterRef('server_id'))
-    recent_scans = Run.objects.annotate(sn=Subquery(server_names.values('name')[:1])).order_by('-id')[:15]
+    recent_scans = Run.objects.annotate(sn=Subquery(server_names.values('name')[:1])).filter(section_name='Raw Resources').order_by('-id')[:15]
 
     recent_scans = list(recent_scans.values_list('start_date', 'sn'))
-    total_scans = Run.objects.count()
+    total_scans = Run.objects.filter(section_name='Raw Resources').count()
     total_servers = Servers.objects.count()
-    most_scanned_server = Run.objects.annotate(sn=Subquery(server_names.values('name')[:1]))
+    most_scanned_server = Run.objects.annotate(sn=Subquery(server_names.values('name')[:1])).filter(section_name='Raw Resources')
     most_scanned_server = list(most_scanned_server.values_list('sn').annotate(name_count=Count('sn')).order_by('-name_count')[:7])
     news_feed = feedparser.parse("https://forums.newworld.com/c/official-news/official-news/50.rss")
     return render(request, 'news.html', {'recent_scans': recent_scans, 'total_scans': total_scans, 'total_servers': total_servers, 'most_scanned_server': most_scanned_server, 'news_entries': news_feed.entries})

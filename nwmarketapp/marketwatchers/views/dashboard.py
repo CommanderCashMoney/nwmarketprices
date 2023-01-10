@@ -87,7 +87,8 @@ def dashboard(request: WSGIRequest, server_id):
 def price_changes(request: WSGIRequest, server_id):
     scanner_status = check_scanner_status(request)
     if not scanner_status['scanner'] or not scanner_status['recently_scanned']:
-        return JsonResponse({"status": "No recent scans from user"}, status=404)
+        if not scanner_status['discord-gold']:
+            return JsonResponse({"status": "No recent scans from user"}, status=404)
 
     p = time.perf_counter()
 
@@ -145,7 +146,8 @@ def price_changes(request: WSGIRequest, server_id):
 def rare_items(request: WSGIRequest, server_id):
     scanner_status = check_scanner_status(request)
     if not scanner_status['scanner'] or not scanner_status['recently_scanned']:
-        return JsonResponse({"status": "No recent scans from user"}, status=404)
+        if not scanner_status['discord-gold']:
+            return JsonResponse({"status": "No recent scans from user"}, status=404)
 
     p = time.perf_counter()
     query = render_to_string("queries/rare_items.sql", context={"server_id": server_id})
@@ -177,7 +179,8 @@ def get_dashboard_items(request: WSGIRequest, server_id: int):
     max_tracked_num = 12
     scanner_status = check_scanner_status(request)
     if not scanner_status['scanner'] or not scanner_status['recently_scanned']:
-        max_tracked_num = 6
+        if not scanner_status['discord-gold']:
+            max_tracked_num = 6
 
     try:
         item_ids = AuthUserTrackedItems.objects.get(user_id=request.user.id, server_id=server_id)
@@ -185,7 +188,10 @@ def get_dashboard_items(request: WSGIRequest, server_id: int):
         return JsonResponse({"status": "No items found.", 'max_tracked_num': max_tracked_num}, status=404)
 
     item_ids = item_ids.item_ids
-    # item_ids = item_ids[:max_tracked_num]
+    if not item_ids:
+        return JsonResponse({"status": "No items found.", 'max_tracked_num': max_tracked_num}, status=404)
+
+    item_ids = item_ids[:max_tracked_num]
     try:
         ps = PriceSummary.objects.filter(server_id=server_id, confirmed_name_id__in=item_ids).select_related(
             'confirmed_name')
@@ -237,7 +243,8 @@ def get_name(item):
 def top_sold_items(request: WSGIRequest, server_id: int):
     scanner_status = check_scanner_status(request)
     if not scanner_status['scanner'] or not scanner_status['recently_scanned']:
-        return JsonResponse({"status": "No recent scans from user"}, status=404)
+        if not scanner_status['discord-gold']:
+            return JsonResponse({"status": "No recent scans from user"}, status=404)
 
     query = render_to_string("queries/most_sold_items_allservers.sql")
     with connection.cursor() as cursor:
