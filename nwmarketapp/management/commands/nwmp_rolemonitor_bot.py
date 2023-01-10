@@ -29,7 +29,7 @@ class Command(BaseCommand):
 
         @bot.slash_command()
         async def stop_scanner_bot(ctx):
-            await ctx.respond("Add Scanner bot stopped", ephemeral=True)
+            await ctx.respond("Role Monitor bot stopped", ephemeral=True)
             exit()
 
         @bot.event
@@ -148,4 +148,4 @@ class Command(BaseCommand):
 # $ sudo su -
 # $ export $(cat /opt/elasticbeanstalk/deployment/env | xargs)
 # $ source /var/app/venv/*/bin/activate
-# $ python3 /var/app/current/manage.py start_scanner_bot
+# $ python3 /var/app/current/manage.py nwmp_rolemonitor_bot
