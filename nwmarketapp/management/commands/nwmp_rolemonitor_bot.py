@@ -28,7 +28,7 @@ class Command(BaseCommand):
         print('starting bot')
 
         @bot.slash_command()
-        async def stop_scanner_bot(ctx):
+        async def stop_rolemonitor_bot(ctx):
             await ctx.respond("Role Monitor bot stopped", ephemeral=True)
             exit()
 
@@ -42,7 +42,7 @@ class Command(BaseCommand):
             if len(before.roles) < len(after.roles):
                 # role was added
                 new_role = next(role for role in after.roles if role not in before.roles)
-                if new_role.name in ('Gold Supporter', 'Platinum Supporter'):
+                if new_role.name in ('Gold Subscriber'):
 
                     user_id = get_user_id(before.name)
                     if user_id:
@@ -86,7 +86,7 @@ class Command(BaseCommand):
             elif len(before.roles) > len(after.roles):
                 # role was removed
                 removed_role = next(role for role in before.roles if role not in after.roles)
-                if removed_role.name == 'Gold Supporter':
+                if removed_role.name == 'Gold Subscriber':
                     # remove gold group from site
                     user_id = get_user_id(before.name)
                     if user_id:
