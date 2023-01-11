@@ -42,7 +42,7 @@ class Command(BaseCommand):
             if len(before.roles) < len(after.roles):
                 # role was added
                 new_role = next(role for role in after.roles if role not in before.roles)
-                if new_role.name in ('Gold Subscriber'):
+                if new_role.name in ('Gold Subscriber', 'Premium Members'):
 
                     user_id = get_user_id(before.name)
                     if user_id:
