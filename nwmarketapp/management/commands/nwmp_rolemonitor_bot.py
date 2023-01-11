@@ -86,7 +86,7 @@ class Command(BaseCommand):
             elif len(before.roles) > len(after.roles):
                 # role was removed
                 removed_role = next(role for role in before.roles if role not in after.roles)
-                if removed_role.name == 'Gold Subscriber':
+                if removed_role.name in ('Gold Subscriber', 'Premium Members'):
                     # remove gold group from site
                     user_id = get_user_id(before.name)
                     if user_id:
