@@ -140,6 +140,10 @@ const loadTrackedItems = (serverId) => {
 
 function changeServer(server_id){
     localStorage.setItem('lastServerId', server_id);
+    if (typeof servers[server_id] == 'undefined') {
+       server_id = 2
+       serverId = 2
+    }
     let server_health = '<span class="' + servers[server_id]['health'] + '"></span>&nbsp;'
     document.getElementById("server-name").innerHTML = server_health + servers[server_id]['name'];
     document.getElementById("server-timestamp").innerHTML =  'Updated ' + servers[server_id]['last_scanned']
