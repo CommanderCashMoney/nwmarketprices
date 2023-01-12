@@ -3,14 +3,13 @@ import discord
 import os
 from dotenv import load_dotenv
 import psycopg2
-from discord.ext import commands
 Intents = discord.Intents.all()
 Intents.members = True
 Intents.presences = True
 Intents.messages = True
 
 load_dotenv()
-bot = commands.Bot(intents=Intents, command_prefix="&")
+bot = discord.Bot(intents=Intents)
 conn = psycopg2.connect(f"dbname={os.getenv('DB_NAME')} user={os.getenv('RDS_USERNAME')} password={os.getenv('RDS_PASSWORD')} host={os.getenv('RDS_HOSTNAME')}")
 curr = conn.cursor()
 
@@ -145,7 +144,7 @@ class Command(BaseCommand):
 # to run on ssh into eb aws
 # $ eb ssh
 # screen -S my_bot --start new session
-# screen -r my_bot  --reconnect to old1
+# screen -r my_bot  --reconnect to old
 # $ sudo su -
 # $ export $(cat /opt/elasticbeanstalk/deployment/env | xargs)
 # $ source /var/app/venv/*/bin/activate
