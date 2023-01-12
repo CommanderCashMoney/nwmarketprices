@@ -103,7 +103,7 @@ def initial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse
     with connection.cursor() as cursor:
         cursor.callproc('most_comp_top9', [server_id])
         for row in cursor.fetchall():
-            most_listed_item_top10.append((row[0], row[1]))
+            most_listed_item_top10.append((row[0], row[1], row[2]))
 
 
 

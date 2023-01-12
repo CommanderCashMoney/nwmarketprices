@@ -1,4 +1,5 @@
 let chart = null;
+let itemIds = {};
 
 const drawBar = () => {
     let names = [];
@@ -10,7 +11,18 @@ const drawBar = () => {
             color: colors[i],
             y: top10data[i][1]
         });
+        itemIds[top10data[i][0]] = top10data[i][2]
+
     }
+
+    Highcharts.AST.allowedAttributes.push('onclick');
+    Highcharts.addEvent(Highcharts.Tick, 'labelFormat', ctx => {
+        const axis = ctx.axis;
+        if (axis.categories) {
+            const category = axis.categories[ctx.pos];
+            ctx.link = itemIds[category];
+        }
+    });
     chart = Highcharts.chart('competitive-bar-container', {
         chart: {
             type: 'bar',
@@ -22,11 +34,16 @@ const drawBar = () => {
         },
         xAxis: {
             categories: names,
+            userHTML: true,
             gridLineColor: '#707073',
             labels: {
                 style: {
                     color: '#E0E0E3'
-                }
+                },
+               formatter: function () {
+                return `<a onclick="loadItem(itemIds['${this.value}']);">${this.value}</a>`
+
+            }
             },
             lineColor: '#707073',
             tickColor: '#707073',
@@ -97,3 +114,16 @@ window.addEventListener('resize', function(event) {
         }
     }, true, false, false);  // redraw=true, onetoone=false, animation=false
 });
+
+
+
+
+
+// Decorate the tick item with the link
+// Highcharts.addEvent(Highcharts.Tick, 'labelFormat', ctx => {
+//     const axis = ctx.axis;
+//     if (axis.categories) {
+//         const category = axis.categories[ctx.pos];
+//         ctx.link = categoryLinks[category];
+//     }
+// });

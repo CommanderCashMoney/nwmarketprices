@@ -13,7 +13,7 @@ const fetchAutocompleteData = () => {
 
 function changeServer(server_id, initialLoad=false){
     localStorage.setItem('lastServerId', server_id);
-    console.log(servers[server_id])
+
     if (typeof servers[server_id] == 'undefined') {
        server_id = 2
        serverId = 2
