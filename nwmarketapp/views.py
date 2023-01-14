@@ -106,6 +106,11 @@ class PricesUploadAPI(CreateAPIView):
 
         first_price = price_list[0]
         access_groups = request.user.groups.values_list('name', flat=True)
+        if 'scanner_user' not in access_groups:
+            return JsonResponse({
+                "status": False,
+                "message": 'Invalid user account'
+            }, status=status.HTTP_400_BAD_REQUEST)
         username = request.user.username
         run = add_run(username, first_price, request.data, access_groups)
         run_id = getattr(run, "id", None)
