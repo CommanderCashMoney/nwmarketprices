@@ -117,7 +117,7 @@ def check_scanner_status(request):
 
     current_utc_time = datetime.now()
     try:
-        all_runs = Run.objects.filter(username=request.user.username, start_date__gte=(current_utc_time - timedelta(days=1))).count()
+        all_runs = Run.objects.filter(username=request.user.username, start_date__gte=(current_utc_time - timedelta(days=2))).count()
     except Run.DoesNotExist:
         return {'scanner': True, 'recently_scanned': False, 'discord-gold': discord_gold, 'server_ids': None}
 

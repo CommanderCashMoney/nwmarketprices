@@ -12,6 +12,20 @@ join auth_user_groups aug on tb1.user_id = aug.user_id
 where aug.group_id = 1
 order by last_login
 
+--delete user with no scans and havent logged in in the past 14 days
+delete from auth_user_groups
+where group_id =1 and user_id in (select tb1.user_id from (
+                  select au.id as user_id, last_login, au.username, date_joined
+                  from auth_user au
+                           left join runs r on au.username = r.username
+                  where r.username is null
+                    and au.is_active = True
+                  order by last_login
+              ) as tb1
+join auth_user_groups aug on tb1.user_id = aug.user_id
+where aug.group_id = 1 and last_login < NOW() - INTERVAL '14 DAYS'
+order by last_login)
+
 -- find users with less than 5 scans who havnt scanned since 11-21-22
 select * from (
                   select max(au.id) as user_id, max(last_login) as last_login, r.username, max(date_joined), max(start_date) as scan_start, count(r.id) as scan_num
