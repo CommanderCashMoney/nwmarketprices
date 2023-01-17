@@ -173,6 +173,7 @@ def rare_items(request: WSGIRequest, server_id):
 
 
 @ratelimit(key='ip', rate='1/s', block=True)
+@cache_page(60 * 1)
 def get_dashboard_items(request: WSGIRequest, server_id: int):
     if request.user.is_anonymous:
         return JsonResponse({"status": "Not logged in"}, status=401)
@@ -240,6 +241,8 @@ def get_dashboard_items(request: WSGIRequest, server_id: int):
 def get_name(item):
     return item[0]
 
+@ratelimit(key='ip', rate='1/s', block=True)
+@cache_page(60 * 5)
 def top_sold_items(request: WSGIRequest, server_id: int):
     scanner_status = check_scanner_status(request)
     if not scanner_status['scanner'] or not scanner_status['recently_scanned']:
