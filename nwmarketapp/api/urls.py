@@ -19,5 +19,5 @@ urlpatterns = [
     path('servers/', names.servers, name="servers"),
     path('servers_updated/', prices.server_scan_times, name='server_scan_times'),
 
-    path('update-server-prices/<int:server_id>/', prices.update_server_prices, name="update-server-prices"),
+    # path('update-server-prices/<int:server_id>/', prices.update_server_prices, name="update-server-prices"),
 ]
