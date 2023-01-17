@@ -534,12 +534,22 @@ html {
         max-width: 33%;
     }
 
+
+}
+@media all and (min-width: 1776px) {
+
     .item-search-container {
         max-width: 509px;
-        width: 100%;
+
     }
 }
+@media all and (max-width: 424px) {
 
+    .nav-title {
+        font-size: 1.0rem!important;
+
+    }
+}
 .card {
     background-color: #3A3F47;
 }
