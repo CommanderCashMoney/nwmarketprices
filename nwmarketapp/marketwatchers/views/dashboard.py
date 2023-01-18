@@ -173,7 +173,6 @@ def rare_items(request: WSGIRequest, server_id):
 
 
 @ratelimit(key='ip', rate='1/s', block=True)
-@cache_page(60 * 1)
 def get_dashboard_items(request: WSGIRequest, server_id: int):
     if request.user.is_anonymous:
         return JsonResponse({"status": "Not logged in"}, status=401)
