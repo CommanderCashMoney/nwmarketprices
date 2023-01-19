@@ -1,4 +1,4 @@
-SET work_mem = '150MB';
+SET work_mem = '50MB';
 
 
 with tbl1 as (

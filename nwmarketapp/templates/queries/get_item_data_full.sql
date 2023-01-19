@@ -1,4 +1,4 @@
-
+SET work_mem = '60MB';
 WITH server_prices AS (
     SELECT * FROM prices WHERE server_id = {{ server_id }} AND timestamp > NOW() - INTERVAL '1 MONTH' and avail is not null
 ),
