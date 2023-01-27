@@ -75,11 +75,14 @@ def convert_popular_items_dict_to_old_style(popular_items_dict: dict) -> Dict[st
 
 def get_popular_items_dict_v2(server_id) -> Any:
     popular_items_dict = {
-        "popular_endgame_data": [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458],
-        "popular_base_data": [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538],
+        "popular_endgame_data": [1223, 1496, 1421, 1626, 436, 1048, 806, 1463, 1461, 1458, 28948],
+        "popular_base_data": [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538, 653],
         "mote_data": [862, 459, 649, 910, 158, 869, 497],
         "refining_data": [326, 847, 1033, 977, 1334],
-        "trophy_data": [1542, 1444, 1529, 1541, 1502]
+        "trophy_data": [1542, 1444, 1529, 1541, 1502],
+        "craft_mods": [1300, 221, 460, 360, 532, 3943, 2122, 2132, 758, 798, 1495],
+        "coatings": [848, 1932, 1103, 265, 1944, 1946, 2378, 1950, 2141, 378],
+        "foods": [1265, 1305, 192, 2904, 2143, 1924, 219, 1020, 696, 1063]
     }
     popular_items = []
     for popular_list in popular_items_dict.values():
@@ -91,6 +94,9 @@ def get_popular_items_dict_v2(server_id) -> Any:
             if obj.confirmed_name_id in v:
                 return_values[k].append(obj)
                 break
+    for obj_list in return_values:
+        return_values[obj_list].sort(key=lambda x: x.confirmed_name.name)
+
     return return_values
 
 

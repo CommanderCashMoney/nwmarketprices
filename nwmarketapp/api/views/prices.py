@@ -114,7 +114,10 @@ def initial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse
         "popular_base_data": "Popular Base Materials",
         "mote_data": "Motes",
         "refining_data": "Refining Reagents",
-        "trophy_data": "Trophy Materials"
+        "trophy_data": "Trophy Materials",
+        "craft_mods": "Craft Mods",
+        "coatings": "Coatings",
+        "foods": "Foods"
     }
 
     popular_rendered = {
