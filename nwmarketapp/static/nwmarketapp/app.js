@@ -138,5 +138,6 @@ window.addEventListener('load', function() {
     setupDropdown("server-select");
     setupDropdown("settings");
     setupModal("export-data-modal-trigger", "export-data-modal");
+    setupModal("other-sites-modal-trigger", "other-sites-modal");
     setupTabs();
 });
