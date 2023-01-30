@@ -30,8 +30,8 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 DEBUG = os.getenv("DEBUG") == "True"
 
 HOST = os.getenv("HOST", "nwmarket-env-1.eba-rxcymaas.us-west-1.elasticbeanstalk.com")
-# ALLOWED_HOSTS = [HOST, "127.0.0.1", 'localhost', 'nwmarketprices.com']
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [HOST, "127.0.0.1", 'localhost', 'nwmarketprices.com', "nwmarket-env-1.eba-rxcymaas.us-west-1.elasticbeanstalk.com"]
+# ALLOWED_HOSTS = ['*']
 
 # Application definition
 
