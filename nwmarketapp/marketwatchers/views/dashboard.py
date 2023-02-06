@@ -17,8 +17,35 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.decorators import api_view
 from nwmarketapp.views import get_serverlist
-from nwmarketapp.models import PriceSummary, AuthUserTrackedItems, ConfirmedNames
+from nwmarketapp.models import PriceSummary, AuthUserTrackedItems, ConfirmedNames, AuthUserItemAlerts
 from django.views.decorators.cache import cache_page
+
+class ItemAlertsSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(read_only=True)
+    class Meta:
+        model = AuthUserItemAlerts
+        fields = [
+            'server_id',
+            'alert_data',
+            'user_id',
+
+        ]
+
+    def create(self, validated_data):
+        AuthUserItemAlerts.objects.update_or_create(
+            user_id=self.initial_data['user_id'],
+            server_id=validated_data['server_id'],
+            defaults=validated_data
+        )
+        return validated_data
+
+    def update(self, instance, validated_data):
+        AuthUserItemAlerts.objects.update_or_create(
+            user_id=self.initial_data['user_id'],
+            server_id=validated_data['server_id'],
+            defaults=validated_data
+        )
+        return validated_data
 
 
 class TrackedItemsSerializer(serializers.ModelSerializer):
@@ -74,6 +101,33 @@ def tracked_items_save(request):
     else:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+
+@api_view(['POST'])
+@ratelimit(key='ip', rate='1/s', block=True)
+def item_alerts_save(request):
+    user_id = request.user.id
+    alert_data = json.loads(request.data[1])
+    print('lol')
+
+    data = {
+        'user_id': user_id,
+        'server_id': request.data[0],
+        'alert_data': alert_data
+    }
+
+    if not data['alert_data']:
+        data['alert_data'] = None
+    item = ItemAlertsSerializer(data=data)
+
+    if AuthUserItemAlerts.objects.filter(user_id=data['user_id'], server_id=data['server_id']).exists():
+        # raise serializers.ValidationError('This data already exists')
+        print('data already exists. doing update')
+
+    if item.is_valid():
+        item.save()
+        return Response(item.data)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 @ratelimit(key='ip', rate='2/s', block=True)
 def dashboard(request: WSGIRequest, server_id):
@@ -171,6 +225,62 @@ def rare_items(request: WSGIRequest, server_id):
 
     return JsonResponse({'rare_items': rare_items_list})
 
+def get_item_alerts(user_id, server_id):
+    try:
+        alerts_obj = AuthUserItemAlerts.objects.get(user_id=user_id, server_id=server_id)
+    except AuthUserTrackedItems.DoesNotExist:
+        return None
+    item_ids = []
+    for x in alerts_obj.alert_data:
+        item_ids.append(x['item_id'])
+    item_ids = [int(i) for i in item_ids]
+    try:
+        ps = PriceSummary.objects.filter(server_id=server_id, confirmed_name_id__in=item_ids).select_related('confirmed_name')
+    except PriceSummary.DoesNotExist:
+        return None
+    if not ps:
+        return None
+    results = []
+    for obj in ps:
+
+        json_data = {
+            'item_name': obj.confirmed_name.name,
+            'item_id': obj.confirmed_name_id,
+            'nwdb_id': obj.confirmed_name.nwdb_id,
+            'lowest_price': obj.recent_lowest_price,
+            'all_time_low': min(d["lowest_price"] for d in obj.ordered_graph_data),
+            'all_time_high': max(d["lowest_price"] for d in obj.ordered_graph_data),
+            'server_id': server_id
+
+        }
+        results.append(json_data)
+    not_found = [item for item in item_ids if not any(d['item_id'] == item for d in results)]
+    for item_id in not_found:
+        item_name = ConfirmedNames.objects.get(id=item_id).name
+        json_data = {
+            'item_name': item_name,
+            'item_id': item_id,
+            'nwdb_id': None,
+            'lowest_price': 'N/A',
+            'all_time_low': 'N/A',
+            'all_time_high': 'N/A',
+            'server_id': server_id
+
+        }
+        results.append(json_data)
+    for idx, ps_data_dict in enumerate(results):
+        for x in alerts_obj.alert_data:
+            if int(x['item_id']) == ps_data_dict['item_id']:
+                results[idx].update(x)
+
+    response = render_to_string("marketwatchers/snippets/item-alerts.html", {'alert_data': results})
+
+    return response
+
+
+
+
+
 
 @ratelimit(key='ip', rate='1/s', block=True)
 def get_dashboard_items(request: WSGIRequest, server_id: int):
@@ -186,8 +296,8 @@ def get_dashboard_items(request: WSGIRequest, server_id: int):
         item_ids = AuthUserTrackedItems.objects.get(user_id=request.user.id, server_id=server_id)
     except AuthUserTrackedItems.DoesNotExist:
         return JsonResponse({"status": "No items found.", 'max_tracked_num': max_tracked_num}, status=404)
-
     item_ids = item_ids.item_ids
+    item_alerts_response = get_item_alerts(request.user.id, server_id)
     if not item_ids:
         return JsonResponse({"status": "No items found.", 'max_tracked_num': max_tracked_num}, status=404)
 
@@ -234,7 +344,7 @@ def get_dashboard_items(request: WSGIRequest, server_id: int):
 
     response = render_to_string("marketwatchers/snippets/tracked-items.html", {'dashboard_data': results})
 
-    return JsonResponse({'item_data': response, 'mini_graph_data': results, 'max_tracked_num': max_tracked_num}, safe=False)
+    return JsonResponse({'item_data': response, 'mini_graph_data': results, 'max_tracked_num': max_tracked_num, 'alert_data': item_alerts_response}, safe=False)
 
 
 def get_name(item):

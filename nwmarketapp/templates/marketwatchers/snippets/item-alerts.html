@@ -1,0 +1,52 @@
+
+{% for item in alert_data %}
+
+
+<article class="tile">
+    <div class="container-custom-alerts" id="item-alert-{{ item.item_id }}">
+        <div class="item-name">{{ item.item_name }}</div>
+        <div class="low-price-title">Low</div>
+        <div class="high-price-title">High</div>
+        <div class="current-price-title">Current</div>
+        <div class="low-price">{{ item.all_time_low }}</div>
+        <div class="current-price">{{ item.lowest_price.price }}</div>
+        <div class="high-price">{{ item.all_time_high }}</div>
+        <div class="price-below">price drops below
+            <div class="control"><input class="input" type="text" value="{{ item.price_below|default:'' }}" id="price-below-{{ item.item_id }}"></div>
+        </div>
+        <div class="price-above">Price rises above
+            <div class="control"><input class="input" type="text" value="{{ item.price_above|default:'' }}" id="price-above-{{ item.item_id }}"></div>
+        </div>
+        <div class="perc-decrease">% decrease
+            <div class="control"><input class="input" type="text" style="width: 60%" value="{{ item.perc_decrease|default:'' }}" id="perc-decrease-{{ item.item_id }}"></div>
+        </div>
+        <div class="perc-increase">% increase
+            <div class="control"><input class="input" type="text" style="width: 60%" value="{{ item.perc_increase|default:'' }}" id="perc-increase-{{ item.item_id }}"></div>
+        </div>
+
+        <div class="active-toggle">
+
+            <input id="enabled-{{ item.item_id }}" type="checkbox"
+                   name="enabled-{{ item.item_id }}" class="switch is-rounded"
+                   {% if item.enabled %}checked="checked"{% endif %}
+            >
+            <label for="enabled-{{ item.item_id }}">Enabled</label>
+
+        </div>
+        <div class="delete-btn">
+            <button class="button is-danger is-rounded is-small" id="del-{{ item.item_id }}">
+
+            <span class="icon is-small">
+                              <i class="fa fa-times"></i>
+                            </span>
+            </button>
+        </div>
+
+    </div>
+
+
+</article>
+<hr>
+{% endfor %}
+
+

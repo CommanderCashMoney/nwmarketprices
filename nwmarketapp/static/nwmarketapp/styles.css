@@ -121,6 +121,13 @@ html {
 .item-search::placeholder {
     color: #6c6b6bc4;
 }
+.item-search-alerts::placeholder {
+    color: #6c6b6bc4;
+}
+.item-search-alerts {
+    background-color: #ffffff;
+    color: #000000;
+}
 
 .lowest-price-text {
     font-size: 4.3em;
@@ -233,8 +240,16 @@ html {
     margin-left: 50px;
     list-style: disc;
 }
-.accordions .accordion .accordion-header {
-    background-color: #36363f;
+.accordions .accordion .accordion-header, .accordion{
+    background-color: #32363d !important;
+}
+.accordions .accordion .accordion-header+.accordion-body{
+
+    border-color:#32363d !important;
+}
+.accordion-content{
+    color: #ffffff;
+    background-color: #454a51!important;
 }
 .ph-item {
     background-color: transparent!important;
@@ -377,7 +392,8 @@ html {
 .is-active {
     display: initial
 }
-
+/* tracked items in custom dashboard*/
+/*-------------------------------------*/
 .item-name { grid-area:item-name; }
 .updated { grid-area: updated; }
 .mini-graph { grid-area: mini-graph;
@@ -405,12 +421,56 @@ html {
     width:100%;
 }
 
+
+/*--------------------------------*/
+/*Item alerts in custom dashboard*/
+.container-custom-alerts {  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 0.6fr 0.6fr 120px;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 0px 10px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "item-name item-name item-name price-below price-above perc-decrease perc-increase active-toggle"
+    "low-price-title current-price-title high-price-title price-below price-above perc-decrease perc-increase active-toggle"
+    "low-price current-price high-price price-below price-above perc-decrease perc-increase delete-btn";
+    align-items: center;
+
+}
+
+.item-name-alerts { grid-area: item-name; }
+
+.low-price-title { grid-area: low-price-title; }
+
+.high-price-title { grid-area: high-price-title; }
+
+.current-price-title { grid-area: current-price-title; }
+
+.low-price { grid-area: low-price; }
+
+.current-price { grid-area: current-price; }
+
+.high-price { grid-area: high-price; }
+
+.price-above { grid-area: price-above; }
+
+.price-below { grid-area: price-below; }
+
+.perc-increase { grid-area: perc-increase; }
+
+.perc-decrease { grid-area: perc-decrease; }
+
+.active-toggle { grid-area: active-toggle; justify-self: center;}
+
+.save-btn { grid-area: save-btn; justify-self: center;}
+.delete-btn { grid-area: delete-btn; justify-self: center;}
+
+
 .grid-container > div {
   padding: 0px 0;
 
 }
 
-
+/*--------------------------------*/
 .timestamp{
     font-size: 0.5em;
 }

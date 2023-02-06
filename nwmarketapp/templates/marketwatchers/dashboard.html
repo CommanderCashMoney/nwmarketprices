@@ -13,6 +13,12 @@
     <script src="{% static 'nwmarketapp/dashboard.js' %}"></script>
     <script src="{% static 'nwmarketapp/dashboard-typeahead.js' %}"></script>
 
+    <script src="{% static 'nwmarketapp/bulma-accordion.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'nwmarketapp/bulma-accordion.min.css' %}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-switch@1.0.1/dist/bulma-switch.min.css">
+
+
 {% endblock %}
 
 
@@ -44,8 +50,53 @@
           <div class="columns" id="tracked-items">
 
           </div>
+        <section class="accordions">
+            <article class="accordion">
+                <div class="accordion-header toggle">
+                    <p>Price Alerts</p>
+                    <i class="fa fa-chevron-down is-pulled-right"></i>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <div class="column">
+                            <div class="columns" style="text-align: center; margin-top: -35px; margin-bottom: -31px;">
+                                <div class="column">
 
+                                    <div class="field item-search-container">
+                                        <div class="typeahead__container">
+                                            <input class="input item-search-alerts is-expanded" type="search"
+                                                   placeholder="Start searching..." id="item-search-alerts"
+                                                   spellcheck="false">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="column" style="text-align: right;">
+                                    <span class="save-btn">
+                                        <button class="button is-success is-outlined is-rounded" id="alerts_save">
+                                            <span class="icon is-small">
+                                            <i class="fa fa-check"></i>
+
+                                            </span>
+                                            <span>Save</span>
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                            <hr>
+                            <div id="item-alerts">
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </div>
+            </article>
+
+
+        </section>
     </article>
+
   </div>
 
 </div>

@@ -45,11 +45,6 @@ const saveTrackedItems = () => {
 
 }
 
-
-window.onpopstate = function(e){
-    init();
-};
-
 const init = () => {
      const lastServerId = localStorage.getItem("lastServerId");
      document.getElementById("item-tracking").classList.add("hidden");
@@ -78,10 +73,6 @@ const init = () => {
 
 }
 
-window.onpopstate = function(e){
-    init();
-};
-
 const loadTrackedItems = (serverId) => {
     document.getElementById("item-selection-link").classList.add("hidden");
     document.getElementById("item-tracking").classList.add("hidden");
@@ -94,6 +85,12 @@ const loadTrackedItems = (serverId) => {
 
         const elem = document.getElementById("tracked-items");
         elem.innerHTML = data["item_data"];
+        const alerts_elem = document.getElementById("item-alerts");
+        alerts_elem.innerHTML = data["alert_data"]
+        const accordions = bulmaAccordion.attach();
+        setupAlertButtons()
+
+
         for (let i = 0; i < data["mini_graph_data"].length; i++){
             let obj =  data["mini_graph_data"][i]
 
@@ -137,7 +134,6 @@ const loadTrackedItems = (serverId) => {
     })
 
 }
-
 function changeServer(server_id){
     localStorage.setItem('lastServerId', server_id);
     if (typeof servers[server_id] == 'undefined') {
@@ -164,7 +160,6 @@ function changeServer(server_id){
     loadTopSold(serverId)
     document.title = 'New World Market Prices - Dashboard - ' + servers[serverId]['name'];
 }
-
 const populateSelectedItems = () => {
 
 
@@ -199,7 +194,6 @@ const populateSelectedItems = () => {
 
 
 };
-
 const setupDropdown = (triggerId) => {
     const select = document.getElementById(triggerId);
     if(!select) {
@@ -424,7 +418,6 @@ const loadTopSold = (serverId) => {
     })
 
 }
-
 const loadGraphModal = (serverId, itemId) => {
      nwmpRequest(`/api/price-data/${serverId}/${itemId}`)
     .then(data => {
@@ -454,8 +447,86 @@ const loadGraphModal = (serverId, itemId) => {
     })
 
 }
+const setupAlertButtons = () => {
+    //setup main save button
+    const save_btn = document.querySelector("#alerts_save");
+    save_btn.addEventListener("click", function (event) {
+        saveAlerts()
+    });
+
+    // setup delete buttons for each alert
+    const alerts_div = document.querySelectorAll(".container-custom-alerts");
+    alerts_div.forEach(function(div) {
+        const id_string = div.id
+        // extract item id from div id
+        const item_id = id_string.substring(11)
+        const buttons = div.querySelectorAll("button")
+        buttons.forEach(function(button) {
+            button.addEventListener("click", function (event) {
+                delAlert(item_id)
+            });
+        });
+
+    });
+}
+const saveAlerts = () => {
+
+    const form = document.getElementById("tracked-items-form");
+    const csrftoken = form.querySelector("[name=csrfmiddlewaretoken]").value;
+
+    const alerts_div = document.querySelectorAll(".container-custom-alerts");
+    let body = [serverId]
+    let alert_data = []
+    alerts_div.forEach(function(div) {
+        const id_string = div.id
+        // extract item id from div id
+        const item_id = id_string.substring(11)
+        // get all the input values
+
+        const alert_blob = {
+
+            'item_id': item_id,
+            'price_below': document.getElementById("price-below-" + item_id).value,
+            'price_above': document.getElementById("price-above-" + item_id).value,
+            'perc_decrease': document.getElementById("perc-decrease-" + item_id).value,
+            'perc_increase': document.getElementById("perc-increase-" + item_id).value,
+            'enabled': document.getElementById("enabled-" + item_id).checked,
+        }
+
+        alert_data.push(alert_blob)
+    });
+
+    body.push(JSON.stringify(alert_data))
 
 
+
+    nwmpRequest("/mw/item_alerts_save/", "POST", {
+            credentials: 'same-origin',
+            body: JSON.stringify(body),
+            headers: {
+                "X-CSRFToken": csrftoken,
+                'Content-Type': 'application/json'
+            },
+      }).then((data) => {
+            // loadTrackedItems(serverId)
+            if(data["status"] == "failed") {
+                const content = data["errors"].join("<br><br>")
+                createNotification(content, "danger");
+            } else {
+                createNotification("Alerts updated successfully.", "success");
+
+            }
+      }).catch((err) => {
+          console.log('fail', err)
+          createNotification("Alert update failed.", "danger");
+      })
+
+
+}
+const delAlert = (item_id) => {
+console.log('del ' + item_id)
+
+}
 window.addEventListener('load', function() {
     init();
     setupDropdown("server-select")
