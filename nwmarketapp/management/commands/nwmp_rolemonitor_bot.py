@@ -21,6 +21,28 @@ def get_user_id(username):
         user_id = cursor.fetchone()
     return user_id
 
+
+def get_all_users():
+    query = "SELECT username FROM auth_user"
+    with conn.cursor() as cursor:
+        cursor.execute(query)
+        all_users = cursor.fetchall()
+
+    all_users = [item.lower() for sublist in all_users for item in sublist]
+
+    query = """select username from auth_user
+                where id in (
+                select user_id from auth_user_groups
+                where group_id = 1
+                group by user_id)"""
+    with conn.cursor() as cursor:
+        cursor.execute(query)
+        all_mws = cursor.fetchall()
+
+    all_mws = [item.lower() for sublist in all_mws for item in sublist]
+    return all_users, all_mws
+
+
 class Command(BaseCommand):
     help = "Run a discord bot"
 
@@ -32,11 +54,67 @@ class Command(BaseCommand):
             await ctx.respond("Role Monitor bot stopped", ephemeral=True)
             exit()
 
+        @bot.slash_command()
+        async def find_inactive_scanners(ctx):
+            all_users, all_mws = get_all_users()
+            guild = bot.get_guild(936405548792938546)
+            roleid = 950235365082533918
+            role = guild.get_role(roleid)
+
+            manual_clean = []
+            remove_role = []
+
+            for member in role.members:
+                mem_name = str(member)
+                pos = mem_name.rfind('#')
+                mem_name = mem_name[:pos]
+                mem_name = mem_name.lower()
+                # print(mem_name)
+                if mem_name in all_users:
+                    # print(f'found {member}')
+                    if mem_name not in all_mws:
+                        # print(f'Found user first try. Remove MW role {member}')
+                        remove_role.append(member)
+                else:
+                    # pos2 = member.rfind(' ')
+                    # clean_mem = member[:pos2]
+                    # print(f'no match for {member}. {pos2}')
+                    manual_clean.append(member)
+                    # if clean_mem not in all_users:
+                    #     print(f'Need to manually clean {member}')
+                    #     manual_clean.append(member)
+                    # else:
+                    #     # found user after cleaning
+                    #     if clean_mem not in mws:
+                    #         # remove mw role
+                    #         print(f'Found user after cleaning. Remove MW role {member}')
+                    #         remove_role.append(member)
+
+            # print('REMOVE THESE')
+            # print(remove_role)
+            for x in remove_role:
+                user = guild.get_member(x.id)
+                print(x.name)
+                # await user.remove_roles(role)
+                # print(x.name)
+
+            # print('MANUALLY CONFIRM THESE')
+            # for z in manual_clean:
+            #     print(z)
+
+
+
+
+
+
+            # await ctx.send("\n".join(str(member) for member in role.members)
+            await ctx.respond("Role Monitor removed inactive scanners", ephemeral=True)
+
         @bot.event
         async def on_member_update(before, after):
 
-            public_channel = bot.get_channel(954906680141946890)
-            private_channel = bot.get_channel(1062231562399256738)
+            public_channel = bot.get_channel(1050192207673573386)
+            private_channel = bot.get_channel(1050192207673573386)
             user_name = before.name
 
             if len(before.roles) < len(after.roles):
@@ -69,7 +147,7 @@ class Command(BaseCommand):
                                     cursor.execute(add_discord_gold_query, (user_id, 91,))
                                     conn.commit()
 
-                                    await public_channel.send(f'Thanks for subscribing {before.mention}! :partying_face: Your support keeps this whole thing running. Your access has been set up on the site and you should have access all the subscriber perks now')
+                                    await public_channel.send(f'Thanks for subscribing {before.mention}! :partying_face: Your support keeps this whole thing running. Your access has been set up on the site and you should have access to all the subscriber perks now')
 
                                 except Exception as e:
 
