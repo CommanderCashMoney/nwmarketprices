@@ -527,6 +527,16 @@ const delAlert = (item_id) => {
 console.log('del ' + item_id)
 
 }
+const addAlert = (item_id) => {
+     nwmpRequest(`/0/${serverId}/?cn_id=${item_id}`)
+    .then(data => {
+        console.log(data)
+
+    }).catch((data) => {
+
+    })
+
+}
 window.addEventListener('load', function() {
     init();
     setupDropdown("server-select")

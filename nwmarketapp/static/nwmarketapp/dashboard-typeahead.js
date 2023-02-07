@@ -34,10 +34,12 @@ const initTypeahead = (data) => {
             },
             onClickAfter: function(node, a, item, event){
                 console.log(item.id, item.name)
+                addAlert(item.id)
 
             },
             onSubmit: function (node, form, item, event) {
                  console.log(item.id, item.name)
+                 addAlert(item.id)
             },
 
 
