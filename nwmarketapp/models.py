@@ -272,6 +272,7 @@ class PriceSummary(models.Model):
         buy_orders = []
         avg_price = sum(p['price'] for p in price_list) / len(price_list)
         avg_qty = sum(p['avail'] for p in price_list) / len(price_list)
+        max_price = max(p['price'] for p in price_list)
         for idx, item_price in reversed(list(enumerate(price_list))):
             buy_orders.append((item_price.get('buy_order_price', None), item_price.get('qty', None)))
 
@@ -279,11 +280,17 @@ class PriceSummary(models.Model):
                 avail_diff = item_price['avail'] / avg_qty
             except ZeroDivisionError:
                 avail_diff = 1 / avg_qty
+            try:
+                price_diff = item_price['price'] / avg_price
+            except ZeroDivisionError:
+                price_diff = 1 / avg_price
+
             if avail_diff <= 0.22:
-                if item_price['price'] / avg_price <= 0.55:
+                price_diff = item_price['price'] / avg_price
+                if price_diff <= 0.55:
                     price_list.pop(idx)
                     continue
-            elif item_price['price'] / avg_price <= 0.05:
+            elif price_diff <= 0.05 and max_price < 50 and avail_diff <= 0.8 and avg_qty > 5 and len(price_list) >= 9:
                 price_list.pop(idx)
 
                 continue
