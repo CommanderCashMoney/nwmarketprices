@@ -357,6 +357,19 @@ html {
     display: none;
 }
 
+.notification-container{
+    position: fixed;
+    z-index: 32;
+    top:10%;left:50%;transform:translate(-50%, -50%);
+
+}
+@supports (position: sticky) {
+  .notification {
+    position: sticky;
+    z-index: 32;
+    top: 0%; // Threshold is required
+  }
+}
 
 .password-input::placeholder {
     color: #6c6b6bc4;

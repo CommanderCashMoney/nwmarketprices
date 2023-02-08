@@ -70,7 +70,7 @@ const init = () => {
      let server_health = '<span class="' + servers[serverId]['health'] + '"></span>&nbsp;'
      document.getElementById("server-name").innerHTML = server_health +  servers[serverId]['name'];
      document.title = 'New World Market Prices - Dashboard - ' + servers[serverId]['name'];
-
+     const accordions = bulmaAccordion.attach();
 }
 
 const loadTrackedItems = (serverId) => {
@@ -87,7 +87,7 @@ const loadTrackedItems = (serverId) => {
         elem.innerHTML = data["item_data"];
         const alerts_elem = document.getElementById("item-alerts");
         alerts_elem.innerHTML = data["alert_data"]
-        const accordions = bulmaAccordion.attach();
+
         setupAlertButtons()
 
 
@@ -447,12 +447,14 @@ const loadGraphModal = (serverId, itemId) => {
     })
 
 }
+
 const setupAlertButtons = () => {
     //setup main save button
     const save_btn = document.querySelector("#alerts_save");
-    save_btn.addEventListener("click", function (event) {
-        saveAlerts()
-    });
+
+
+    save_btn.removeEventListener("click", saveAlerts);
+    save_btn.addEventListener("click",saveAlerts);
 
     // setup delete buttons for each alert
     const alerts_div = document.querySelectorAll(".container-custom-alerts");
@@ -462,9 +464,8 @@ const setupAlertButtons = () => {
         const item_id = id_string.substring(11)
         const buttons = div.querySelectorAll("button")
         buttons.forEach(function(button) {
-            button.addEventListener("click", function (event) {
-                delAlert(item_id)
-            });
+            button.removeEventListener("click", delAlert)
+            button.addEventListener("click", delAlert)
         });
 
     });
@@ -531,8 +532,58 @@ const addAlert = (item_id) => {
      nwmpRequest(`/0/${serverId}/?cn_id=${item_id}`)
     .then(data => {
         console.log(data)
+        const max_price = Math.max(...data['price_graph_data'].map(dict => dict.lowest_price));
+        const min_price = Math.min(...data['price_graph_data'].map(dict => dict.lowest_price));
+
+        let row_html_block = '<hr><article class="tile item-alert-row">\n' +
+            `    <div class="container-custom-alerts" id="item-alert-${item_id}">\n` +
+            `        <div class="item-name">${data['item_name']}</div>\n` +
+            '        <div class="low-price-title">Low</div>\n' +
+            '        <div class="high-price-title">High</div>\n' +
+            '        <div class="current-price-title">Current</div>\n' +
+            `        <div class="low-price">${min_price}</div>\n` +
+            `        <div class="current-price">${data['recent_lowest_price']}</div>\n` +
+            `        <div class="high-price">${max_price}</div>\n` +
+            '        <div class="price-below">price drops below\n' +
+            `            <div class="control"><input class="input" type="text" value="" id="price-below-${item_id}"></div>\n` +
+            '        </div>\n' +
+            '        <div class="price-above">Price rises above\n' +
+            `            <div class="control"><input class="input" type="text" value="" id="price-above-${item_id}"></div>\n` +
+            '        </div>\n' +
+            '        <div class="perc-decrease">% decrease\n' +
+            `            <div class="control"><input class="input" type="text" style="width: 60%" value="" id="perc-decrease-${item_id}"></div>\n` +
+            '        </div>\n' +
+            '        <div class="perc-increase">% increase\n' +
+            `            <div class="control"><input class="input" type="text" style="width: 60%" value="" id="perc-increase-${item_id}"></div>\n` +
+            '        </div>\n' +
+            '\n' +
+            '        <div class="active-toggle">\n' +
+            '\n' +
+            `            <input id="enabled-${item_id}" type="checkbox" name="enabled-${item_id}" class="switch is-rounded" checked="checked">\n` +
+            `            <label for="enabled-${item_id}">Enabled</label>\n` +
+            '\n' +
+            '        </div>\n' +
+            '        <div class="delete-btn">\n' +
+            `            <button class="button is-danger is-rounded is-small" id="del-${item_id}">\n` +
+            '\n' +
+            '            <span class="icon is-small">\n' +
+            '                              <i class="fa fa-times"></i>\n' +
+            '                            </span>\n' +
+            '            </button>\n' +
+            '        </div>\n' +
+            '\n' +
+            '    </div>\n' +
+            '\n' +
+            '\n' +
+            '</article>'
+
+        let existing_rows = document.querySelectorAll('.item-alert-row')
+        let last_row = existing_rows[existing_rows.length - 1];
+        last_row.insertAdjacentHTML('afterend', row_html_block);
 
     }).catch((data) => {
+        console.log('err')
+       createNotification(data['status'], "danger");
 
     })
 
