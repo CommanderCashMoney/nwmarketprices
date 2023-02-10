@@ -6,7 +6,7 @@ from django.db import connection
 from datetime import datetime
 import json
 from django.core.handlers.wsgi import WSGIRequest
-
+import sys
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from dateutil import parser
@@ -19,6 +19,7 @@ from rest_framework.decorators import api_view
 from nwmarketapp.views import get_serverlist
 from nwmarketapp.models import PriceSummary, AuthUserTrackedItems, ConfirmedNames, AuthUserItemAlerts
 from django.views.decorators.cache import cache_page
+from pympler import asizeof
 
 class ItemAlertsSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(read_only=True)
@@ -91,9 +92,9 @@ def tracked_items_save(request):
         data['item_ids'] = None
     item = TrackedItemsSerializer(data=data)
 
-    if AuthUserTrackedItems.objects.filter(user_id=data['user_id'], server_id=data['server_id']).exists():
-        # raise serializers.ValidationError('This data already exists')
-        print('data already exists. doing update')
+    # if AuthUserTrackedItems.objects.filter(user_id=data['user_id'], server_id=data['server_id']).exists():
+    #     # raise serializers.ValidationError('This data already exists')
+    #     print('data already exists. doing update')
 
     if item.is_valid():
         item.save()
@@ -107,7 +108,7 @@ def tracked_items_save(request):
 def item_alerts_save(request):
     user_id = request.user.id
     alert_data = json.loads(request.data[1])
-    print('lol')
+
 
     data = {
         'user_id': user_id,
@@ -117,11 +118,14 @@ def item_alerts_save(request):
 
     if not data['alert_data']:
         data['alert_data'] = None
+    list_size = asizeof.asizeof(data['alert_data'])
+    if list_size > 20000:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
     item = ItemAlertsSerializer(data=data)
 
-    if AuthUserItemAlerts.objects.filter(user_id=data['user_id'], server_id=data['server_id']).exists():
-        # raise serializers.ValidationError('This data already exists')
-        print('data already exists. doing update')
+    # if AuthUserItemAlerts.objects.filter(user_id=data['user_id'], server_id=data['server_id']).exists():
+    #     # raise serializers.ValidationError('This data already exists')
+    #     print('data already exists. doing update')
 
     if item.is_valid():
         item.save()
@@ -228,9 +232,11 @@ def rare_items(request: WSGIRequest, server_id):
 def get_item_alerts(user_id, server_id):
     try:
         alerts_obj = AuthUserItemAlerts.objects.get(user_id=user_id, server_id=server_id)
-    except AuthUserTrackedItems.DoesNotExist:
+    except AuthUserItemAlerts.DoesNotExist:
         return None
     item_ids = []
+    if not alerts_obj.alert_data:
+        return None
     for x in alerts_obj.alert_data:
         item_ids.append(x['item_id'])
     item_ids = [int(i) for i in item_ids]
@@ -250,6 +256,7 @@ def get_item_alerts(user_id, server_id):
             'lowest_price': obj.recent_lowest_price,
             'all_time_low': min(d["lowest_price"] for d in obj.ordered_graph_data),
             'all_time_high': max(d["lowest_price"] for d in obj.ordered_graph_data),
+            'price_change': obj.price_change,
             'server_id': server_id
 
         }
@@ -264,6 +271,7 @@ def get_item_alerts(user_id, server_id):
             'lowest_price': 'N/A',
             'all_time_low': 'N/A',
             'all_time_high': 'N/A',
+            'price_change': 0,
             'server_id': server_id
 
         }

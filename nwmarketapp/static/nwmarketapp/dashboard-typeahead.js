@@ -27,18 +27,18 @@ const initTypeahead = (data) => {
         display: "name",
 
         source: {data: data},
-
+        maxItem: 15,
         callback: {
             onInit: function (node) {
                 console.log('Typeahead Initiated on alerts');
             },
             onClickAfter: function(node, a, item, event){
-                console.log(item.id, item.name)
+
                 addAlert(item.id)
 
             },
             onSubmit: function (node, form, item, event) {
-                 console.log(item.id, item.name)
+
                  addAlert(item.id)
             },
 

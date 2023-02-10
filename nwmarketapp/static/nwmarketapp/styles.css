@@ -371,6 +371,12 @@ html {
   }
 }
 
+.item-alert-row{
+    border-bottom: 2px solid #282f2f;
+    padding-bottom: 15px;
+
+}
+
 .password-input::placeholder {
     color: #6c6b6bc4;
 }
@@ -438,16 +444,28 @@ html {
 /*--------------------------------*/
 /*Item alerts in custom dashboard*/
 .container-custom-alerts {  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 0.6fr 0.6fr 120px;
+  grid-template-columns: 0.4fr 0.4fr 0.4fr 0.4fr 1fr 1fr 0.6fr 0.6fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
   gap: 0px 10px;
   grid-auto-flow: row;
   grid-template-areas:
-    "item-name item-name item-name price-below price-above perc-decrease perc-increase active-toggle"
-    "low-price-title current-price-title high-price-title price-below price-above perc-decrease perc-increase active-toggle"
-    "low-price current-price high-price price-below price-above perc-decrease perc-increase delete-btn";
+    "item-name       item-name           item-name        item-name          price-below price-above perc-decrease perc-increase active-toggle delete-btn"
+    "low-price-title current-price-title high-price-title price-change-title price-below price-above perc-decrease perc-increase active-toggle delete-btn"
+    "low-price       current-price       high-price       price-change       price-below price-above perc-decrease perc-increase active-toggle delete-btn";
     align-items: center;
 
+}
+.container-custom-alerts a{
+    color: #1abc9c!important;
+    text-decoration: none!important;
+    transition: all 200ms ease!important;
+}
+.container-custom-alerts div{
+    font-size: 14px;
+}
+
+.container-custom-alerts .item-name {
+    font-size: 20px;
 }
 
 .item-name-alerts { grid-area: item-name; }
@@ -464,17 +482,16 @@ html {
 
 .high-price { grid-area: high-price; }
 
-.price-above { grid-area: price-above; }
+.price-above { grid-area: price-above;}
 
 .price-below { grid-area: price-below; }
 
-.perc-increase { grid-area: perc-increase; }
+.perc-increase { grid-area: perc-increase; margin-left: -30px;}
 
 .perc-decrease { grid-area: perc-decrease; }
 
 .active-toggle { grid-area: active-toggle; justify-self: center;}
 
-.save-btn { grid-area: save-btn; justify-self: center;}
 .delete-btn { grid-area: delete-btn; justify-self: center;}
 
 
@@ -483,6 +500,11 @@ html {
 
 }
 
+.typeahead__list{
+    max-height: 230px;
+    overflow-y: scroll;
+
+}
 /*--------------------------------*/
 .timestamp{
     font-size: 0.5em;
