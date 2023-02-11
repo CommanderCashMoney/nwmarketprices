@@ -135,9 +135,16 @@ class AuthUserTrackedItems(models.Model):
     item_ids = ArrayField(models.IntegerField(null=True), null=True)
     server_id = models.IntegerField(null=True)
 
-
     class Meta:
         db_table = 'auth_user_tracked_items'
+
+class AuthUserItemAlerts(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, db_index=True)
+    server_id = models.IntegerField(null=True)
+    alert_data = models.JSONField(null=True)
+
+    class Meta:
+        db_table = 'auth_user_item_alerts'
 
 
 class SoldItems(models.Model):
@@ -195,7 +202,7 @@ class PriceSummary(models.Model):
                         if item['lowest_price'] / avg_price <= 0.55:
                             g.pop(idx)
                             continue
-                    elif item['lowest_price'] / avg_price <= 0.05 and max_price < 50 and avail_diff <= 0.8 and avg_avail > 5:
+                    elif item['lowest_price'] / avg_price <= 0.05 and max_price < 50 and avail_diff <= 0.8 and avg_avail > 5 and len(g) > 8:
                         g.pop(idx)
                         print(f'removed: {self.confirmed_name.name} with price of {item["lowest_price"]} on {self.server_id} with date: {item["date_only"]}')
                         continue

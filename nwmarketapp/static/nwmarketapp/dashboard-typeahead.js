@@ -1,13 +1,15 @@
 let selectedItems = [];
 const initTypeahead = (data) => {
+
     $.typeahead({
         input: '.item-search',
         display: "name",
 
         source: {data: data},
+
         callback: {
             onInit: function (node) {
-                console.log('Typeahead Initiated on ' + node.selector);
+                console.log('Typeahead Initiated on items');
             },
             onClickAfter: function(node, a, item, event){
                 selectItem(item.id, item.name);
@@ -17,13 +19,36 @@ const initTypeahead = (data) => {
                 selectItem(item.id, item.name);
             },
 
+
+        }
+    })
+    $.typeahead({
+        input: '.item-search-alerts',
+        display: "name",
+
+        source: {data: data},
+        maxItem: 15,
+        callback: {
+            onInit: function (node) {
+                console.log('Typeahead Initiated on alerts');
+            },
+            onClickAfter: function(node, a, item, event){
+
+                addAlert(item.id)
+
+            },
+            onSubmit: function (node, form, item, event) {
+
+                 addAlert(item.id)
+            },
+
+
         }
     })
 }
 
-$('.typeahead').bind('typeahead:render', function(ev, suggestion) {
-  console.log('Selection: ' + suggestion);
-});
+
+
 
 
 
