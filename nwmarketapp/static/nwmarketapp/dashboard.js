@@ -83,10 +83,11 @@ const loadTrackedItems = (serverId) => {
         const elem = document.getElementById("tracked-items");
         elem.innerHTML = data["item_data"];
         const alerts_elem = document.getElementById("item-alerts");
-        alerts_elem.innerHTML = data["alert_data"]
-
-        setupAlertButtons()
-        alertTriggers()
+        if (alerts_elem) {
+            alerts_elem.innerHTML = data["alert_data"]
+            setupAlertButtons()
+            alertTriggers()
+        }
 
 
         for (let i = 0; i < data["mini_graph_data"].length; i++){
@@ -532,6 +533,16 @@ const delAlert = (item_id) => {
 
 }
 const addAlert = (item_id) => {
+     // get count of current alerts
+    let alert_count = 0
+    const alerts_div = document.querySelectorAll(".container-custom-alerts");
+    alert_count = alerts_div.length
+
+    if (alert_count >= max_tracked_num){
+        createNotification('Maximum number reached. You must be an active scanner or a Gold subscriber to set up more alerts. Visit the Discord channel to learn more.', "danger");
+        return
+    }
+
      nwmpRequest(`/0/${serverId}/?cn_id=${item_id}`)
     .then(data => {
 
@@ -548,7 +559,7 @@ const addAlert = (item_id) => {
             `        <div class="low-price">${min_price}</div>\n` +
             `        <div class="current-price">${data['recent_lowest_price']}</div>\n` +
             `        <div class="high-price">${max_price}</div>\n` +
-            `        <div class="price-change">${data['price_change']}</div>\n` +
+            `        <div class="price-change">${data['price_change']}%</div>\n` +
 
             '        <div class="price-below">Price drops below\n' +
             `            <div class="control"><input class="input" type="text" value="" id="price-below-${item_id}" maxlength="10"></div>\n` +
@@ -603,12 +614,12 @@ const alertTriggers = () => {
         // extract item id from div id
         let item_id = id_string.substring(11)
         let current_price = div.querySelector('.current-price').innerHTML
-        let price_change = div.querySelector('.price-change').innerHTML
+        let price_change = (div.querySelector('.price-change').innerHTML).slice(0, -1)
         let price_below = div.querySelector(`#price-below-${item_id}`).value
         let enabled = div.querySelector(`#enabled-${item_id}`).checked
         if (price_below){
             let title_text = div.querySelector(`.price-below`)
-            if (current_price < price_below){
+            if (parseFloat(current_price) < parseFloat(price_below)){
                 title_text.style.color = "#FF0000"
                 if (enabled) {
                     alerts_triggered += 1;
@@ -621,7 +632,8 @@ const alertTriggers = () => {
         let price_above = div.querySelector(`#price-above-${item_id}`).value
         if (price_above){
             let title_text = div.querySelector(`.price-above`)
-            if (current_price > price_above){
+
+            if (parseFloat(current_price) > parseFloat(price_above)){
                 title_text.style.color = "#FF0000"
                 if (enabled) {
                     alerts_triggered += 1;
@@ -634,6 +646,7 @@ const alertTriggers = () => {
         let perc_decrease = div.querySelector(`#perc-decrease-${item_id}`).value
         if (perc_decrease){
             let title_text = div.querySelector(`.perc-decrease`)
+
             if (price_change < 0) {
                 if (price_change <= -Math.abs(perc_decrease)) {
                     title_text.style.color = "#FF0000"
@@ -666,7 +679,7 @@ const alertTriggers = () => {
 
 
     });
-    console.log(alerts_triggered)
+
     if (alerts_triggered > 0){
         const alert_header = document.querySelector('#alerts-triggered');
         alert_header.innerHTML = alerts_triggered + ' alerts triggered';

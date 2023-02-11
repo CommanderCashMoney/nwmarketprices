@@ -108,8 +108,12 @@ def tracked_items_save(request):
 def item_alerts_save(request):
     user_id = request.user.id
     alert_data = json.loads(request.data[1])
-
-
+    max_tracked_num = 12
+    scanner_status = check_scanner_status(request)
+    if not scanner_status['scanner'] or not scanner_status['recently_scanned']:
+        if not scanner_status['discord-gold']:
+            max_tracked_num = 6
+    alert_data = alert_data[:max_tracked_num]
     data = {
         'user_id': user_id,
         'server_id': request.data[0],
@@ -123,10 +127,6 @@ def item_alerts_save(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
     item = ItemAlertsSerializer(data=data)
 
-    # if AuthUserItemAlerts.objects.filter(user_id=data['user_id'], server_id=data['server_id']).exists():
-    #     # raise serializers.ValidationError('This data already exists')
-    #     print('data already exists. doing update')
-
     if item.is_valid():
         item.save()
         return Response(item.data)
@@ -136,8 +136,8 @@ def item_alerts_save(request):
 @ratelimit(key='ip', rate='2/s', block=True)
 def dashboard(request: WSGIRequest, server_id):
     server_details = get_serverlist()
-
-    return render(request, "marketwatchers/dashboard.html", {'servers': server_details})
+    scanner_status = check_scanner_status(request)
+    return render(request, "marketwatchers/dashboard.html", {'servers': server_details, 'gold': scanner_status['discord-gold']})
 
 
 @ratelimit(key='ip', rate='1/s', block=True)
@@ -284,10 +284,6 @@ def get_item_alerts(user_id, server_id):
     response = render_to_string("marketwatchers/snippets/item-alerts.html", {'alert_data': results})
 
     return response
-
-
-
-
 
 
 @ratelimit(key='ip', rate='1/s', block=True)

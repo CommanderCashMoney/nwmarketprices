@@ -12,7 +12,7 @@
         <div class="low-price">{{ item.all_time_low }}</div>
         <div class="current-price">{{ item.lowest_price.price }}</div>
         <div class="high-price">{{ item.all_time_high }}</div>
-        <div class="price-change">{{ item.price_change }}</div>
+        <div class="price-change">{{ item.price_change }}%</div>
         <div class="price-below">Price drops below
             <div class="control"><input class="input" type="text" value="{{ item.price_below|default:'' }}" id="price-below-{{ item.item_id }}" maxlength="10"></div>
         </div>
