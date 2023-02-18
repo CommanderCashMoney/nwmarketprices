@@ -486,7 +486,7 @@ html {
 
 .price-below { grid-area: price-below; }
 
-.perc-increase { grid-area: perc-increase; margin-left: -30px;}
+.perc-increase { grid-area: perc-increase; margin-left: -20px;}
 
 .perc-decrease { grid-area: perc-decrease; }
 
