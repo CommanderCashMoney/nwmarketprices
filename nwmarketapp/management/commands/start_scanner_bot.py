@@ -143,8 +143,8 @@ class ServerSelectView(discord.ui.View):
 
 # to run on ssh into eb aws
 # $ eb ssh
-# screen -S my_bot --start new session
-# screen -r my_bot  --reconnect to old
+# screen -S my_bot2 --start new session
+# screen -r my_bot2 --reconnect to old
 # $ sudo su -
 # $ export $(cat /opt/elasticbeanstalk/deployment/env | xargs)
 # $ source /var/app/venv/*/bin/activate

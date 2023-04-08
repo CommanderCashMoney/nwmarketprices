@@ -113,8 +113,9 @@ class Command(BaseCommand):
         @bot.event
         async def on_member_update(before, after):
 
-            public_channel = bot.get_channel(1050192207673573386)
-            private_channel = bot.get_channel(1050192207673573386)
+            public_channel = bot.get_channel(954906680141946890)
+            private_channel = bot.get_channel(1062231562399256738)
+
             user_name = before.name
 
             if len(before.roles) < len(after.roles):
