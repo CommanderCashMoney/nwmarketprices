@@ -10,6 +10,24 @@
     <script src="{% static 'nwmarketapp/init-typeahead.js' %}"></script>
 {% endblock %}
 {% block content %}
+    <script>
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        if (urlParams.has('ref')) {
+            const refValue = urlParams.get('ref');
+            console.log(`The value of the "ref" parameter is "${refValue}".`);
+            if (refValue === 'agg') {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '{% static 'nwmarketapp/agg.css' %}';
+                document.head.appendChild(link);
+
+            }
+
+
+        }
+
+    </script>
 <div class="container py-0 px-2">
     <div class="columns mt-1-desktop mb-0 hidden" id="price-data">
         <div class="column is-two-fifths mx-0 p-1">

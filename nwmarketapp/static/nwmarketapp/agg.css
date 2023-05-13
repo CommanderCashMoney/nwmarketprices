@@ -1,0 +1,12 @@
+.box {
+    background-color:  #1a1b1e!important;
+}
+html {
+    background-color: #111111!important;
+}
+.navbar, .navbar-item {
+    background-color:  #111111!important;
+}
+.is-dark {
+    background-color: #111111!important;
+}
