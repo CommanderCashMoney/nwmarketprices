@@ -3,16 +3,22 @@
     <div class="navbar-brand">
         <img src="{% static 'images/cropped-logo4-60.png' %}" style="width: 60px; height: 60px; margin-top: auto; margin-bottom: auto; margin-right: 10px"/>
         <span class="navbar-item nav-title is-size-5">
+            {% if request.GET.ref != "agg" %}
             <a href="/" style="color: white">New World Market Prices</a>
+            {% else %}
+            <a href="/" style="color: white" target="_blank">New World Market Prices</a>
+            {% endif %}
         </span>
         <div class="navbar-item"></div>
         {% if show_login %}
+
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
            data-target="burger">
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
         </a>
+
         {% endif %}
     </div>
     {% if show_search %}
@@ -22,7 +28,9 @@
     <div class="navbar-end is-dark">
         <div id="burger" class="navbar-menu is-dark burger-menu">
             {% include 'snippets/server-select.html' %}
-            {% include 'snippets/login_button.html' %}
+            {% if request.GET.ref != "agg" %}
+                {% include 'snippets/login_button.html' %}
+            {% endif %}
         </div>
     </div>
     {% else %}

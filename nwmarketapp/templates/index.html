@@ -15,7 +15,7 @@
         const urlParams = new URLSearchParams(queryString);
         if (urlParams.has('ref')) {
             const refValue = urlParams.get('ref');
-            console.log(`The value of the "ref" parameter is "${refValue}".`);
+
             if (refValue === 'agg') {
                 const link = document.createElement('link');
                 link.rel = 'stylesheet';
@@ -104,10 +104,14 @@
         If you would like to join us, head over to the <a href="https://discord.gg/9xfcG6jTVj" style="text-decoration: underline">discord channel</a> to find out more.
 
         <br>
-        How to <a id="export-data-modal-trigger" style="text-decoration: underline">export prices</a> for use with other sites.
-        <br><a href="/news"> News and stats</a> |
-        <a id="other-sites-modal-trigger">Other New World sites I like</a>
-        <br><span data-ccpa-link="1"></span>
+        {% if request.GET.ref == "agg" %}
+            More functionality is available on the <a href="https://nwmarketprices.com/" style="text-decoration: underline" target="_blank">full web version of the site</a>.
+        {% else %}
+            How to <a id="export-data-modal-trigger" style="text-decoration: underline">export prices</a> for use with other sites.
+            <br><a href="/news"> News and stats</a> |
+            <a id="other-sites-modal-trigger">Other New World sites I like</a>
+            <br><span data-ccpa-link="1"></span>
+        {% endif %}
 
     </div>
 </div>
