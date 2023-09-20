@@ -30,9 +30,7 @@ cloudscraper~=1.2.64
 django-cors-headers
 feedparser~=6.0.10
 django-ebhealthcheck
-discord.py==2.1.0
-discord==2.1.0
-py-cord==2.1.1
+py-cord
 python-dateutil~=2.8.0
 humanize
 tzlocal
