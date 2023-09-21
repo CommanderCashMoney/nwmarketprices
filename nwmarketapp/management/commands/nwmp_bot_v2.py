@@ -13,7 +13,7 @@ curr = conn.cursor()
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler = logging.FileHandler(filename='/var/log/discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
@@ -335,3 +335,12 @@ class ServerSelectView(discord.ui.View):
         super().__init__(timeout=None)
         server_select = ServerDropdown(region_selected)
         self.add_item(server_select)
+
+# to run on ssh into eb aws
+# $ eb ssh
+# screen -S my_bot --start new session
+# screen -r my_bot  --reconnect to old
+# $ sudo su -
+# $ export $(cat /opt/elasticbeanstalk/deployment/env | xargs)
+# $ source /var/app/venv/*/bin/activate
+# $ python3 /var/app/current/manage.py nwmp_bot_v2
