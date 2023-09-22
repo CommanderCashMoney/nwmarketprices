@@ -1,4 +1,5 @@
 asgiref==3.4.1
+awsebcli
 cement==2.8.2
 certifi==2021.10.8
 charset-normalizer==2.0.10
@@ -10,7 +11,7 @@ djangorestframework==3.13.1
 djangorestframework-simplejwt==5.0.0
 future==0.16.0
 jmespath==0.10.0
-numpy
+numpy==1.22.0
 pathspec==0.5.9
 psycopg2==2.9.3
 PyJWT==2.3.0
