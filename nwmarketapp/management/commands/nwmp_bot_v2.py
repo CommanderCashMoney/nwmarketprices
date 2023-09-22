@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import psycopg2
 import logging
 
-
+# 1
 load_dotenv()
 bot = discord.Bot(intents=discord.Intents.all())
 conn = psycopg2.connect(f"dbname={os.getenv('DB_NAME')} user={os.getenv('RDS_USERNAME')} password={os.getenv('RDS_PASSWORD')} host={os.getenv('RDS_HOSTNAME')}")
