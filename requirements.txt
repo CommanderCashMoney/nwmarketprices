@@ -35,5 +35,3 @@ humanize
 tzlocal
 pympler
 urllib3==1.26.6
-
-```
