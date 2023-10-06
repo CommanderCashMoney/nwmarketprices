@@ -305,7 +305,7 @@ def get_serverlist():
 
             server_details[item[0]] = {'name': item[1], 'health': dot_color, 'last_scanned': humanize.naturaltime(localtime)}
         else:
-            server_details[item[0]] = {'name': item[1], 'health': 'red-dot', 'last_scanned': None}
+            server_details[item[0]] = {'name': item[1], 'health': 'red-dot', 'last_scanned': 'N/A'}
     return server_details
 
 @cache_page(60 * 20)
