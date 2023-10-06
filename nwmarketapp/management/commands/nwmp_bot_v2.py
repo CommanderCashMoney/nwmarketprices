@@ -301,8 +301,17 @@ class ServerDropdown(discord.ui.Select):
 
                 server_id = int(interaction.data['values'][0])
                 server_name = [tup for tup in self.server_data if tup[1] == server_id]
-                server_auth_group_id = server_id + 3  # add +3 here because the auth group ids don't exactly match the server ids
+                # server_auth_group_id = server_id + 3  # add +3 here because the auth group ids don't exactly match the server ids
                 server_name = server_name[0][0]
+                # get the server ID number by name look up
+                group_query = f"""select b.id from servers a
+                                    join auth_group b on a.id::text = REPLACE(b.name, 'server-', '')
+                                  where a.name = '{server_name}'"""
+                with conn.cursor() as cursor:
+                    cursor.execute(group_query)
+                    server_auth_group_id = cursor.fetchone()
+
+
                 value_list = [(user_id, 1,), (user_id,
                                               server_auth_group_id,)]  # adds two record id=1 for scanner user, and another row for the server
                 username = interaction.user.name
