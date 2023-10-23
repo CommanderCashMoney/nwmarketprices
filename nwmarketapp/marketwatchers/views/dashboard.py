@@ -190,8 +190,8 @@ def price_changes(request: WSGIRequest, server_id):
 
 
 
-    price_drops = sorted(price_drops, key=lambda item: item["price_change"])[:20]
-    price_increases = sorted(price_increases, key=lambda item: item["price_change"], reverse=True)[:20]
+    price_drops = sorted(price_drops, key=lambda item: item["price_change"])[:40]
+    price_increases = sorted(price_increases, key=lambda item: item["price_change"], reverse=True)[:40]
 
     elapsed = time.perf_counter() - p
     print('price changes process time: ', elapsed)
@@ -223,7 +223,7 @@ def rare_items(request: WSGIRequest, server_id):
                                 'price': obj.recent_lowest_price['price'],
                                 'last_seen': obj.diff})
 
-    rare_items_list = sorted(rare_items_list, key=lambda item: item["last_seen"], reverse=True)[:10]
+    rare_items_list = sorted(rare_items_list, key=lambda item: item["last_seen"], reverse=True)[:15]
     elapsed = time.perf_counter() - p
     print('rare item process time: ', elapsed)
 
