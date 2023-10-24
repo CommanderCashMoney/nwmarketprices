@@ -75,8 +75,8 @@ def convert_popular_items_dict_to_old_style(popular_items_dict: dict) -> Dict[st
 
 def get_popular_items_dict_v2(server_id) -> Any:
     popular_items_dict = {
-        "popular_endgame_data": [1223, 1626, 436, 1048, 806, 1463, 1461, 1458, 28948, 38400, 38409, 38408],
-        "popular_base_data": [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538, 653, 38393, 38391, 38386, 38389],
+        "popular_endgame_data": [1223, 1626, 436, 1048, 806, 1461, 1458, 28948, 38400, 38409, 38408, 38410, 38395, 38397, 38396, 38398],
+        "popular_base_data": [1576, 120, 1566, 93, 1572, 1166, 1567, 868, 1571, 538, 653, 38393, 38391, 38386, 38389, 1463],
         "mote_data": [862, 459, 649, 910, 158, 869, 497],
         "refining_data": [326, 847, 1033, 977, 1334],
         "trophy_data": [1542, 1444, 1529, 1541, 1502],
