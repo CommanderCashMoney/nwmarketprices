@@ -16,21 +16,10 @@ from rest_framework.decorators import api_view
 from django.db.models import Subquery, OuterRef
 from nwmarket.settings import CACHE_ENABLED
 from nwmarketapp.api.utils import get_popular_items_dict_v2
-from nwmarketapp.models import Craft, PriceSummary, Run, ConfirmedNames, Price, Servers
+from nwmarketapp.models import PriceSummary, Run, ConfirmedNames, Price, Servers
 
 
-def createCraftObject(data):
-    res = []
-    for dat in data:
-        res.append({
-            "name": dat.component.name,
-            "quantity": dat.quantity,
-            "id": dat.component.id,
-            "nwdb_id": dat.component.nwdb_id,
-            "price": 0,
-            "total": 0
-        })
-    return res
+
 
 @ratelimit(key='ip', rate='4/s', block=True)
 @cache_page(60 * 10)
@@ -48,16 +37,7 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse
         ps = PriceSummary.objects.get(server_id=server_id, confirmed_name_id=item_id)
     except (PriceSummary.DoesNotExist):
         return JsonResponse({"status": "No prices found for this item."}, status=404)
-    try:
-        crafts = createCraftObject(Craft.objects.filter(item_id=item_id))
-        craftCost = 0.0
-        for craft in crafts:
-            craft["price"] = sorted(PriceSummary.objects.get(server_id=server_id, confirmed_name_id=craft["id"]).lowest_prices, key=lambda obj: obj["price"])[0]["price"]
-            craft["total"] = round(craft["price"] * craft["quantity"], 2)
-            craftCost = craftCost + craft["total"]
-    except (Craft.DoesNotExist, PriceSummary.DoesNotExist):
-        crafts = None
-        craftCost = 0.0
+
     cn_id = request.GET.get("cn_id")
     # Single item request from /0/[server_id]/?cn_id=[item_id]
     # This is used by some of the price overlay tools
@@ -82,8 +62,6 @@ def get_item_data(request: WSGIRequest, server_id: int, item_id) -> JsonResponse
                     "recent_lowest_price": ps.recent_lowest_price['price'],
                     "highest_buy_order": ps.recent_lowest_price.get('buy_order_price', None),
                     "highest_buy_order_qty": ps.recent_lowest_price.get('qty', None),
-                    "components": crafts,
-                    "craftCost": str(round(craftCost, 2)),
                     "last_checked": isoparse(ps.recent_lowest_price['datetime']),
                     "price_change": ps.price_change,
                     "price_change_date": ps.price_change_date,
