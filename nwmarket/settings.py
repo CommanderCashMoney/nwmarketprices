@@ -30,7 +30,7 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 DEBUG = os.getenv("DEBUG") == "True"
 
 HOST = os.getenv("HOST", "nwmarket3-env.eba-eezyakup.us-west-1.elasticbeanstalk.com")
-ALLOWED_HOSTS = [HOST, "127.0.0.1", 'localhost', 'nwmarketprices.com', "nwmarket3-env.eba-eezyakup.us-west-1.elasticbeanstalk.com"]
+ALLOWED_HOSTS = [HOST, "127.0.0.1", 'localhost', 'nwmarketprices.com', "nwmarket-env.eba-rxcymaas.us-west-1.elasticbeanstalk.com/", "d2zzpqwuh0fgy8.cloudfront.net"]
 # ALLOWED_HOSTS = ['*']
 X_FRAME_OPTIONS = 'ALLOW-FROM https://aeternum-map.gg/'
 # Application definition
