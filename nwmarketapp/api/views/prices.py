@@ -112,9 +112,7 @@ def initial_page_load_data(request: WSGIRequest, server_id: int) -> JsonResponse
         **popular_rendered
     })
 
-
-@ratelimit(key='ip', rate='5/m', block=True)
-@cache_page(60 * 10)
+# Not rated limited because request to this are redirected to CloudFront
 def latest_prices(request: WSGIRequest, server_id: int) -> FileResponse:
     p = perf_counter()
     final_prices = []

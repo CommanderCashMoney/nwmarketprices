@@ -31,7 +31,9 @@ import feedparser
 from threading import Thread
 from time import perf_counter
 import humanize
-
+import boto3
+import os
+import time
 
 class TokenPairSerializer(TokenObtainPairSerializer):
     def __init__(self, *args, **kwargs):
@@ -182,9 +184,31 @@ class PricesUploadAPI(CreateAPIView):
             with connection.cursor() as cursor:
                 cursor.execute(query)
             self.send_discord_notification(run)
+        self.invalidate_cloudfront_cache(run.server_id)
         print('price upload sql finished: ', perf_counter() - p)
 
+    def invalidate_cloudfront_cache(self, server_id):
+        # cf = boto3.client('cloudfront')
+        cf = boto3.client('cloudfront',
+                            aws_access_key_id=os.getenv('BOTO_ACCESS_KEY'),
+                            aws_secret_access_key=os.getenv('BOTO_SECRET'))
+        cf_id = os.getenv("CF_DISTRIBUTION_ID")
 
+        res= cf.create_invalidation(
+            DistributionId=cf_id,
+            InvalidationBatch={
+                'Paths': {
+                    'Quantity': 2,
+                    'Items': [
+                        f'/api/latest-prices/{str(server_id)}/',
+                        '/api/servers_updated/'
+
+                    ]
+                },
+                'CallerReference': str(time.time()).replace(".", "")
+            }
+        )
+        print(f'Invalidation request sent for server {server_id} - {res}')
 
 
 def add_run(username: str, first_price: dict, run_info: dict, access_groups) -> Run:
