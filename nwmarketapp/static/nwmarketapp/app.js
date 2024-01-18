@@ -3,7 +3,7 @@ let itemId = null;
 
 const fetchAutocompleteData = () => {
     fetch(
-        "https://d2zzpqwuh0fgy8.cloudfront.net/api/typeahead/"
+        "/api/typeahead/"
     ).then(
         (response) => response.json()
     ).then(
