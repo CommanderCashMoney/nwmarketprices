@@ -77,6 +77,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://d2zzpqwuh0fgy8.cloudfront.net',
     'http://127.0.0.1:8080',
     'http://localhost:8080',
+    'https://nwmarketprices.com'
 ]
 
 
