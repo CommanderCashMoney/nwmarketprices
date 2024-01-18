@@ -74,6 +74,9 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     'https://local.gaming.tools',
     'https://gaming.tools',
+    'https://d2zzpqwuh0fgy8.cloudfront.net',
+    'http://127.0.0.1:8080',
+    'http://localhost:8080',
 ]
 
 

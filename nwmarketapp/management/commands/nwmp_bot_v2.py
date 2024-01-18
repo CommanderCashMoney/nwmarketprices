@@ -353,3 +353,7 @@ class ServerSelectView(discord.ui.View):
 # $ export $(cat /opt/elasticbeanstalk/deployment/env | xargs)
 # $ source /var/app/venv/*/bin/activate
 # $ python3 /var/app/current/manage.py nwmp_bot_v2
+
+#$ cd /var/log/
+# ls -l
+# tail -n 50 discord.log

@@ -198,10 +198,9 @@ class PricesUploadAPI(CreateAPIView):
             DistributionId=cf_id,
             InvalidationBatch={
                 'Paths': {
-                    'Quantity': 2,
+                    'Quantity': 1,
                     'Items': [
-                        f'/api/latest-prices/{str(server_id)}/',
-                        '/api/servers_updated/'
+                        f'/api/latest-prices/{str(server_id)}/'
 
                     ]
                 },
