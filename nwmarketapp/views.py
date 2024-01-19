@@ -184,7 +184,7 @@ class PricesUploadAPI(CreateAPIView):
             with connection.cursor() as cursor:
                 cursor.execute(query)
             self.send_discord_notification(run)
-        self.invalidate_cloudfront_cache(run.server_id)
+        # self.invalidate_cloudfront_cache(run.server_id)
         print('price upload sql finished: ', perf_counter() - p)
 
     def invalidate_cloudfront_cache(self, server_id):
