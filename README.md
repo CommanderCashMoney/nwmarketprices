@@ -94,7 +94,7 @@ $ python3 ./manage.py runserver
 
 ```bash
 # Get your dump
-$ wget https://www.dropbox.com/s/v20qi60g3zshr3f/full-prodAWS_Prod-2022_09_04_09_55_22-dump.sql?dl=1
+$ wget https://scraperdownload.s3.us-west-1.amazonaws.com/full-prodAWS_PROD2-2023_04_10_08_02_36-dump.sql
 
 # Lauch database
 $ docker-compose up
@@ -104,7 +104,7 @@ $ docker exec -i postgres psql -U postgres
 
 # Create a database named nwmp_prod (CREATE DATABASE nwmp_prod) then exit
 # Populate the new database
-$ cat ./full-prodAWS_Prod-2022_09_04_09_55_22-dump.sql | docker exec -i postgres psql -U postgres -d nwmp_prod
+$ cat ./full-prodAWS_PROD2-2023_04_10_08_02_36-dump.sql | docker exec -i postgres psql -U postgres -d nwmp_prod
 
 # You can access adminer at <http://localhost:8000>
 ```
